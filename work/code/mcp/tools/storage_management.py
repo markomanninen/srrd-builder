@@ -1,5 +1,13 @@
-from mcp.server import MCPServer
-from work.code.mcp.storage.project_manager import ProjectManager
+from typing import Dict, Any, Optional, List
+import os
+import sys
+import json
+from pathlib import Path
+
+# Add parent directory to path to access storage modules
+sys.path.append(str(Path(__file__).parent.parent))
+
+from storage.project_manager import ProjectManager
 
 async def initialize_project_tool(name: str, description: str, domain: str, project_path: str) -> str:
     """MCP tool to initialize Git-based project storage"""
@@ -39,7 +47,8 @@ async def restore_session_tool(session_id: int, project_path: str) -> str:
     # This is a placeholder until the session manager is implemented
     return "Session restored"
 
-def register_storage_tools(server: MCPServer):
+def register_storage_tools(server):
+    """Register storage management tools with the MCP server"""
     server.tools["initialize_project"] = initialize_project_tool
     server.tools["save_session"] = save_session_tool
     server.tools["search_knowledge"] = search_knowledge_tool

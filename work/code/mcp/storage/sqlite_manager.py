@@ -1,5 +1,7 @@
 import aiosqlite
 import json
+import os
+from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 
@@ -8,12 +10,65 @@ class SQLiteManager:
         self.db_path = db_path
         self.connection: Optional[aiosqlite.Connection] = None
 
+    async def initialize(self):
+        """Initialize the database connection and schema"""
+        return await self.initialize_database()
+    
     async def initialize_database(self):
         """Create database with schema"""
         self.connection = await aiosqlite.connect(self.db_path)
-        with open("work/code/mcp/config/database_schema.sql") as f:
-            await self.connection.executescript(f.read())
-        await self.connection.commit()
+        
+        # Try to find schema file in multiple locations
+        schema_paths = [
+            "config/database_schema.sql",
+            "work/code/mcp/config/database_schema.sql",
+            str(Path(__file__).parent.parent / "config" / "database_schema.sql")
+        ]
+        
+        schema_content = None
+        for schema_path in schema_paths:
+            try:
+                with open(schema_path, 'r') as f:
+                    schema_content = f.read()
+                    break
+            except FileNotFoundError:
+                continue
+        
+        if schema_content:
+            await self.connection.executescript(schema_content)
+            await self.connection.commit()
+        else:
+            # Fallback: create basic schema
+            basic_schema = """
+            CREATE TABLE IF NOT EXISTS projects (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT,
+                domain TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            
+            CREATE TABLE IF NOT EXISTS sessions (
+                id INTEGER PRIMARY KEY,
+                project_id INTEGER,
+                session_type TEXT,
+                user_id TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (project_id) REFERENCES projects (id)
+            );
+            
+            CREATE TABLE IF NOT EXISTS interactions (
+                id INTEGER PRIMARY KEY,
+                session_id INTEGER,
+                interaction_type TEXT,
+                content TEXT,
+                metadata TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (session_id) REFERENCES sessions (id)
+            );
+            """
+            await self.connection.executescript(basic_schema)
+            await self.connection.commit()
 
     async def create_project(self, name: str, description: str, domain: str) -> int:
         """Create new project record"""

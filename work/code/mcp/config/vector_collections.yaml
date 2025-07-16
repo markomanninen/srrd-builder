@@ -1,0 +1,56 @@
+vector_collections:
+  research_literature:
+    description: "Academic papers and methodologies"
+    embedding_dimension: 1536
+    similarity_metric: "cosine"
+    metadata_fields:
+      - domain
+      - methodology
+      - paradigm_type
+      - innovation_level
+      - publication_year
+      - journal_tier
+    
+  novel_theories:
+    description: "Alternative theoretical frameworks"
+    embedding_dimension: 1536
+    similarity_metric: "cosine"
+    metadata_fields:
+      - theory_type
+      - validation_status
+      - paradigm_challenge_level
+      - mathematical_complexity
+      - empirical_testability
+    
+  methodologies:
+    description: "Research methodologies and best practices"
+    embedding_dimension: 1536
+    similarity_metric: "cosine"
+    metadata_fields:
+      - domain
+      - complexity
+      - innovation_friendly
+      - validation_rigor
+      - time_requirement
+    
+  interactions:
+    description: "Previous research interactions and guidance"
+    embedding_dimension: 1536
+    similarity_metric: "cosine"
+    metadata_fields:
+      - session_type
+      - domain
+      - success_indicators
+      - user_expertise_level
+      - question_depth
+
+search_settings:
+  default_limit: 10
+  similarity_threshold: 0.7
+  novel_theory_boost: 1.2
+  context_window: 5
+  
+indexing:
+  batch_size: 100
+  update_frequency: "daily"
+  reindex_threshold: 1000
