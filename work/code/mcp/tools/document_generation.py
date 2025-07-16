@@ -34,11 +34,11 @@ LATEX_TEMPLATE = r"""
 \pagestyle{fancy}
 \fancyhf{}
 \rhead{\thepage}
-\lhead{{{title}}}
+\lhead{title_placeholder}
 
-\title{{{title}}}
-\author{{{author}}}
-\date{{{date}}}
+\title{title_placeholder}
+\author{author_placeholder}
+\date{date_placeholder}
 
 \begin{document}
 
@@ -86,18 +86,16 @@ async def generate_latex_document_tool(
     
     try:
         # Format the LaTeX document
-        latex_content = LATEX_TEMPLATE.format(
-            title=title,
-            author=author,
-            date=datetime.now().strftime("%B %d, %Y"),
-            abstract=abstract,
-            introduction=introduction,
-            methodology=methodology,
-            results=results,
-            discussion=discussion,
-            conclusion=conclusion,
-            bibliography=bibliography
-        )
+        latex_content = LATEX_TEMPLATE.replace("title_placeholder", title)
+        latex_content = latex_content.replace("author_placeholder", author)
+        latex_content = latex_content.replace("date_placeholder", datetime.now().strftime("%B %d, %Y"))
+        latex_content = latex_content.replace("{abstract}", abstract)
+        latex_content = latex_content.replace("{introduction}", introduction)
+        latex_content = latex_content.replace("{methodology}", methodology)
+        latex_content = latex_content.replace("{results}", results)
+        latex_content = latex_content.replace("{discussion}", discussion)
+        latex_content = latex_content.replace("{conclusion}", conclusion)
+        latex_content = latex_content.replace("{bibliography}", bibliography)
         
         # Save to project if path provided
         if project_path:

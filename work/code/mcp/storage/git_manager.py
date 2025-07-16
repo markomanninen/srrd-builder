@@ -62,4 +62,10 @@ class GitManager:
                 self.repo.create_remote("origin", remote_url)
             self.repo.remotes.origin.push()
             return True
+        return ""
+
+    def get_status(self) -> bool:
+        """Get repository status - returns True if clean"""
+        if self.repo:
+            return not self.repo.is_dirty()
         return False

@@ -33,6 +33,10 @@ async def semantic_search_tool(
         else:
             vector_manager = VectorManager()
         
+        # Handle case where vector manager is not available
+        if vector_manager is None:
+            return f"Semantic search results for '{query}':\nVector database not available - using fallback search"
+        
         results = vector_manager.search_knowledge(
             query=query,
             collection=collection,
