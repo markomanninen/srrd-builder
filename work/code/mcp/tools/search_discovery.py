@@ -27,17 +27,23 @@ async def semantic_search_tool(
     """Perform semantic search across research documents"""
     
     try:
+        vector_manager = None
+        
         if project_path:
             project_manager = ProjectManager(project_path)
             vector_manager = project_manager.vector_manager
         else:
             vector_manager = VectorManager()
+            try:
+                await vector_manager.initialize()
+            except Exception as e:
+                vector_manager = None
         
-        # Handle case where vector manager is not available
+        # Handle case where vector manager is not available or None
         if vector_manager is None:
-            return f"Semantic search results for '{query}':\nVector database not available - using fallback search"
+            return f"Semantic search results for '{query}':\nVector database not available - using fallback search\n\nFallback results:\n- No semantic search capabilities available\n- Consider installing ChromaDB and sentence-transformers for full functionality"
         
-        results = vector_manager.search_knowledge(
+        results = await vector_manager.search_knowledge(
             query=query,
             collection=collection,
             n_results=limit
@@ -45,9 +51,18 @@ async def semantic_search_tool(
         
         # Filter by similarity threshold if available
         filtered_results = []
-        for result in results.get('documents', []):
+        documents = results.get('documents', [])
+        
+        # Handle nested list structure from ChromaDB
+        if documents and isinstance(documents[0], list):
+            documents = documents[0]
+        
+        for result in documents:
             # Assuming results include similarity scores
             filtered_results.append(result)
+        
+        if not filtered_results:
+            return f"Semantic search results for '{query}':\nNo matching documents found in collection '{collection}'"
         
         return f"Semantic search results for '{query}':\n{json.dumps(filtered_results[:limit], indent=2)}"
         
@@ -187,25 +202,44 @@ async def find_similar_documents_tool(
     """Find documents similar to the target document"""
     
     try:
+        vector_manager = None
+        
         if project_path:
             project_manager = ProjectManager(project_path)
             vector_manager = project_manager.vector_manager
         else:
             vector_manager = VectorManager()
+            try:
+                await vector_manager.initialize()
+            except Exception as e:
+                vector_manager = None
+        
+        # Handle case where vector manager is not available or None
+        if vector_manager is None:
+            return f"Similar documents search:\nVector database not available - cannot perform similarity search\n\nConsider installing ChromaDB and sentence-transformers for full functionality"
         
         # Use the document content as query for similarity search
-        results = vector_manager.search_knowledge(
+        results = await vector_manager.search_knowledge(
             query=target_document,
             collection=collection,
             n_results=max_results
         )
         
         similar_docs = []
-        for result in results.get('documents', []):
+        documents = results.get('documents', [])
+        
+        # Handle nested list structure from ChromaDB
+        if documents and isinstance(documents[0], list):
+            documents = documents[0]
+        
+        for result in documents:
             similar_docs.append({
-                'content': result[:200] + "...",  # Truncate for display
+                'content': result[:200] + "..." if len(result) > 200 else result,  # Truncate for display
                 'similarity': "High"  # Placeholder - would need actual similarity scores
             })
+        
+        if not similar_docs:
+            return f"Similar documents:\nNo similar documents found in collection '{collection}'"
         
         return f"Similar documents found:\n{json.dumps(similar_docs, indent=2)}"
         

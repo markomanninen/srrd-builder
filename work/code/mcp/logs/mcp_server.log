@@ -75,3 +75,37 @@
 2025-07-16 23:36:24,459 - srrd_builder - WARNING - server.py:39 - Configuration issue: OpenAI API key not configured - AI features may not work
 2025-07-16 23:36:24,459 - srrd_builder - INFO - server.py:44 - MCP Server initialized on port 8084
 2025-07-16 23:36:24,459 - srrd_builder - INFO - server.py:45 - Registered 21 tools
+2025-07-16 23:51:46,026 - srrd_builder - WARNING - server.py:39 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-16 23:51:46,030 - srrd_builder - INFO - server.py:44 - MCP Server initialized on port 8083
+2025-07-16 23:51:46,030 - srrd_builder - INFO - server.py:45 - Registered 21 tools
+2025-07-16 23:51:46,030 - srrd_builder - INFO - server.py:49 - Starting MCP server on localhost:8083
+2025-07-16 23:53:44,567 - srrd_builder - WARNING - server.py:39 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-16 23:53:44,569 - srrd_builder - INFO - server.py:44 - MCP Server initialized on port 8083
+2025-07-16 23:53:44,569 - srrd_builder - INFO - server.py:45 - Registered 21 tools
+2025-07-16 23:53:44,569 - srrd_builder - INFO - server.py:49 - Starting MCP server on localhost:8083
+2025-07-16 23:58:50,583 - srrd_builder - WARNING - server.py:39 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-16 23:58:50,585 - srrd_builder - INFO - server.py:44 - MCP Server initialized on port 8083
+2025-07-16 23:58:50,585 - srrd_builder - INFO - server.py:45 - Registered 21 tools
+2025-07-16 23:58:50,585 - srrd_builder - INFO - server.py:49 - Starting MCP server on localhost:8083
+2025-07-17 00:01:06,501 - srrd_builder - WARNING - server.py:39 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-17 00:01:06,501 - srrd_builder - INFO - server.py:44 - MCP Server initialized on port 8083
+2025-07-17 00:01:06,501 - srrd_builder - INFO - server.py:45 - Registered 21 tools
+2025-07-17 00:01:06,501 - srrd_builder - INFO - server.py:49 - Starting MCP server on localhost:8083
+2025-07-17 00:01:18,400 - srrd_builder - INFO - logging_setup.py:97 - Tool call successful: initialize
+2025-07-17 00:01:30,091 - srrd_builder - INFO - logging_setup.py:97 - Tool call successful: initialize
+2025-07-17 00:01:31,704 - srrd_builder - INFO - logging_setup.py:102 - Tool call initiated: semantic_search
+2025-07-17 00:01:31,727 - srrd_builder - INFO - logging_setup.py:97 - Tool call successful: semantic_search
+2025-07-17 00:05:02,511 - srrd_builder - WARNING - server.py:39 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-17 00:05:02,511 - srrd_builder - INFO - server.py:44 - MCP Server initialized on port 8084
+2025-07-17 00:05:02,511 - srrd_builder - INFO - server.py:45 - Registered 21 tools
+2025-07-17 00:05:14,674 - srrd_builder - WARNING - server.py:39 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-17 00:05:14,674 - srrd_builder - INFO - server.py:44 - MCP Server initialized on port 8083
+2025-07-17 00:05:14,674 - srrd_builder - INFO - server.py:45 - Registered 21 tools
+2025-07-17 00:05:14,674 - srrd_builder - INFO - server.py:49 - Starting MCP server on localhost:8083
+2025-07-17 00:05:41,563 - srrd_builder - WARNING - server.py:39 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-17 00:05:41,564 - srrd_builder - INFO - server.py:44 - MCP Server initialized on port 8083
+2025-07-17 00:05:41,564 - srrd_builder - INFO - server.py:45 - Registered 21 tools
+2025-07-17 00:05:41,564 - srrd_builder - INFO - server.py:49 - Starting MCP server on localhost:8083
+2025-07-17 00:06:03,504 - srrd_builder - INFO - logging_setup.py:97 - Tool call successful: initialize
+2025-07-17 00:06:05,596 - srrd_builder - INFO - logging_setup.py:102 - Tool call initiated: semantic_search
+2025-07-17 00:06:05,600 - srrd_builder - INFO - logging_setup.py:97 - Tool call successful: semantic_search
