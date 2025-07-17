@@ -70,21 +70,21 @@ LATEX_TEMPLATE = r"""
 \end{document}
 """
 
-async def generate_latex_document_tool(
-    title: str,
-    author: str = "SRRD Builder",
-    abstract: str = "",
-    introduction: str = "",
-    methodology: str = "",
-    results: str = "",
-    discussion: str = "",
-    conclusion: str = "",
-    bibliography: str = "",
-    project_path: str = ""
-) -> str:
+async def generate_latex_document_tool(**kwargs) -> str:
     """Generate LaTeX document from research content"""
     
     try:
+        title = kwargs.get('title', 'Untitled Research Paper')
+        author = kwargs.get('author', 'SRRD Builder')
+        abstract = kwargs.get('abstract', '')
+        introduction = kwargs.get('introduction', '')
+        methodology = kwargs.get('methodology', '')
+        results = kwargs.get('results', '')
+        discussion = kwargs.get('discussion', '')
+        conclusion = kwargs.get('conclusion', '')
+        bibliography = kwargs.get('bibliography', '')
+        project_path = kwargs.get('project_path', '')
+        
         # Format the LaTeX document
         latex_content = LATEX_TEMPLATE.replace("title_placeholder", title)
         latex_content = latex_content.replace("author_placeholder", author)
@@ -113,10 +113,16 @@ async def generate_latex_document_tool(
     except Exception as e:
         return f"Error generating LaTeX document: {str(e)}"
 
-async def compile_latex_tool(tex_file_path: str, output_format: str = "pdf") -> str:
+async def compile_latex_tool(**kwargs) -> str:
     """Compile LaTeX document to PDF or other formats"""
     
     try:
+        tex_file_path = kwargs.get('tex_file_path')
+        output_format = kwargs.get('output_format', 'pdf')
+        
+        if not tex_file_path:
+            return "Error: Missing required parameter 'tex_file_path'"
+        
         tex_path = Path(tex_file_path)
         if not tex_path.exists():
             return f"Error: LaTeX file not found at {tex_file_path}"
@@ -126,6 +132,11 @@ async def compile_latex_tool(tex_file_path: str, output_format: str = "pdf") -> 
         tex_filename = tex_path.name
         
         if output_format.lower() == "pdf":
+            # Check if pdflatex is available
+            import shutil
+            if not shutil.which("pdflatex"):
+                return f"Error: pdflatex not found. Please install LaTeX distribution:\n• macOS: 'brew install --cask mactex'\n• Ubuntu: 'sudo apt-get install texlive-full'\n• Windows: Install MiKTeX from https://miktex.org/\n\nSee INSTALLATION.md for complete setup guide. The LaTeX source file is available at: {tex_file_path}"
+            
             # Compile with pdflatex
             result = subprocess.run(
                 ["pdflatex", "-interaction=nonstopmode", tex_filename],
@@ -136,23 +147,47 @@ async def compile_latex_tool(tex_file_path: str, output_format: str = "pdf") -> 
             
             if result.returncode == 0:
                 pdf_path = work_dir / tex_filename.replace('.tex', '.pdf')
-                return f"PDF compiled successfully: {pdf_path}"
+                if pdf_path.exists():
+                    return f"PDF compiled successfully: {pdf_path}"
+                else:
+                    return f"LaTeX compilation completed but PDF not found. Check LaTeX file syntax: {tex_file_path}"
             else:
-                return f"LaTeX compilation error: {result.stderr}"
+                error_info = []
+                if result.stdout:
+                    error_info.append(f"Output: {result.stdout.strip()}")
+                if result.stderr:
+                    error_info.append(f"Error: {result.stderr.strip()}")
+                
+                if not error_info:
+                    error_info = ["LaTeX compilation failed with no error output. The LaTeX file may contain syntax errors."]
+                
+                # Also check if the .tex file contains valid LaTeX
+                try:
+                    with open(tex_path, 'r') as f:
+                        content = f.read().strip()
+                    if not content.startswith('\\documentclass') and not content.startswith('\\begin{document}'):
+                        error_info.append(f"Note: The file may not contain valid LaTeX syntax. LaTeX files should start with \\documentclass or \\begin{{document}}.")
+                except:
+                    pass
+                
+                return f"LaTeX compilation error: {' | '.join(error_info)}"
         else:
             return f"Unsupported output format: {output_format}"
             
     except Exception as e:
         return f"Error compiling LaTeX: {str(e)}"
 
-async def format_research_content_tool(
-    content: str,
-    content_type: str = "section",
-    formatting_style: str = "academic"
-) -> str:
+async def format_research_content_tool(**kwargs) -> str:
     """Format research content according to academic standards"""
     
     try:
+        content = kwargs.get('content', '')
+        content_type = kwargs.get('content_type', 'section')
+        formatting_style = kwargs.get('formatting_style', 'academic')
+        
+        if not content:
+            return "Error: Missing required parameter 'content'"
+        
         formatted_content = content.strip()
         
         if content_type == "section":
@@ -185,10 +220,15 @@ async def format_research_content_tool(
     except Exception as e:
         return f"Error formatting content: {str(e)}"
 
-async def generate_bibliography_tool(references: List[Dict[str, str]]) -> str:
+async def generate_bibliography_tool(**kwargs) -> str:
     """Generate LaTeX bibliography from reference list"""
     
     try:
+        references = kwargs.get('references', [])
+        
+        if not references:
+            return "Error: Missing required parameter 'references'"
+        
         bib_entries = []
         
         for i, ref in enumerate(references, 1):
@@ -207,10 +247,15 @@ async def generate_bibliography_tool(references: List[Dict[str, str]]) -> str:
     except Exception as e:
         return f"Error generating bibliography: {str(e)}"
 
-async def extract_document_sections_tool(document_content: str) -> str:
+async def extract_document_sections_tool(**kwargs) -> str:
     """Extract and identify sections from document content"""
     
     try:
+        document_content = kwargs.get('document_content', '')
+        
+        if not document_content:
+            return "Error: Missing required parameter 'document_content'"
+        
         sections = {
             'title': '',
             'abstract': '',

@@ -17,16 +17,19 @@ sys.path.append(str(Path(__file__).parent.parent))
 from storage.project_manager import ProjectManager
 from storage.vector_manager import VectorManager
 
-async def semantic_search_tool(
-    query: str,
-    collection: str = "research_docs",
-    limit: int = 10,
-    similarity_threshold: float = 0.7,
-    project_path: str = ""
-) -> str:
+async def semantic_search_tool(**kwargs) -> str:
     """Perform semantic search across research documents"""
     
     try:
+        query = kwargs.get('query')
+        collection = kwargs.get('collection', 'research_docs')
+        limit = kwargs.get('limit', 10)
+        similarity_threshold = kwargs.get('similarity_threshold', 0.7)
+        project_path = kwargs.get('project_path', '')
+        
+        if not query:
+            return "Error: Missing required parameter 'query'"
+        
         vector_manager = None
         
         if project_path:
@@ -69,14 +72,17 @@ async def semantic_search_tool(
     except Exception as e:
         return f"Error performing semantic search: {str(e)}"
 
-async def discover_patterns_tool(
-    content: str,
-    pattern_type: str = "research_themes",
-    min_frequency: int = 2
-) -> str:
+async def discover_patterns_tool(**kwargs) -> str:
     """Discover patterns and themes in research content"""
     
     try:
+        content = kwargs.get('content', '')
+        pattern_type = kwargs.get('pattern_type', 'research_themes')
+        min_frequency = kwargs.get('min_frequency', 2)
+        
+        if not content:
+            return "Error: Missing required parameter 'content'"
+        
         patterns = {}
         
         if pattern_type == "research_themes":
@@ -125,14 +131,17 @@ async def discover_patterns_tool(
     except Exception as e:
         return f"Error discovering patterns: {str(e)}"
 
-async def build_knowledge_graph_tool(
-    documents: List[str],
-    relationship_types: List[str] = ["cites", "related_to", "builds_upon"],
-    project_path: str = ""
-) -> str:
+async def build_knowledge_graph_tool(**kwargs) -> str:
     """Build knowledge graph from research documents"""
     
     try:
+        documents = kwargs.get('documents', [])
+        relationship_types = kwargs.get('relationship_types', ["cites", "related_to", "builds_upon"])
+        project_path = kwargs.get('project_path', '')
+        
+        if not documents:
+            return "Error: Missing required parameter 'documents'"
+        
         knowledge_graph = {
             'nodes': [],
             'edges': [],
@@ -192,16 +201,19 @@ async def build_knowledge_graph_tool(
     except Exception as e:
         return f"Error building knowledge graph: {str(e)}"
 
-async def find_similar_documents_tool(
-    target_document: str,
-    collection: str = "research_docs",
-    similarity_threshold: float = 0.8,
-    max_results: int = 5,
-    project_path: str = ""
-) -> str:
+async def find_similar_documents_tool(**kwargs) -> str:
     """Find documents similar to the target document"""
     
     try:
+        target_document = kwargs.get('target_document', '')
+        collection = kwargs.get('collection', 'research_docs')
+        similarity_threshold = kwargs.get('similarity_threshold', 0.8)
+        max_results = kwargs.get('max_results', 5)
+        project_path = kwargs.get('project_path', '')
+        
+        if not target_document:
+            return "Error: Missing required parameter 'target_document'"
+        
         vector_manager = None
         
         if project_path:
@@ -246,14 +258,17 @@ async def find_similar_documents_tool(
     except Exception as e:
         return f"Error finding similar documents: {str(e)}"
 
-async def extract_key_concepts_tool(
-    text: str,
-    max_concepts: int = 20,
-    concept_types: List[str] = ["technical_terms", "theories", "methods"]
-) -> str:
+async def extract_key_concepts_tool(**kwargs) -> str:
     """Extract key concepts from research text"""
     
     try:
+        text = kwargs.get('text', '')
+        max_concepts = kwargs.get('max_concepts', 20)
+        concept_types = kwargs.get('concept_types', ["technical_terms", "theories", "methods"])
+        
+        if not text:
+            return "Error: Missing required parameter 'text'"
+        
         concepts = {}
         
         if "technical_terms" in concept_types:
@@ -297,14 +312,17 @@ async def extract_key_concepts_tool(
     except Exception as e:
         return f"Error extracting key concepts: {str(e)}"
 
-async def generate_research_summary_tool(
-    documents: List[str],
-    summary_type: str = "comprehensive",
-    max_length: int = 500
-) -> str:
+async def generate_research_summary_tool(**kwargs) -> str:
     """Generate summary of research documents"""
     
     try:
+        documents = kwargs.get('documents', [])
+        summary_type = kwargs.get('summary_type', 'comprehensive')
+        max_length = kwargs.get('max_length', 500)
+        
+        if not documents:
+            return "Error: Missing required parameter 'documents'"
+        
         if summary_type == "comprehensive":
             # Create a comprehensive summary
             all_text = " ".join(documents)

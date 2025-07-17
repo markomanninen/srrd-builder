@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import asyncio
 import json
 import websockets
@@ -13,14 +14,15 @@ from config.config_manager import config
 from utils.logging_setup import setup_logging, MCPLoggerAdapter
 
 class MCPServer:
-    def __init__(self, port=None):
+    def __init__(self, port=None, use_stdio=False):
         self.port = port or config.server.port
+        self.use_stdio = use_stdio
         self.tools = {}
         self.storage_manager = None
         self.session_manager = None
         
         # Setup logging
-        if config.server.enable_logging:
+        if config.server.enable_logging and not use_stdio:
             self.logger = setup_logging(
                 log_level=config.server.log_level,
                 log_file=config.server.log_file,
@@ -44,7 +46,115 @@ class MCPServer:
             self.logger.info(f"MCP Server initialized on port {self.port}")
             self.logger.info(f"Registered {len(self.tools)} tools")
 
+    async def start_stdio_server(self):
+        """Start MCP server using stdio for Claude Desktop"""
+        while True:
+            try:
+                line = await asyncio.get_event_loop().run_in_executor(None, input)
+                if not line:
+                    break
+                    
+                data = json.loads(line)
+                response = await self.handle_mcp_request(data)
+                print(json.dumps(response), flush=True)
+                
+            except EOFError:
+                break
+            except Exception as e:
+                error_response = {
+                    "jsonrpc": "2.0",
+                    "id": data.get("id") if 'data' in locals() else None,
+                    "error": {
+                        "code": -32000,
+                        "message": f"Server error: {str(e)}"
+                    }
+                }
+                print(json.dumps(error_response), flush=True)
+
+    async def handle_mcp_request(self, data):
+        """Handle MCP request and return response"""
+        method = data.get("method")
+        params = data.get("params", {})
+        msg_id = data.get("id")
+        
+        if method == "initialize":
+            return {
+                "jsonrpc": "2.0",
+                "id": msg_id,
+                "result": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {
+                        "tools": {
+                            "listChanged": False
+                        }
+                    },
+                    "serverInfo": {
+                        "name": "SRRD Builder MCP Server",
+                        "version": "1.0.0"
+                    }
+                }
+            }
+            
+        elif method == "tools/list":
+            tools_info = await self.list_tools_mcp()
+            return {
+                "jsonrpc": "2.0",
+                "id": msg_id,
+                "result": tools_info
+            }
+            
+        elif method == "tools/call":
+            tool_name = params.get("name")
+            tool_args = params.get("arguments", {})
+            
+            if tool_name in self.tools:
+                try:
+                    result = await self.tools[tool_name](**tool_args)
+                    return {
+                        "jsonrpc": "2.0",
+                        "id": msg_id,
+                        "result": {
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": str(result)
+                                }
+                            ]
+                        }
+                    }
+                except Exception as e:
+                    return {
+                        "jsonrpc": "2.0",
+                        "id": msg_id,
+                        "error": {
+                            "code": -32000,
+                            "message": f"Tool execution error: {str(e)}"
+                        }
+                    }
+            else:
+                return {
+                    "jsonrpc": "2.0",
+                    "id": msg_id,
+                    "error": {
+                        "code": -32601,
+                        "message": f"Tool '{tool_name}' not found"
+                    }
+                }
+        else:
+            return {
+                "jsonrpc": "2.0",
+                "id": msg_id,
+                "error": {
+                    "code": -32601,
+                    "message": f"Method not found: {method}"
+                }
+            }
+
     async def start_server(self):
+        if self.use_stdio:
+            await self.start_stdio_server()
+            return
+            
         if self.logger:
             self.logger.info(f"Starting MCP server on {config.server.host}:{self.port}")
         
@@ -424,5 +534,13 @@ class MCPServer:
         }
 
 if __name__ == "__main__":
-    server = MCPServer()
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='SRRD Builder MCP Server')
+    parser.add_argument('--stdio', action='store_true', help='Use stdio for Claude Desktop')
+    parser.add_argument('--port', type=int, default=None, help='WebSocket port')
+    
+    args = parser.parse_args()
+    
+    server = MCPServer(port=args.port, use_stdio=args.stdio)
     asyncio.run(server.start_server())

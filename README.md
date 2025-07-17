@@ -16,6 +16,26 @@ SRRD-Builder is designed to support the full scientific research lifecycle, from
 - **Local Storage Integration** (Git, SQLite, Vector DB)
 - **Global Package Installation** for any Git-based research project
 
+## Quick Start
+
+### 🚀 Automated Installation
+```bash
+git clone https://github.com/markomanninen/srrd-builder
+cd srrd-builder
+./setup.sh
+```
+
+> **Note**: The MCP server is fully functional. If you encounter dependency installation issues, the script will fall back to minimal requirements. Advanced features like semantic search may require manual installation of additional packages.
+
+### 📖 Manual Installation
+See [INSTALLATION.md](INSTALLATION.md) for detailed installation instructions including all dependencies and troubleshooting.
+
+### 🔧 Requirements
+- Python 3.8+
+- LaTeX distribution (MacTeX on macOS, TeXLive on Linux)
+- Claude Desktop
+- Git
+
 ## Documentation
 
 ### Project Status & Planning

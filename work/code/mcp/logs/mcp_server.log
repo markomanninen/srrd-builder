@@ -109,3 +109,26 @@
 2025-07-17 00:06:03,504 - srrd_builder - INFO - logging_setup.py:97 - Tool call successful: initialize
 2025-07-17 00:06:05,596 - srrd_builder - INFO - logging_setup.py:102 - Tool call initiated: semantic_search
 2025-07-17 00:06:05,600 - srrd_builder - INFO - logging_setup.py:97 - Tool call successful: semantic_search
+2025-07-17 08:27:58,295 - srrd_builder - INFO - logging_setup.py:97 - Tool call successful: initialize
+2025-07-17 08:28:00,624 - srrd_builder - INFO - logging_setup.py:102 - Tool call initiated: clarify_research_goals
+2025-07-17 08:28:00,633 - srrd_builder - INFO - logging_setup.py:97 - Tool call successful: clarify_research_goals
+2025-07-17 08:28:13,175 - srrd_builder - INFO - logging_setup.py:102 - Tool call initiated: suggest_methodology
+2025-07-17 08:28:13,179 - srrd_builder - INFO - logging_setup.py:97 - Tool call successful: suggest_methodology
+2025-07-17 08:28:26,295 - srrd_builder - INFO - logging_setup.py:102 - Tool call initiated: simulate_peer_review
+2025-07-17 08:28:26,299 - srrd_builder - INFO - logging_setup.py:97 - Tool call successful: simulate_peer_review
+2025-07-17 08:28:35,078 - srrd_builder - INFO - logging_setup.py:102 - Tool call initiated: check_quality_gates
+2025-07-17 08:28:35,084 - srrd_builder - ERROR - logging_setup.py:100 - Tool call failed: check_quality_gates - Tool execution error: QualityAssuranceTool.check_quality_gates() missing 1 required positional argument: 'domain_standards'
+2025-07-17 08:29:03,752 - srrd_builder - INFO - logging_setup.py:102 - Tool call initiated: generate_latex_document
+2025-07-17 08:29:03,754 - srrd_builder - INFO - logging_setup.py:97 - Tool call successful: generate_latex_document
+2025-07-17 08:29:35,837 - srrd_builder - INFO - logging_setup.py:102 - Tool call initiated: format_research_content
+2025-07-17 08:29:35,839 - srrd_builder - INFO - logging_setup.py:97 - Tool call successful: format_research_content
+2025-07-17 08:29:45,129 - srrd_builder - INFO - logging_setup.py:102 - Tool call initiated: generate_bibliography
+2025-07-17 08:29:45,131 - srrd_builder - INFO - logging_setup.py:97 - Tool call successful: generate_bibliography
+2025-07-17 08:29:54,459 - srrd_builder - INFO - logging_setup.py:102 - Tool call initiated: semantic_search
+2025-07-17 08:29:54,468 - srrd_builder - INFO - logging_setup.py:97 - Tool call successful: semantic_search
+2025-07-17 08:29:59,966 - srrd_builder - INFO - logging_setup.py:102 - Tool call initiated: discover_patterns
+2025-07-17 08:29:59,984 - srrd_builder - INFO - logging_setup.py:97 - Tool call successful: discover_patterns
+2025-07-17 08:30:07,880 - srrd_builder - INFO - logging_setup.py:102 - Tool call initiated: extract_key_concepts
+2025-07-17 08:30:07,888 - srrd_builder - INFO - logging_setup.py:97 - Tool call successful: extract_key_concepts
+2025-07-17 08:30:21,447 - srrd_builder - INFO - logging_setup.py:102 - Tool call initiated: clarify_research_goals
+2025-07-17 08:30:21,453 - srrd_builder - INFO - logging_setup.py:97 - Tool call successful: clarify_research_goals
