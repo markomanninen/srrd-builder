@@ -66,6 +66,27 @@ class SQLiteManager:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (session_id) REFERENCES sessions (id)
             );
+            
+            CREATE TABLE IF NOT EXISTS requirements (
+                id INTEGER PRIMARY KEY,
+                project_id INTEGER,
+                category TEXT,
+                requirement_text TEXT,
+                priority INTEGER DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (project_id) REFERENCES projects (id)
+            );
+            
+            CREATE TABLE IF NOT EXISTS quality_checks (
+                id INTEGER PRIMARY KEY,
+                project_id INTEGER,
+                check_type TEXT,
+                component TEXT,
+                result TEXT,
+                comments TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (project_id) REFERENCES projects (id)
+            );
             """
             await self.connection.executescript(basic_schema)
             await self.connection.commit()

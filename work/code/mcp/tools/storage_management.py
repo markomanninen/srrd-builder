@@ -20,7 +20,7 @@ async def initialize_project_tool(**kwargs) -> str:
         return "Error: Missing required parameters (name, description, domain, project_path)"
     
     project_manager = ProjectManager(project_path)
-    result = project_manager.initialize_project(name, description, domain)
+    result = await project_manager.initialize_project(name, description, domain)
     return f"Project initialized with status: {result}"
 
 async def save_session_tool(**kwargs) -> str:

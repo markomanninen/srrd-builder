@@ -34,13 +34,24 @@ class VectorManager:
         self.embedding_model = None
         self.config = None
         
-    async def initialize(self):
-        """Initialize vector database and collections"""
+    async def initialize(self, enable_embedding_model: bool = False):
+        """Initialize vector database and collections
+        
+        Args:
+            enable_embedding_model: If True, will attempt to load SentenceTransformer model
+                                   This may require downloading ~90MB on first use
+        """
         if not CHROMADB_AVAILABLE:
-            print("Warning: ChromaDB not available. Vector operations will be limited.")
+            print("ℹ️  VectorManager: ChromaDB not available. Vector search features will be limited.")
             return
         
         try:
+            print("🔧 VectorManager: Initializing vector database...")
+            
+            # Initialize ChromaDB client
+            self.db_path.parent.mkdir(parents=True, exist_ok=True)
+            self.client = chromadb.PersistentClient(path=str(self.db_path))
+            
             # Load configuration
             if YAML_AVAILABLE and self.config_path.exists():
                 with open(self.config_path, 'r') as f:
@@ -48,36 +59,47 @@ class VectorManager:
             else:
                 # Default configuration
                 self.config = {
-                    "vector_collections": {
+                    "collections": {
                         "research_docs": {
-                            "name": "research_documents",
-                            "description": "Research documents and papers"
+                            "name": "research_docs",
+                            "metadata": {"hnsw:space": "cosine"}
+                        },
+                        "knowledge_base": {
+                            "name": "knowledge_base", 
+                            "metadata": {"hnsw:space": "cosine"}
                         }
                     }
                 }
             
-            # Initialize ChromaDB client
-            self.client = chromadb.PersistentClient(path=str(self.db_path))
+            # Skip embedding model for now - too unreliable for initialization
+            self.embedding_model = None
+            if enable_embedding_model:
+                print("ℹ️  VectorManager: Embedding model loading skipped for reliable startup.")
+                print("    Use enable_embedding_model() method later if needed.")
+            else:
+                print("ℹ️  VectorManager: Embedding model disabled for faster startup.")
             
-            # Initialize embedding model if available
-            if SENTENCE_TRANSFORMERS_AVAILABLE:
-                self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-            
-            # Create collections
-            for collection_name, collection_config in self.config['vector_collections'].items():
+            # Create collections (without embeddings for now)
+            print("📚 VectorManager: Setting up collections...")
+            for collection_config in self.config["collections"].values():
                 try:
-                    collection = self.client.get_collection(collection_name)
-                except:
-                    collection = self.client.create_collection(
-                        name=collection_name,
-                        metadata=collection_config
+                    collection = self.client.get_or_create_collection(
+                        name=collection_config["name"],
+                        metadata=collection_config.get("metadata", {})
                     )
-                
-                self.collections[collection_name] = collection
-                
+                    self.collections[collection_config["name"]] = collection
+                    print(f"    ✓ Collection '{collection_config['name']}' ready")
+                except Exception as e:
+                    print(f"    ✗ Failed to create collection '{collection_config['name']}': {e}")
+            
+            print("🎉 VectorManager: Initialization completed!")
+            
         except Exception as e:
-            print(f"Warning: Vector database initialization failed: {e}")
+            print(f"❌ VectorManager: Initialization failed: {e}")
+            print("    Vector search features will be disabled.")
             self.client = None
+            self.collections = {}
+            self.embedding_model = None
     
     async def add_document(self, collection_name: str, document: str, 
                           metadata: Dict[str, Any], doc_id: str):
@@ -193,3 +215,14 @@ class VectorManager:
         except Exception as e:
             print(f"Error retrieving related content: {e}")
             return []
+    
+    def _is_model_cached(self, model_name: str = 'all-MiniLM-L6-v2') -> bool:
+        """Check if the embedding model is already cached locally"""
+        try:
+            import os
+            # Check HuggingFace cache directory
+            cache_dir = os.path.expanduser('~/.cache/huggingface/hub')
+            model_cache_path = Path(cache_dir) / f"models--sentence-transformers--{model_name}"
+            return model_cache_path.exists()
+        except:
+            return False

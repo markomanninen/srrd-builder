@@ -9,15 +9,28 @@ class ProjectManager:
         self.project_path = Path(project_path)
         self.git_manager = GitManager(project_path)
         self.sqlite_manager = SQLiteManager(str(self.project_path / '.srrd' / 'sessions.db'))
-        self.vector_manager = None # VectorManager(str(self.project_path / '.srrd' / 'knowledge.db'))
+        self.vector_manager = VectorManager(str(self.project_path / '.srrd' / 'knowledge.db'))
 
-    def initialize_project(self, name: str, description: str, domain: str) -> Dict[str, Any]:
+    async def initialize_project(self, name: str, description: str, domain: str) -> Dict[str, Any]:
         """Initialize complete project structure"""
+        print(f"🚀 Initializing project '{name}' in domain '{domain}'...")
+        
+        print("📁 Creating directory structure...")
         self.create_directory_structure()
+        
+        print("🔧 Initializing Git repository...")
         self.git_manager.initialize_repository()
-        # self.sqlite_manager.initialize_database()
-        # self.vector_manager.initialize_collections()
-        project_id = -1 # self.sqlite_manager.create_project(name, description, domain)
+        
+        print("🗄️  Setting up database...")
+        await self.sqlite_manager.initialize_database()
+        
+        print("🔍 Initializing vector search capabilities...")
+        await self.vector_manager.initialize(enable_embedding_model=False)
+        
+        print("💾 Creating project record...")
+        project_id = await self.sqlite_manager.create_project(name, description, domain)
+        
+        print(f"✅ Project '{name}' initialized successfully! (ID: {project_id})")
         return {"project_id": project_id, "status": "initialized"}
 
     def create_directory_structure(self) -> bool:

@@ -162,7 +162,7 @@ class MCPServer:
             print(f"SRRD Builder MCP Server running on ws://{config.server.host}:{self.port}")
             await asyncio.Future()  # run forever
 
-    async def handle_mcp_message(self, websocket):
+    async def handle_mcp_message(self, websocket, path):
         """Handle incoming WebSocket messages using MCP JSON-RPC protocol"""
         async for message in websocket:
             try:
