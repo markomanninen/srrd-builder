@@ -1,0 +1,198 @@
+# Frontend Testing for SRRD-Builder MCP Server
+
+This directory contains a comprehensive web-based testing interface for the SRRD-Builder MCP Server.
+
+## 🚀 Quick Start
+
+### Method 1: Using VS Code Tasks (Recommended)
+
+1. **Open VS Code Command Palette**: `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux)
+2. **Type**: `Tasks: Run Task`
+3. **Select**: `SRRD: Full Frontend Test Setup`
+
+This will:
+- Start the MCP server
+- Start the frontend test server  
+- Open the test interface in your browser
+
+### Method 2: Manual Setup
+
+1. **Start the MCP Server**:
+   ```bash
+   cd work/code/mcp
+   python3 run_server.py
+   ```
+
+2. **Start the Frontend Server**:
+   ```bash
+   cd work/code/mcp
+   python3 -m http.server 8080 --directory frontend
+   ```
+
+3. **Open in Browser**:
+   ```bash
+   open http://localhost:8080
+   ```
+
+## 🧪 Testing Features
+
+### **Web Interface Testing**
+- **Modern UI**: Responsive design with real-time feedback
+- **Tool Testing**: Click buttons to test individual MCP tools
+- **Custom Parameters**: Test tools with custom JSON parameters
+- **Real-time Output**: See responses and logs in real-time
+- **Export Results**: Download test results as JSON
+
+### **Automated Test Suite**
+- **Comprehensive Testing**: Tests all 21 MCP tools automatically
+- **Error Handling**: Validates error responses and edge cases
+- **Performance Monitoring**: Tracks response times and success rates
+- **Progress Tracking**: Real-time progress updates during test execution
+
+### **WebSocket Integration**
+- **Real MCP Protocol**: Uses actual WebSocket connections to MCP server
+- **JSON-RPC**: Proper MCP protocol implementation
+- **Async Operations**: Non-blocking tool calls and responses
+- **Connection Management**: Auto-reconnect and error handling
+
+## 📁 Files
+
+### **index.html**
+Main testing interface with:
+- Tool testing buttons organized by category
+- Real-time output console
+- Server status monitoring
+- Custom tool parameter input
+- Test result export functionality
+
+### **mcp-client.js**
+WebSocket client for MCP server communication:
+- `MCPClient` class for server communication
+- JSON-RPC protocol implementation
+- Connection management and error handling
+- Tool calling and response handling
+
+### **test-suite.js**
+Automated test runner:
+- `TestSuiteRunner` class for automated testing
+- Comprehensive test cases for all tool categories
+- Performance monitoring and reporting
+- Error validation and edge case testing
+
+## 🎯 How to Test Different Scenarios
+
+### **1. Basic Functionality Test**
+```javascript
+// In browser console
+const client = new MCPClient();
+await client.connect();
+const tools = await client.listTools();
+console.log('Available tools:', tools);
+```
+
+### **2. Individual Tool Testing**
+Click any tool button in the interface or use custom parameters:
+```json
+{
+  "research_area": "quantum computing",
+  "experience_level": "graduate",
+  "novel_theory_mode": true
+}
+```
+
+### **3. Automated Test Suite**
+Click "Run Full Test Suite" or use:
+```javascript
+// In browser console
+const testRunner = new TestSuiteRunner(client);
+testRunner.onProgress = (msg) => console.log(msg);
+const results = await testRunner.runFullTestSuite();
+```
+
+### **4. Performance Testing**
+Monitor the "Server Statistics" panel for:
+- Response times
+- Success rates
+- Active connections
+- Error frequencies
+
+## 🔍 Test Categories
+
+### **Research Planning Tools**
+- `clarify_research_goals`: Socratic questioning for research clarification
+- `suggest_methodology`: Research methodology recommendations
+
+### **Quality Assurance Tools**
+- `simulate_peer_review`: AI-driven peer review simulation
+- `check_quality_gates`: Research quality validation
+
+### **Document Generation Tools**
+- `generate_latex_document`: LaTeX document generation
+- `format_research_content`: Academic content formatting
+- `generate_bibliography`: Citation and bibliography management
+
+### **Search & Discovery Tools**
+- `semantic_search`: Intelligent content search
+- `discover_patterns`: Research pattern identification
+- `extract_key_concepts`: Key concept extraction
+
+### **Storage Management Tools**
+- `initialize_project`: Project setup and initialization
+- Additional storage and versioning tools
+
+## 📊 Expected Results
+
+### **Successful Test Run**
+- All tools should respond without errors
+- Response times should be under 5 seconds
+- Success rate should be 90%+ for basic functionality
+- WebSocket connection should remain stable
+
+### **Common Issues and Solutions**
+
+**Connection Failed**:
+- Ensure MCP server is running on port 8083
+- Check for port conflicts
+- Verify WebSocket support in browser
+
+**Tool Errors**:
+- Check tool parameters match expected schema
+- Verify required dependencies are installed
+- Review server logs for detailed error messages
+
+**Timeout Issues**:
+- Increase timeout values in test configuration
+- Check server performance and resource usage
+- Verify network connectivity
+
+## 🛠️ Development and Debugging
+
+### **Browser Developer Tools**
+- **Console**: View detailed logs and error messages
+- **Network**: Monitor WebSocket communication
+- **Application**: Inspect local storage and session data
+
+### **Server Logs**
+Monitor MCP server output for:
+- Tool execution details
+- Error stack traces  
+- Performance metrics
+- Connection status
+
+### **Test Customization**
+Modify test parameters in `test-suite.js` to:
+- Add new test cases
+- Adjust timeout values
+- Customize tool parameters
+- Add performance benchmarks
+
+## 🎉 Ready for Testing!
+
+The frontend testing interface provides a comprehensive way to:
+- ✅ **Validate all MCP tools** through an intuitive web interface
+- ✅ **Monitor server performance** in real-time
+- ✅ **Export test results** for documentation and reporting
+- ✅ **Debug issues** with detailed logging and error handling
+- ✅ **Automate testing** with comprehensive test suites
+
+Perfect for development, QA testing, and demonstration purposes! 🚀

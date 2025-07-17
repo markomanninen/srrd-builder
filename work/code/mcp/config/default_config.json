@@ -1,0 +1,53 @@
+{
+  "server": {
+    "host": "localhost",
+    "port": 8083,
+    "max_concurrent_sessions": 100,
+    "session_timeout": 3600
+  },
+  "storage": {
+    "database_file": ".srrd/sessions.db",
+    "vector_db_path": ".srrd/knowledge.db",
+    "git_auto_commit": true,
+    "backup_enabled": true
+  },
+  "ai_services": {
+    "default_model": "gpt-4",
+    "embedding_model": "text-embedding-ada-002",
+    "max_tokens": 4000,
+    "temperature": 0.7
+  },
+  "research_domains": {
+    "theoretical_physics": {
+      "novel_theory_support": true,
+      "paradigm_challenge_enabled": true,
+      "equal_treatment_validation": true
+    },
+    "experimental_physics": {
+      "methodology_templates": ["experimental_design", "data_analysis"],
+      "equipment_validation": true
+    },
+    "computer_science": {
+      "algorithm_validation": true,
+      "implementation_support": true
+    }
+  },
+  "socratic_questioning": {
+    "max_depth": 6,
+    "adaptive_difficulty": true,
+    "domain_specialization": true,
+    "novel_theory_mode": true
+  },
+  "latex_generation": {
+    "default_format": "article",
+    "physics_packages": ["amsmath", "physics", "siunitx", "tikz"],
+    "auto_compile": true,
+    "bibliography_style": "nature"
+  },
+  "quality_assurance": {
+    "peer_review_simulation": true,
+    "methodology_validation": true,
+    "novelty_assessment": true,
+    "equal_treatment_scoring": true
+  }
+}
