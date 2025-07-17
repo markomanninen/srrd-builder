@@ -2,6 +2,43 @@
 
 This guide covers all the dependencies and components needed to use the SRRD-Builder MCP server with Claude Desktop.
 
+## Quick Installation (Recommended)
+
+The fastest way to get started is using the automated setup script:
+
+```bash
+git clone https://github.com/markomanninen/srrd-builder
+cd srrd-builder
+./setup.sh
+```
+
+This script will:
+- Install Python dependencies with fallback to minimal requirements
+- Install the `srrd` CLI tool
+- Set up LaTeX (macOS/Linux)
+- Configure Claude Desktop
+- Test all components
+
+After installation, use the CLI:
+
+```bash
+# Check configuration and status
+srrd configure --status
+
+# Start the MCP server
+srrd serve start
+
+# Stop the MCP server
+srrd serve stop
+
+# Restart the MCP server
+srrd serve restart
+```
+
+## Manual Installation
+
+If you prefer manual installation or encounter issues with the automated setup:
+
 ## Prerequisites
 
 - **Python 3.8+**: Required for running the MCP server
@@ -14,13 +51,16 @@ This guide covers all the dependencies and components needed to use the SRRD-Bui
 
 ```bash
 # Create virtual environment (recommended)
-python3 -m venv srrd-builder-env
-source srrd-builder-env/bin/activate  # On macOS/Linux
+python3 -m venv venv
+source venv/bin/activate  # On macOS/Linux
 # or
-srrd-builder-env\Scripts\activate     # On Windows
+venv\Scripts\activate     # On Windows
 
 # Install Python dependencies
 pip install -r requirements.txt
+
+# Install SRRD CLI package
+pip install -e .
 ```
 
 ### 2. LaTeX Distribution (Required for Document Generation)
@@ -88,6 +128,19 @@ python -m spacy download en_core_web_sm
 
 ## Claude Desktop Configuration
 
+### Automatic Configuration (Recommended)
+
+The setup script automatically configures Claude Desktop. To check or manually configure:
+
+```bash
+# Check current configuration status
+srrd configure --status
+
+# The CLI will show if Claude Desktop is properly configured
+```
+
+### Manual Configuration
+
 1. **Locate Claude Desktop config file:**
    - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
    - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
@@ -107,6 +160,27 @@ python -m spacy download en_core_web_sm
     }
   }
 }
+```
+
+## Server Management
+
+Use the `srrd` CLI tool to manage the MCP server:
+
+```bash
+# Start the server
+srrd serve start
+
+# Check server status
+srrd configure --status
+
+# Stop the server
+srrd serve stop
+
+# Restart the server
+srrd serve restart
+
+# Get help
+srrd serve --help
 ```
 
 ## Feature-Specific Requirements
@@ -135,34 +209,61 @@ python -m spacy download en_core_web_sm
 
 ## Verification
 
-Test your installation by running:
+### Automated Testing
+
+The setup script includes automated testing, but you can also test manually:
 
 ```bash
-# Test the MCP server
-cd /path/to/srrd-builder/work/code/mcp
+# Test SRRD CLI
+srrd --help
+srrd configure --status
+
+# Test MCP server directly
+cd work/code/mcp
 echo '{"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}' | python3 mcp_server.py
 
-# Test LaTeX compilation
+# Test LaTeX compilation (if LaTeX is installed)
 echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "compile_latex", "arguments": {"tex_file_path": "/tmp/test.tex", "output_format": "pdf"}}, "id": 2}' | python3 mcp_server.py
 ```
+
+### Testing with Claude Desktop
+
+1. Start the server: `srrd serve start`
+2. Restart Claude Desktop
+3. In Claude, try: "List the available SRRD-Builder tools"
+4. Check status anytime with: `srrd configure --status`
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **"pdflatex not found"**
+1. **"srrd command not found"**
+   - Ensure virtual environment is activated: `source venv/bin/activate`
+   - Reinstall CLI package: `pip install -e .`
+
+2. **"MCP server not starting"**
+   - Check status: `srrd configure --status`
+   - View logs: Check files in `work/code/mcp/logs/`
+   - Restart: `srrd serve restart`
+
+3. **"pdflatex not found"**
    - Install LaTeX distribution (see above)
    - Ensure pdflatex is in your PATH: `which pdflatex`
 
-2. **"ModuleNotFoundError"**
+4. **"ModuleNotFoundError"**
    - Install missing Python dependencies: `pip install [module_name]`
    - Check virtual environment activation
 
-3. **"Config file not found"**
-   - Ensure Claude Desktop config file exists and is properly formatted
-   - Check file permissions
+5. **"Claude Desktop not finding tools"**
+   - Ensure server is running: `srrd serve start`
+   - Check configuration: `srrd configure --status`
+   - Restart Claude Desktop after starting the server
 
-4. **"Tool execution error"**
+6. **"Config file not found"**
+   - Run setup script again: `./setup.sh`
+   - Check Claude Desktop config manually
+
+7. **"Tool execution error"**
    - Check tool-specific requirements above
    - Verify file paths are correct
    - Check Python environment and dependencies
@@ -226,13 +327,16 @@ echo "Don't forget to configure Claude Desktop with the MCP server settings."
 If you encounter issues:
 
 1. Check this installation guide
-2. Verify all dependencies are installed
-3. Test individual components
-4. Check Claude Desktop logs: `~/Library/Logs/Claude/` (macOS)
+2. Run `srrd configure --status` for current system status
+3. Check logs in `work/code/mcp/logs/`
+4. Run the comprehensive test: `python3 work/code/mcp/test_comprehensive_tools_storage.py`
+5. Verify all dependencies are installed
+6. Check Claude Desktop logs: `~/Library/Logs/Claude/` (macOS)
 
 ## Version Information
 
 - **SRRD-Builder MCP Server**: v1.0.0
 - **Supported Python**: 3.8+
-- **Supported Claude Desktop**: Latest version
+- **Supported Claude Desktop**: Latest version with MCP support
+- **CLI Tool**: Included (`srrd` command)
 - **Last Updated**: January 17, 2025

@@ -1,0 +1,23 @@
+{
+  "version": "0.1.0",
+  "mcp_server": {
+    "default_port": 8080,
+    "default_host": "localhost",
+    "tools_enabled": true
+  },
+  "storage": {
+    "git_enabled": true,
+    "sqlite_enabled": true,
+    "vector_db_enabled": true
+  },
+  "latex": {
+    "default_template": "general",
+    "auto_compile": false,
+    "output_format": "pdf"
+  },
+  "templates": {
+    "proposal": "research_proposal.tex",
+    "manuscript": "manuscript.tex",
+    "article": "article.tex"
+  }
+}

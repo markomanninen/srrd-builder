@@ -54,6 +54,15 @@ else
     fi
 fi
 
+# Install SRRD CLI package
+echo "🔧 Installing SRRD CLI package..."
+if pip install -e .; then
+    echo "✅ SRRD CLI package installed successfully"
+else
+    echo "❌ SRRD CLI installation failed"
+    exit 1
+fi
+
 # Platform-specific installations
 if [[ "$PLATFORM" == "macOS" ]]; then
     echo "🍺 Installing macOS dependencies..."
@@ -126,6 +135,33 @@ fi
 
 # Test installation
 echo "🧪 Testing installation..."
+
+# Test SRRD CLI
+echo "Testing SRRD CLI..."
+cd ../../..  # Back to root directory for CLI testing
+
+if command -v srrd &> /dev/null; then
+    echo "✅ SRRD CLI available"
+    
+    # Test CLI status
+    echo "Testing CLI status..."
+    if srrd configure --status &> /dev/null; then
+        echo "✅ CLI status command working"
+    else
+        echo "⚠️  CLI status command failed"
+    fi
+    
+    # Test CLI help
+    echo "Testing CLI help..."
+    if srrd --help &> /dev/null; then
+        echo "✅ CLI help command working"
+    else
+        echo "⚠️  CLI help command failed"
+    fi
+else
+    echo "❌ SRRD CLI not available in PATH"
+fi
+
 cd work/code/mcp
 
 # Test MCP server
@@ -205,11 +241,19 @@ echo ""
 echo "🎉 Setup complete!"
 echo ""
 echo "📋 Next steps:"
-echo "1. Restart Claude Desktop if it's running"
-echo "2. The SRRD-Builder tools should now be available in Claude Desktop"
-echo "3. Check the INSTALLATION.md file for detailed documentation"
+echo "1. Use 'srrd configure --status' to check configuration"
+echo "2. Use 'srrd serve start' to start the MCP server"
+echo "3. Restart Claude Desktop if it's running"
+echo "4. The SRRD-Builder tools should now be available in Claude Desktop"
+echo "5. Check the INSTALLATION.md file for detailed documentation"
 echo ""
 echo "🔧 To activate the environment in the future:"
 echo "   source venv/bin/activate"
+echo ""
+echo "⚙️  CLI Commands:"
+echo "   srrd configure --status    # Check configuration and server status"
+echo "   srrd serve start          # Start the MCP server"
+echo "   srrd serve stop           # Stop the MCP server"
+echo "   srrd serve restart        # Restart the MCP server"
 echo ""
 echo "📖 Available tools: research planning, document generation, semantic search, quality assurance, and storage management"

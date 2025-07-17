@@ -8,6 +8,7 @@ import asyncio
 import json
 import sys
 import os
+import signal
 from pathlib import Path
 
 # Add current directory to path for imports
@@ -18,7 +19,18 @@ from tools import register_all_tools
 class ClaudeMCPServer:
     def __init__(self):
         self.tools = {}
+        self.running = True
         self._register_tools()
+        self._setup_signal_handlers()
+        
+    def _setup_signal_handlers(self):
+        """Setup signal handlers for graceful shutdown"""
+        def signal_handler(signum, frame):
+            self.running = False
+            sys.exit(0)
+        
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
         
     def _register_tools(self):
         """Register MCP tools using the standard registration system"""
@@ -456,37 +468,61 @@ class ClaudeMCPServer:
 
     async def run(self):
         """Run the MCP server using stdio for Claude Desktop"""
-        while True:
-            try:
-                line = sys.stdin.readline()
-                if not line:
+        try:
+            while self.running:
+                try:
+                    line = sys.stdin.readline()
+                    if not line:
+                        break
+                        
+                    line = line.strip()
+                    if not line:
+                        continue
+                        
+                    request_data = json.loads(line)
+                    response = await self.handle_request(request_data)
+                    
+                    if response is not None:
+                        sys.stdout.write(json.dumps(response) + '\n')
+                        sys.stdout.flush()
+                    
+                except EOFError:
                     break
-                    
-                line = line.strip()
-                if not line:
-                    continue
-                    
-                request_data = json.loads(line)
-                response = await self.handle_request(request_data)
-                
-                if response is not None:
-                    sys.stdout.write(json.dumps(response) + '\n')
-                    sys.stdout.flush()
-                
-            except EOFError:
-                break
-            except:
-                error_response = {
-                    "jsonrpc": "2.0",
-                    "id": 1,
-                    "error": {
-                        "code": -32603,
-                        "message": "Internal server error"
+                except KeyboardInterrupt:
+                    break
+                except json.JSONDecodeError:
+                    error_response = {
+                        "jsonrpc": "2.0",
+                        "id": 1,
+                        "error": {
+                            "code": -32700,
+                            "message": "Parse error"
+                        }
                     }
-                }
-                sys.stdout.write(json.dumps(error_response) + '\n')
-                sys.stdout.flush()
+                    sys.stdout.write(json.dumps(error_response) + '\n')
+                    sys.stdout.flush()
+                except Exception as e:
+                    error_response = {
+                        "jsonrpc": "2.0",
+                        "id": 1,
+                        "error": {
+                            "code": -32603,
+                            "message": f"Internal server error: {str(e)}"
+                        }
+                    }
+                    sys.stdout.write(json.dumps(error_response) + '\n')
+                    sys.stdout.flush()
+        except KeyboardInterrupt:
+            pass
+        finally:
+            self.running = False
 
 if __name__ == "__main__":
-    server = ClaudeMCPServer()
-    asyncio.run(server.run())
+    try:
+        server = ClaudeMCPServer()
+        asyncio.run(server.run())
+    except KeyboardInterrupt:
+        sys.exit(0)
+    except Exception as e:
+        sys.stderr.write(f"Server error: {e}\n")
+        sys.exit(1)
