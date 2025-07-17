@@ -1,5 +1,49 @@
 # SRRD-Builder MCP Server
 
+This directory contains the Model Context Protocol (MCP) server for SRRD-Builder.
+
+## Production Files
+
+- **`mcp_server.py`** - The main MCP server for Claude Desktop
+- **`tools/`** - Tool modules providing all 21 research assistance tools
+- **`storage/`** - Storage management backend
+
+## Configuration
+
+The MCP server is configured in Claude Desktop's config file as:
+
+```json
+{
+  "mcpServers": {
+    "srrd-builder": {
+      "command": "python3",
+      "args": ["/path/to/srrd-builder/work/code/mcp/mcp_server.py"],
+      "cwd": "/path/to/srrd-builder/work/code/mcp",
+      "env": {
+        "PYTHONPATH": "/path/to/srrd-builder/work/code/mcp"
+      }
+    }
+  }
+}
+```
+
+## Development
+
+- Run `../../setup.sh` from the root directory to install dependencies and test the server
+- The server uses stdio-based communication with Claude Desktop
+
+## Testing
+
+Test the MCP server directly:
+
+```bash
+echo '{"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}' | python3 mcp_server.py
+```
+
+Should return a list of 21 available tools.
+
+## Legacy Information (Archived)
+
 A neurosymbolic Model Context Protocol (MCP) server for AI-driven scientific research requirement document generation, with specialized support for novel theory development in fundamental physics.
 
 ## 🚀 Quick Start

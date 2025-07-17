@@ -99,7 +99,7 @@ python -m spacy download en_core_web_sm
   "mcpServers": {
     "srrd-builder": {
       "command": "python3",
-      "args": ["/path/to/srrd-builder/work/code/mcp/mcp_claude_ultra_clean.py"],
+      "args": ["/path/to/srrd-builder/work/code/mcp/mcp_server.py"],
       "cwd": "/path/to/srrd-builder/work/code/mcp",
       "env": {
         "PYTHONPATH": "/path/to/srrd-builder/work/code/mcp"
@@ -140,10 +140,10 @@ Test your installation by running:
 ```bash
 # Test the MCP server
 cd /path/to/srrd-builder/work/code/mcp
-echo '{"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}' | python3 mcp_claude_ultra_clean.py
+echo '{"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}' | python3 mcp_server.py
 
 # Test LaTeX compilation
-echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "compile_latex", "arguments": {"tex_file_path": "/tmp/test.tex", "output_format": "pdf"}}, "id": 2}' | python3 mcp_claude_ultra_clean.py
+echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "compile_latex", "arguments": {"tex_file_path": "/tmp/test.tex", "output_format": "pdf"}}, "id": 2}' | python3 mcp_server.py
 ```
 
 ## Troubleshooting

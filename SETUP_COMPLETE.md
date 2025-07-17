@@ -71,7 +71,7 @@ srrd-builder/
 ├── INSTALLATION.md                    # Comprehensive setup guide
 ├── README.md                         # Project overview
 └── work/code/mcp/
-    ├── mcp_claude_ultra_clean.py     # Main MCP server
+    ├── mcp_server.py                 # Main MCP server
     ├── tools/                        # Tool modules
     │   ├── __init__.py
     │   ├── research_planning.py
@@ -97,7 +97,7 @@ srrd-builder/
      "mcpServers": {
        "srrd-builder": {
          "command": "python3",
-         "args": ["/path/to/srrd-builder/work/code/mcp/mcp_claude_ultra_clean.py"],
+         "args": ["/path/to/srrd-builder/work/code/mcp/mcp_server.py"],
          "cwd": "/path/to/srrd-builder/work/code/mcp",
          "env": {
            "PYTHONPATH": "/path/to/srrd-builder/work/code/mcp"

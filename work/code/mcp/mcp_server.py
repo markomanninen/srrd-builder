@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-SRRD-Builder MCP Server for Claude Desktop - Ultra Clean Version
-Completely silent version that only outputs JSON-RPC responses
+SRRD-Builder MCP Server for Claude Desktop
+Model Context Protocol server providing 21 research assistance tools
 """
 import asyncio
 import json

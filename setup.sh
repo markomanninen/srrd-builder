@@ -130,7 +130,7 @@ cd work/code/mcp
 
 # Test MCP server
 echo "Testing MCP server..."
-TEST_RESULT=$(echo '{"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}' | python3 mcp_claude_ultra_clean.py 2>/dev/null)
+TEST_RESULT=$(echo '{"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}' | python3 mcp_server.py 2>/dev/null)
 if echo "$TEST_RESULT" | grep -q '"tools"'; then
     TOOL_COUNT=$(echo "$TEST_RESULT" | python3 -c "
 import json, sys
@@ -155,7 +155,7 @@ Hello from SRRD-Builder!
 \end{document}
 EOF
     
-    TEST_LATEX=$(echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "compile_latex", "arguments": {"tex_file_path": "/tmp/srrd_test.tex", "output_format": "pdf"}}, "id": 2}' | python3 mcp_claude_ultra_clean.py 2>/dev/null)
+    TEST_LATEX=$(echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "compile_latex", "arguments": {"tex_file_path": "/tmp/srrd_test.tex", "output_format": "pdf"}}, "id": 2}' | python3 mcp_server.py 2>/dev/null)
     if echo "$TEST_LATEX" | grep -q "PDF compiled successfully"; then
         echo "✅ LaTeX compilation working"
         rm -f /tmp/srrd_test.*
@@ -175,7 +175,7 @@ CONFIG_CONTENT='{
   "mcpServers": {
     "srrd-builder": {
       "command": "python3",
-      "args": ["'$CURRENT_DIR'/work/code/mcp/mcp_claude_ultra_clean.py"],
+      "args": ["'$CURRENT_DIR'/work/code/mcp/mcp_server.py"],
       "cwd": "'$CURRENT_DIR'/work/code/mcp",
       "env": {
         "PYTHONPATH": "'$CURRENT_DIR'/work/code/mcp"
