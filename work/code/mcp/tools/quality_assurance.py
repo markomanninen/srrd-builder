@@ -84,11 +84,20 @@ class QualityAssuranceTool:
         }
     
     async def check_quality_gates(self, research_content: Dict[str, Any], phase: str,
-                                domain_standards: Dict[str, Any],
+                                domain_standards: Optional[Dict[str, Any]] = None,
                                 innovation_criteria: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         MCP tool: Automated quality checks at each research phase
         """
+        
+        # Provide default domain standards if none provided
+        if domain_standards is None:
+            domain_standards = {
+                "minimum_score": 0.7,
+                "required_sections": ["methodology", "analysis", "conclusion"],
+                "quality_metrics": ["clarity", "rigor", "validity"],
+                "domain_specific": {}
+            }
         
         quality_gates = {
             "planning": [

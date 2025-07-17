@@ -158,7 +158,15 @@ class MCPServer:
         if self.logger:
             self.logger.info(f"Starting MCP server on {config.server.host}:{self.port}")
         
-        async with websockets.serve(self.handle_mcp_message, config.server.host, self.port):
+        # Create a proper handler function
+        async def websocket_handler(websocket):
+            return await self.handle_mcp_message(websocket, "/")
+        
+        async with websockets.serve(
+            websocket_handler,
+            config.server.host, 
+            self.port
+        ):
             print(f"SRRD Builder MCP Server running on ws://{config.server.host}:{self.port}")
             await asyncio.Future()  # run forever
 
@@ -381,7 +389,7 @@ class MCPServer:
                         "domain_standards": {"type": "object"},
                         "innovation_criteria": {"type": "object"}
                     },
-                    "required": ["research_content", "phase", "domain_standards"]
+                    "required": ["research_content", "phase"]
                 }
             },
             "semantic_search": {
@@ -526,12 +534,17 @@ class MCPServer:
                     "parameters": {
                         "research_content": "object",
                         "phase": "string",
-                        "domain_standards": "object",
+                        "domain_standards": "object (optional)",
                         "innovation_criteria": "object (optional)"
                     }
                 }
             ]
         }
+
+    async def _websocket_handler(self, websocket, path=None):
+        """WebSocket handler wrapper - compatible with different websockets versions"""
+        # Some websockets versions pass path, others don't
+        return await self.handle_mcp_message(websocket, path or "/")
 
 if __name__ == "__main__":
     import argparse

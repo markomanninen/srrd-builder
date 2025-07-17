@@ -226,3 +226,68 @@ class VectorManager:
             return model_cache_path.exists()
         except:
             return False
+    
+    async def enable_embedding_model(self, timeout: float = 30.0) -> bool:
+        """Load the embedding model with proper user feedback
+        
+        Args:
+            timeout: Maximum time to wait for model download
+            
+        Returns:
+            True if model was loaded successfully, False otherwise
+        """
+        if not SENTENCE_TRANSFORMERS_AVAILABLE:
+            print("❌ sentence-transformers not available. Install with: pip install sentence-transformers")
+            return False
+            
+        if self.embedding_model is not None:
+            print("✅ Embedding model already loaded!")
+            return True
+            
+        model_name = 'all-MiniLM-L6-v2'
+        is_cached = self._is_model_cached(model_name)
+        
+        if is_cached:
+            print("📥 Loading cached embedding model...")
+        else:
+            print("📥 Downloading embedding model (first time setup)...")
+            print(f"    Model: {model_name} (~90MB)")
+            print("    This may take 1-2 minutes depending on connection speed...")
+            print("    The model will be cached locally for future use.")
+            print("    Press Ctrl+C to cancel if needed.")
+        
+        try:
+            import asyncio
+            
+            # Load model with timeout
+            self.embedding_model = await asyncio.wait_for(
+                asyncio.get_event_loop().run_in_executor(
+                    None, 
+                    lambda: SentenceTransformer(model_name)
+                ),
+                timeout=timeout
+            )
+            
+            if is_cached:
+                print("✅ Cached embedding model loaded successfully!")
+            else:
+                print("✅ Embedding model downloaded and loaded successfully!")
+            return True
+            
+        except asyncio.TimeoutError:
+            print(f"⏱️  Model loading timed out after {timeout} seconds")
+            print("    This may be due to slow internet connection or large download.")
+            print("    Vector search will continue with fallback text-based similarity.")
+            print("    Try again later with better internet connection.")
+            self.embedding_model = None
+            return False
+        except KeyboardInterrupt:
+            print("\n🛑 Model download cancelled by user.")
+            print("    Vector search will use fallback text-based similarity.")
+            self.embedding_model = None
+            return False
+        except Exception as e:
+            print(f"❌ Failed to load embedding model: {e}")
+            print("    Vector search will use fallback text-based similarity.")
+            self.embedding_model = None
+            return False

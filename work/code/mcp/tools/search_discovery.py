@@ -38,7 +38,7 @@ async def semantic_search_tool(**kwargs) -> str:
         else:
             vector_manager = VectorManager()
             try:
-                await vector_manager.initialize()
+                await vector_manager.initialize(enable_embedding_model=False)
             except Exception as e:
                 vector_manager = None
         
@@ -222,7 +222,7 @@ async def find_similar_documents_tool(**kwargs) -> str:
         else:
             vector_manager = VectorManager()
             try:
-                await vector_manager.initialize()
+                await vector_manager.initialize(enable_embedding_model=False)
             except Exception as e:
                 vector_manager = None
         

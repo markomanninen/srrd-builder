@@ -245,7 +245,7 @@ class ClaudeMCPServer:
                         "domain_standards": {"type": "object", "description": "Domain-specific quality standards"},
                         "innovation_criteria": {"type": "object", "description": "Innovation criteria (optional)"}
                     },
-                    "required": ["research_content", "phase", "domain_standards"]
+                    "required": ["research_content", "phase"]
                 }
             },
             "semantic_search": {

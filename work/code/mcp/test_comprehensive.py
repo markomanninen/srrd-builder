@@ -176,12 +176,11 @@ class MCPTestSuite:
             # Test check_quality_gates
             if "check_quality_gates" in self.server.tools:
                 result = await self.server.tools["check_quality_gates"](
-                    content={"title": "Test Research", "abstract": "Test abstract"},
-                    gate_type="publication_readiness",
-                    domain="theoretical_physics"
+                    research_content={"title": "Test Research", "abstract": "Test abstract"},
+                    phase="planning"
                 )
                 
-                if isinstance(result, dict) and "gate_status" in result:
+                if isinstance(result, dict) and "passed" in result:
                     self.log_test_result("Check Quality Gates", True, "Quality gates checked")
                 else:
                     self.log_test_result("Check Quality Gates", False, "Unexpected result format")
