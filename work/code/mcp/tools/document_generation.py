@@ -69,6 +69,265 @@ LATEX_TEMPLATE = r"""\documentclass[12pt,a4paper]{{article}}
 \end{{document}}
 """
 
+# Enhanced LaTeX Template System
+class LaTeXTemplateManager:
+    """Manages multiple LaTeX templates for different document types and journals"""
+    
+    def __init__(self):
+        self.templates = {
+            "basic_article": {
+                "name": "Basic Academic Article",
+                "description": "Standard academic article format",
+                "template": LATEX_TEMPLATE
+            },
+            "nature": {
+                "name": "Nature Journal Format",
+                "description": "Template following Nature journal guidelines",
+                "template": r"""\documentclass[twocolumn]{{article}}
+\usepackage[utf8]{{inputenc}}
+\usepackage[T1]{{fontenc}}
+\usepackage{{amsmath,amsfonts,amssymb}}
+\usepackage{{graphicx}}
+\usepackage{{natbib}}
+\usepackage{{booktabs}}
+\usepackage{{hyperref}}
+\usepackage{{geometry}}
+
+\geometry{{margin=0.75in}}
+
+\title{{{title}}}
+\author{{{author}}}
+\date{{{date}}}
+
+\begin{{document}}
+
+\maketitle
+
+\begin{{abstract}}
+{abstract}
+\end{{abstract}}
+
+\section{{Introduction}}
+{introduction}
+
+\section{{Methods}}
+{methodology}
+
+\section{{Results}}
+{results}
+
+\section{{Discussion}}
+{discussion}
+
+\section*{{Acknowledgments}}
+We thank the contributors and reviewers for their valuable feedback.
+
+\bibliographystyle{{nature}}
+\bibliography{{references}}
+
+\end{{document}}
+"""
+            },
+            "ieee": {
+                "name": "IEEE Conference Format",
+                "description": "Template for IEEE conference proceedings",
+                "template": r"""\documentclass[conference]{{IEEEtran}}
+\usepackage[utf8]{{inputenc}}
+\usepackage{{amsmath,amsfonts,amssymb}}
+\usepackage{{graphicx}}
+\usepackage{{cite}}
+\usepackage{{hyperref}}
+
+\title{{{title}}}
+\author{{\IEEEauthorblockN{{{author}}}
+\IEEEauthorblockA{{Institution\\
+Email: author@institution.edu}}}}
+
+\begin{{document}}
+
+\maketitle
+
+\begin{{abstract}}
+{abstract}
+\end{{abstract}}
+
+\begin{{IEEEkeywords}}
+keyword1, keyword2, keyword3
+\end{{IEEEkeywords}}
+
+\section{{Introduction}}
+{introduction}
+
+\section{{Methodology}}
+{methodology}
+
+\section{{Results}}
+{results}
+
+\section{{Discussion}}
+{discussion}
+
+\section{{Conclusion}}
+{conclusion}
+
+\begin{{thebibliography}}{{99}}
+{bibliography}
+\end{{thebibliography}}
+
+\end{{document}}
+"""
+            },
+            "proposal": {
+                "name": "Research Proposal",
+                "description": "Template for research proposals",
+                "template": r"""\documentclass[11pt,a4paper]{{article}}
+\usepackage[utf8]{{inputenc}}
+\usepackage[T1]{{fontenc}}
+\usepackage{{amsmath,amsfonts,amssymb}}
+\usepackage{{graphicx}}
+\usepackage{{natbib}}
+\usepackage{{hyperref}}
+\usepackage{{geometry}}
+\usepackage{{titlesec}}
+
+\geometry{{margin=1in}}
+
+\title{{{title}}}
+\author{{{author}}}
+\date{{{date}}}
+
+\begin{{document}}
+
+\maketitle
+
+\begin{{abstract}}
+{abstract}
+\end{{abstract}}
+
+\section{{Research Objectives}}
+{introduction}
+
+\section{{Literature Review}}
+Please provide a comprehensive literature review here.
+
+\section{{Methodology}}
+{methodology}
+
+\section{{Expected Results}}
+{results}
+
+\section{{Timeline}}
+Please provide a detailed project timeline.
+
+\section{{Budget}}
+Please provide budget considerations.
+
+\section{{Significance}}
+{discussion}
+
+\bibliographystyle{{apa}}
+\bibliography{{references}}
+
+\end{{document}}
+"""
+            },
+            "thesis": {
+                "name": "Thesis/Dissertation",
+                "description": "Template for thesis and dissertation documents",
+                "template": r"""\documentclass[12pt,a4paper]{{report}}
+\usepackage[utf8]{{inputenc}}
+\usepackage[T1]{{fontenc}}
+\usepackage{{amsmath,amsfonts,amssymb}}
+\usepackage{{graphicx}}
+\usepackage{{natbib}}
+\usepackage{{hyperref}}
+\usepackage{{geometry}}
+\usepackage{{fancyhdr}}
+\usepackage{{setspace}}
+
+\geometry{{margin=1in}}
+\doublespacing
+\pagestyle{{fancy}}
+\fancyhf{{}}
+\rhead{{\thepage}}
+\lhead{{\leftmark}}
+
+\title{{{title}}}
+\author{{{author}}}
+\date{{{date}}}
+
+\begin{{document}}
+
+\frontmatter
+\maketitle
+
+\begin{{abstract}}
+{abstract}
+\end{{abstract}}
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\mainmatter
+
+\chapter{{Introduction}}
+{introduction}
+
+\chapter{{Literature Review}}
+Please provide a comprehensive literature review.
+
+\chapter{{Methodology}}
+{methodology}
+
+\chapter{{Results}}
+{results}
+
+\chapter{{Discussion}}
+{discussion}
+
+\chapter{{Conclusion}}
+{conclusion}
+
+\chapter{{Future Work}}
+Please provide directions for future research.
+
+\bibliographystyle{{apa}}
+\bibliography{{references}}
+
+\appendix
+\chapter{{Additional Materials}}
+Additional materials and appendices can be added here.
+
+\end{{document}}
+"""
+            }
+        }
+    
+    def get_template(self, template_type: str = "basic_article") -> dict:
+        """Get a specific template by type"""
+        return self.templates.get(template_type, self.templates["basic_article"])
+    
+    def list_templates(self) -> dict:
+        """List all available templates"""
+        return {
+            key: {
+                "name": template["name"],
+                "description": template["description"]
+            } for key, template in self.templates.items()
+        }
+    
+    def add_custom_template(self, template_id: str, name: str, description: str, template_content: str):
+        """Add a custom template"""
+        self.templates[template_id] = {
+            "name": name,
+            "description": description,
+            "template": template_content
+        }
+
+# Initialize global template manager
+template_manager = LaTeXTemplateManager()
+
 async def generate_latex_document_tool(**kwargs) -> str:
     """Generate LaTeX document from research content"""
     
@@ -582,6 +841,69 @@ async def generate_document_with_database_bibliography_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error generating document with database bibliography: {str(e)}"
 
+async def list_latex_templates_tool(**kwargs) -> str:
+    """List all available LaTeX templates"""
+    try:
+        templates = template_manager.list_templates()
+        result = "Available LaTeX Templates:\n\n"
+        
+        for template_id, info in templates.items():
+            result += f"• **{template_id}**: {info['name']}\n"
+            result += f"  {info['description']}\n\n"
+        
+        return result
+    except Exception as e:
+        return f"Error listing templates: {str(e)}"
+
+async def generate_latex_with_template_tool(**kwargs) -> str:
+    """Generate LaTeX document using a specific template"""
+    try:
+        title = kwargs.get('title', 'Untitled Research Document')
+        author = kwargs.get('author', 'SRRD Builder')
+        abstract = kwargs.get('abstract', '')
+        introduction = kwargs.get('introduction', '')
+        methodology = kwargs.get('methodology', '')
+        results = kwargs.get('results', '')
+        discussion = kwargs.get('discussion', '')
+        conclusion = kwargs.get('conclusion', '')
+        bibliography = kwargs.get('bibliography', '')
+        project_path = kwargs.get('project_path', '')
+        template_type = kwargs.get('template_type', 'basic_article')
+        
+        # Get the specified template
+        template_info = template_manager.get_template(template_type)
+        latex_template = template_info["template"]
+        
+        # Format the LaTeX document using the selected template
+        latex_content = latex_template.format(
+            title=title,
+            author=author,
+            date=datetime.now().strftime("%B %d, %Y"),
+            abstract=abstract,
+            introduction=introduction,
+            methodology=methodology,
+            results=results,
+            discussion=discussion,
+            conclusion=conclusion,
+            bibliography=bibliography
+        )
+        
+        # Save to project if path provided
+        if project_path:
+            project_manager = ProjectManager(project_path)
+            doc_path = Path(project_path) / "documents" / f"{title.replace(' ', '_').lower()}_{template_type}.tex"
+            doc_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            with open(doc_path, 'w', encoding='utf-8') as f:
+                f.write(latex_content)
+            
+            return f"LaTeX document generated using '{template_info['name']}' template at: {doc_path}"
+        else:
+            return f"LaTeX document generated using '{template_info['name']}' template:\n{latex_content[:500]}..."
+            
+    except Exception as e:
+        return f"Error generating LaTeX document with template: {str(e)}"
+
 def register_document_tools(server):
     """Register document generation tools with the MCP server"""
     
@@ -728,6 +1050,36 @@ def register_document_tools(server):
             "required": ["title", "bibliography_query"]
         },
         handler=generate_document_with_database_bibliography_tool
+    )
+    
+    server.register_tool(
+        name="list_latex_templates",
+        description="List all available LaTeX templates",
+        parameters={},
+        handler=list_latex_templates_tool
+    )
+    
+    server.register_tool(
+        name="generate_latex_with_template",
+        description="Generate LaTeX document using a specific template",
+        parameters={
+            "type": "object",
+            "properties": {
+                "title": {"type": "string", "description": "Document title"},
+                "author": {"type": "string", "description": "Author name"},
+                "abstract": {"type": "string", "description": "Abstract content"},
+                "introduction": {"type": "string", "description": "Introduction section"},
+                "methodology": {"type": "string", "description": "Methodology section"},
+                "results": {"type": "string", "description": "Results section"},
+                "discussion": {"type": "string", "description": "Discussion section"},
+                "conclusion": {"type": "string", "description": "Conclusion section"},
+                "bibliography": {"type": "string", "description": "Bibliography content"},
+                "project_path": {"type": "string", "description": "Project path for saving"},
+                "template_type": {"type": "string", "description": "Type of template to use", "default": "basic_article"}
+            },
+            "required": ["title"]
+        },
+        handler=generate_latex_with_template_tool
     )
     
 # Export functions for MCP server registration

@@ -324,13 +324,13 @@
 This interface allows you to test the MCP server functionality through a web browser.
 
 Available actions:
-• Connect to the MCP server running on localhost:8083
+• Connect to the MCP server running on localhost:8765
 • Test individual tools with predefined or custom parameters
 • Monitor server status and performance
 • View real-time output and responses
 
 To get started:
-1. Make sure the MCP server is running (python3 run_server.py)
+1. Make sure the MCP server is running (srrd-server --with-frontend)
 2. Click "Connect to Server" 
 3. Test any tool by clicking the buttons above
 4. View results in this console
@@ -359,7 +359,7 @@ Ready for testing! 🧪
 
         // Initialize MCP client
         function initializeMCPClient() {
-            mcpClient = new MCPClient('ws://localhost:8083');
+            mcpClient = new MCPClient('ws://localhost:8765');
             
             // Set up callbacks
             mcpClient.onStatusChange = updateStatus;
@@ -405,7 +405,7 @@ Ready for testing! 🧪
             }
 
             try {
-                log('Connecting to MCP server on localhost:8083...');
+                log('Connecting to MCP server on localhost:8765...');
                 await mcpClient.connect();
                 
                 // Test connection by listing tools
@@ -416,7 +416,7 @@ Ready for testing! 🧪
                 
             } catch (error) {
                 log(`Connection failed: ${error.message}`, 'error');
-                log('💡 Make sure the MCP server is running: python3 run_server.py', 'info');
+                log('💡 Make sure the MCP server is running: srrd-server --with-frontend', 'info');
                 updateStatus(false, 'Connection failed');
             }
         }
@@ -603,7 +603,7 @@ Ready for testing! 🧪
             stats.innerHTML = `
                 <div style="display: grid; gap: 10px;">
                     <div><strong>Connection Status:</strong> ${isConnected ? 'Connected ✅' : 'Disconnected ❌'}</div>
-                    <div><strong>Server URL:</strong> ws://localhost:8083</div>
+                    <div><strong>Server URL:</strong> ws://localhost:8765</div>
                     <div><strong>Tests Run:</strong> ${testResults.length}</div>
                     <div><strong>Success Rate:</strong> ${successRate}%</div>
                     <div><strong>Successful Tests:</strong> ${testResults.filter(r => r.success).length}</div>
@@ -648,7 +648,7 @@ Ready for testing! 🧪
             log('🚀 SRRD-Builder MCP Frontend Test Interface Ready');
             log('');
             log('To get started:');
-            log('1. Make sure MCP server is running: python3 run_server.py');
+            log('1. Make sure MCP server is running: srrd-server --with-frontend');
             log('2. Click "Connect to Server"');
             log('3. Test individual tools or run diagnostics');
             log('');

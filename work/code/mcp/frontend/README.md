@@ -151,7 +151,7 @@ Monitor the "Server Statistics" panel for:
 ### **Common Issues and Solutions**
 
 **Connection Failed**:
-- Ensure MCP server is running on port 8083
+- Ensure MCP server is running on port 8765
 - Check for port conflicts
 - Verify WebSocket support in browser
 

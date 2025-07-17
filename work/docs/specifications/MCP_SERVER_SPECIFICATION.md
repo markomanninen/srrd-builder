@@ -561,84 +561,32 @@ async def extract_document_sections(document_content: str) -> dict:
 #     """Extract and organize figures and tables for LaTeX integration"""
 ```
 
-## Global Package Installation System
-
-*Note: This section describes the planned global package architecture. Currently, SRRD-Builder works as a local project-specific installation.*
+## Installation and Setup
 
 ### Current Implementation Status
-- **Local Installation**: Works within individual Git repositories
-- **CLI Integration**: Basic CLI commands implemented (`srrd init`, `srrd generate`, `srrd publish`, etc.)
-- **MCP Server**: Functional MCP server with WebSocket and stdio support
-- **Project Structure**: Standardized `.srrd/` project structure
+- ✅ **Local Installation**: Works within individual Git repositories via `./setup.sh`
+- ✅ **Global CLI Access**: `pip install -e .` makes `srrd` and `srrd-server` commands globally available
+- ✅ **MCP Server**: Functional MCP server with WebSocket and stdio support  
+- ✅ **Project Structure**: Standardized `.srrd/` project structure
+- ✅ **Template System**: In-memory LaTeX templates (5 types: basic, nature, ieee, proposal, thesis)
 
-### Planned Package Architecture
-
-#### Global Installation Structure
-```
-/usr/local/lib/python3.x/site-packages/srrd_builder/
-├── __init__.py
-├── mcp_server/                    # MCP server implementation
-│   ├── server.py
-│   ├── tools/
-│   └── storage/
-├── templates/                     # Global template library
-│   ├── latex/
-│   │   ├── journals/             # Journal-specific templates
-│   │   ├── conferences/          # Conference templates
-│   │   └── general/              # General academic templates
-│   ├── proposal/
-│   └── methodology/
-├── knowledge_base/                # Global knowledge database
-│   ├── methodologies.db
-│   ├── best_practices.db
-│   └── quality_standards.db
-├── cli/                          # Command-line interface
-│   ├── main.py
-│   └── commands/
-└── config/                       # Global configuration
-    ├── default_config.json
-    └── journal_formats.json
-
-~/.srrd_config/                   # User-specific configuration
-├── user_preferences.json
-├── custom_templates/
-└── personal_knowledge_base/
-```
-
-### Installation and Setup
-
-#### Global Package Installation
+### Simple Installation
 ```bash
-# Install SRRD-Builder globally
-pip install srrd-builder
+# Clone and setup (makes CLI globally available)
+git clone <repository>
+cd srrd-builder
+./setup.sh
 
-# Initialize SRRD in any Git repository
-cd /path/to/your/research/project
-srrd init
-
-# Start MCP server
-srrd serve --port 8080
-
-# Generate document
-srrd generate manuscript --template nature --output main.tex
+# Use from any directory
+srrd init my-project --domain physics    # Create project anywhere
+srrd serve start                         # Start MCP server
+srrd-server --stdio                     # Direct server access for Claude Desktop
 ```
 
-#### Auto-Detection and Setup
-```python
-# Project Detection Algorithm
-class ProjectDetector:
-    def detect_project_type(self, git_repo_path: str) -> dict:
-        """Detect research project type from Git repository structure"""
-        
-    def setup_srrd_structure(self, project_path: str, project_type: str) -> bool:
-        """Set up SRRD structure in existing Git project"""
-        
-    def migrate_existing_documents(self, project_path: str) -> dict:
-        """Migrate existing research documents to SRRD format"""
-        
-    def detect_latex_environment(self, project_path: str) -> dict:
-        """Detect existing LaTeX setup and dependencies"""
-```
+### Project Configuration
+- **Local Config**: Each project uses `work/code/mcp/config/default_config.json`
+- **Environment Variables**: Override config with `SRRD_*` environment variables
+- **No Global Config**: System works with sensible defaults, no global configuration needed
 
 ### Command-Line Interface
 

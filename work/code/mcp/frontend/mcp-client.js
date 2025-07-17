@@ -4,7 +4,7 @@
  */
 
 class MCPClient {
-    constructor(serverUrl = 'ws://localhost:8083') {
+    constructor(serverUrl = 'ws://localhost:8765') {
         this.serverUrl = serverUrl;
         this.ws = null;
         this.isConnected = false;
@@ -65,7 +65,7 @@ class MCPClient {
                 setTimeout(() => {
                     if (!this.isConnected) {
                         this.ws.close();
-                        reject(new Error('Connection timeout - make sure MCP server is running on localhost:8083'));
+                        reject(new Error('Connection timeout - make sure MCP server is running on localhost:8765'));
                     }
                 }, 5000);
 

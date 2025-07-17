@@ -224,7 +224,7 @@ class MCPServer:
                         
                         if tool_name in self.tools:
                             try:
-                                result = await self.tools[tool_name](**tool_args)
+                                result = await self.tools[tool_name]['handler'](**tool_args)
                                 if self.log_adapter:
                                     self.log_adapter.log_tool_call(tool_name, tool_args, result)
                                 

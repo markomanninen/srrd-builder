@@ -71,18 +71,13 @@ class ConfigManager:
     
     def _get_default_config_path(self) -> str:
         """Get the default configuration file path"""
-        # Look for config in order of preference
-        config_paths = [
-            "config/default_config.json",
-            os.path.expanduser("~/.srrd_builder/config.json"),
-            "/etc/srrd_builder/config.json"
-        ]
+        # Use local config file - MCP server runs in project context
+        config_path = "config/default_config.json"
         
-        for path in config_paths:
-            if os.path.exists(path):
-                return path
+        if os.path.exists(config_path):
+            return config_path
         
-        return "config/default_config.json"  # Default fallback
+        return config_path  # Return default path even if it doesn't exist
     
     def _load_config(self):
         """Load configuration from file"""
