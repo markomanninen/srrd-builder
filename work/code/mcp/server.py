@@ -333,6 +333,16 @@ class MCPServer:
         self.tools = {}
         register_all_tools(self)
 
+    def register_tool(self, name, description, parameters, handler):
+        """Register a tool with the MCP server"""
+        self.tools[name] = {
+            'description': description,
+            'parameters': parameters,
+            'handler': handler
+        }
+        if self.logger:
+            self.logger.info(f"Registered tool: {name}")
+
     async def list_tools_mcp(self):
         """Return list of available tools in MCP format"""
         tools_list = []
@@ -466,6 +476,36 @@ class MCPServer:
                         "max_length": {"type": "integer"}
                     },
                     "required": ["documents"]
+                }
+            },
+            "generate_latex_document": {
+                "description": "Generate LaTeX research document",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "title": {"type": "string", "description": "Document title"},
+                        "author": {"type": "string", "description": "Author name"},
+                        "abstract": {"type": "string", "description": "Abstract content"},
+                        "introduction": {"type": "string", "description": "Introduction section"},
+                        "methodology": {"type": "string", "description": "Methodology section"},
+                        "results": {"type": "string", "description": "Results section"},
+                        "discussion": {"type": "string", "description": "Discussion section"},
+                        "conclusion": {"type": "string", "description": "Conclusion section"},
+                        "bibliography": {"type": "string", "description": "Bibliography content"},
+                        "project_path": {"type": "string", "description": "Project path for saving"}
+                    },
+                    "required": ["title"]
+                }
+            },
+            "compile_latex": {
+                "description": "Compile LaTeX document to PDF",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "tex_file_path": {"type": "string", "description": "Path to .tex file"},
+                        "output_format": {"type": "string", "description": "Output format (pdf)", "default": "pdf"}
+                    },
+                    "required": ["tex_file_path"]
                 }
             }
         }

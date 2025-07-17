@@ -17,36 +17,34 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from storage.project_manager import ProjectManager
 
-# LaTeX template for scientific research documents
-LATEX_TEMPLATE = r"""
-\documentclass[12pt,a4paper]{article}
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{amsmath,amsfonts,amssymb}
-\usepackage{graphicx}
-\usepackage{hyperref}
-\usepackage{cite}
-\usepackage{geometry}
-\usepackage{fancyhdr}
-\usepackage{abstract}
+# LaTeX template for scientific research documents - FIXED VERSION
+LATEX_TEMPLATE = r"""\documentclass[12pt,a4paper]{{article}}
+\usepackage[utf8]{{inputenc}}
+\usepackage[T1]{{fontenc}}
+\usepackage{{amsmath,amsfonts,amssymb}}
+\usepackage{{graphicx}}
+\usepackage{{hyperref}}
+\usepackage{{cite}}
+\usepackage{{geometry}}
+\usepackage{{fancyhdr}}
 
-\geometry{margin=1in}
-\pagestyle{fancy}
-\fancyhf{}
-\rhead{\thepage}
-\lhead{title_placeholder}
+\geometry{{margin=1in}}
+\pagestyle{{fancy}}
+\fancyhf{{}}
+\rhead{{\thepage}}
+\lhead{{{title}}}
 
-\title{title_placeholder}
-\author{author_placeholder}
-\date{date_placeholder}
+\title{{{title}}}
+\author{{{author}}}
+\date{{{date}}}
 
-\begin{document}
+\begin{{document}}
 
 \maketitle
 
-\begin{abstract}
+\begin{{abstract}}
 {abstract}
-\end{abstract}
+\end{{abstract}}
 
 \section{{Introduction}}
 {introduction}
@@ -63,11 +61,11 @@ LATEX_TEMPLATE = r"""
 \section{{Conclusion}}
 {conclusion}
 
-\begin{thebibliography}{{99}}
+\begin{{thebibliography}}{{99}}
 {bibliography}
-\end{thebibliography}
+\end{{thebibliography}}
 
-\end{document}
+\end{{document}}
 """
 
 async def generate_latex_document_tool(**kwargs) -> str:
@@ -85,17 +83,19 @@ async def generate_latex_document_tool(**kwargs) -> str:
         bibliography = kwargs.get('bibliography', '')
         project_path = kwargs.get('project_path', '')
         
-        # Format the LaTeX document
-        latex_content = LATEX_TEMPLATE.replace("title_placeholder", title)
-        latex_content = latex_content.replace("author_placeholder", author)
-        latex_content = latex_content.replace("date_placeholder", datetime.now().strftime("%B %d, %Y"))
-        latex_content = latex_content.replace("{abstract}", abstract)
-        latex_content = latex_content.replace("{introduction}", introduction)
-        latex_content = latex_content.replace("{methodology}", methodology)
-        latex_content = latex_content.replace("{results}", results)
-        latex_content = latex_content.replace("{discussion}", discussion)
-        latex_content = latex_content.replace("{conclusion}", conclusion)
-        latex_content = latex_content.replace("{bibliography}", bibliography)
+        # Format the LaTeX document using format() method
+        latex_content = LATEX_TEMPLATE.format(
+            title=title,
+            author=author,
+            date=datetime.now().strftime("%B %d, %Y"),
+            abstract=abstract,
+            introduction=introduction,
+            methodology=methodology,
+            results=results,
+            discussion=discussion,
+            conclusion=conclusion,
+            bibliography=bibliography
+        )
         
         # Save to project if path provided
         if project_path:
@@ -198,24 +198,26 @@ async def format_research_content_tool(**kwargs) -> str:
             for line in lines:
                 line = line.strip()
                 if line:
-                    # Ensure proper sentence structure
-                    if not line.endswith('.') and not line.endswith('!') and not line.endswith('?'):
-                        line += '.'
+                    # Ensure proper capitalization for section start
+                    if len(formatted_lines) == 0 and line[0].islower():
+                        line = line[0].upper() + line[1:]
                     formatted_lines.append(line)
+                else:
+                    formatted_lines.append('')
             
-            formatted_content = '\n\n'.join(formatted_lines)
-        
+            formatted_content = '\n\n'.join([line for line in formatted_lines if line])
+            
         elif content_type == "equation":
             # Format mathematical equations
             if not formatted_content.startswith('\\begin{equation}'):
                 formatted_content = f"\\begin{{equation}}\n{formatted_content}\n\\end{{equation}}"
-        
+                
         elif content_type == "citation":
             # Format citations
             if not formatted_content.startswith('\\cite'):
                 formatted_content = f"\\cite{{{formatted_content}}}"
         
-        return f"Formatted {content_type}:\n{formatted_content}"
+        return f"Formatted content:\n{formatted_content}"
         
     except Exception as e:
         return f"Error formatting content: {str(e)}"
@@ -232,79 +234,263 @@ async def generate_bibliography_tool(**kwargs) -> str:
         bib_entries = []
         
         for i, ref in enumerate(references, 1):
-            if ref.get('type') == 'article':
-                entry = f"\\bibitem{{ref{i}}} {ref.get('authors', 'Unknown')}, \\textit{{{ref.get('title', 'Untitled')}}}, {ref.get('journal', 'Unknown Journal')}, {ref.get('year', 'Unknown Year')}."
-            elif ref.get('type') == 'book':
-                entry = f"\\bibitem{{ref{i}}} {ref.get('authors', 'Unknown')}, \\textit{{{ref.get('title', 'Untitled')}}}, {ref.get('publisher', 'Unknown Publisher')}, {ref.get('year', 'Unknown Year')}."
+            if isinstance(ref, dict):
+                # Handle structured reference
+                title = ref.get('title', 'Unknown Title')
+                authors = ref.get('authors', 'Unknown Author')
+                year = ref.get('year', 'Unknown Year')
+                journal = ref.get('journal', '')
+                
+                if journal:
+                    bib_entry = f"\\bibitem{{ref{i}}} {authors}. {title}. \\textit{{{journal}}}, {year}."
+                else:
+                    bib_entry = f"\\bibitem{{ref{i}}} {authors}. {title}. {year}."
+                    
+                bib_entries.append(bib_entry)
             else:
-                entry = f"\\bibitem{{ref{i}}} {ref.get('authors', 'Unknown')}, \\textit{{{ref.get('title', 'Untitled')}}}, {ref.get('year', 'Unknown Year')}."
-            
-            bib_entries.append(entry)
+                # Handle string reference
+                bib_entries.append(f"\\bibitem{{ref{i}}} {ref}")
         
-        bibliography = '\n'.join(bib_entries)
+        bibliography = '\n\n'.join(bib_entries)
+        
         return f"Generated bibliography:\n{bibliography}"
         
     except Exception as e:
         return f"Error generating bibliography: {str(e)}"
 
 async def extract_document_sections_tool(**kwargs) -> str:
-    """Extract and identify sections from document content"""
+    """Extract and identify sections from document content for modular LaTeX management"""
     
     try:
         document_content = kwargs.get('document_content', '')
+        project_path = kwargs.get('project_path', '')
+        create_separate_files = kwargs.get('create_separate_files', False)
         
         if not document_content:
             return "Error: Missing required parameter 'document_content'"
         
-        sections = {
-            'title': '',
-            'abstract': '',
-            'introduction': '',
-            'methodology': '',
-            'results': '',
-            'discussion': '',
-            'conclusion': ''
-        }
+        # Define section patterns for academic papers
+        section_patterns = [
+            r'\\section\{([^}]+)\}',
+            r'\\subsection\{([^}]+)\}',
+            r'\\subsubsection\{([^}]+)\}',
+            r'(?i)(?:^|\n)\s*(abstract|introduction|methodology|methods|results|discussion|conclusion|references|bibliography|acknowledgments?)\s*(?:\n|:|\.|$)',
+            r'(?i)(?:^|\n)\s*(\d+\.?\s*[A-Z][^.\n]*(?:introduction|methodology|methods|results|discussion|conclusion))\s*(?:\n|$)',
+        ]
         
-        # Simple section detection based on common headers
+        sections = {}
+        current_section = "preamble"
+        current_content = []
+        document_started = False
+        preamble_content = []
+        
         lines = document_content.split('\n')
-        current_section = None
         
         for line in lines:
-            line = line.strip()
-            lower_line = line.lower()
+            # Track document structure
+            if '\\begin{document}' in line:
+                # Save preamble content (everything before \begin{document})
+                if current_section == "preamble":
+                    sections["preamble"] = '\n'.join(current_content).strip()
+                    current_content = []
+                document_started = True
+                continue
+            elif '\\end{document}' in line:
+                # Save last section before document end
+                if current_content and current_section != "preamble":
+                    sections[current_section] = '\n'.join(current_content).strip()
+                break
             
-            if any(keyword in lower_line for keyword in ['title:', 'title']):
-                current_section = 'title'
-                sections[current_section] = line.replace('title:', '').replace('Title:', '').strip()
-            elif any(keyword in lower_line for keyword in ['abstract:', 'abstract']):
-                current_section = 'abstract'
-            elif any(keyword in lower_line for keyword in ['introduction:', 'introduction']):
-                current_section = 'introduction'
-            elif any(keyword in lower_line for keyword in ['method', 'approach']):
-                current_section = 'methodology'
-            elif any(keyword in lower_line for keyword in ['result', 'finding']):
-                current_section = 'results'
-            elif any(keyword in lower_line for keyword in ['discussion:', 'discussion']):
-                current_section = 'discussion'
-            elif any(keyword in lower_line for keyword in ['conclusion:', 'conclusion']):
-                current_section = 'conclusion'
-            elif current_section and line:
-                sections[current_section] += f"\n{line}"
+            # Skip document structure commands in sections
+            if document_started and ('\\maketitle' in line or '\\begin{document}' in line):
+                continue
+            
+            # Check if line starts a new section (only after document has started)
+            section_found = False
+            
+            if document_started:
+                for pattern in section_patterns:
+                    import re
+                    match = re.search(pattern, line, re.IGNORECASE)
+                    if match:
+                        # Save previous section
+                        if current_content and current_section != "preamble":
+                            sections[current_section] = '\n'.join(current_content).strip()
+                        
+                        # Start new section
+                        section_name = match.group(1).lower().replace(' ', '_')
+                        current_section = section_name
+                        current_content = [line]
+                        section_found = True
+                        break
+            
+            if not section_found:
+                current_content.append(line)
         
-        # Clean up sections
-        for key in sections:
-            sections[key] = sections[key].strip()
+        # Save the last section
+        if current_content and current_section != "preamble":
+            sections[current_section] = '\n'.join(current_content).strip()
         
-        return f"Extracted document sections: {json.dumps(sections, indent=2)}"
+        # Create separate .tex files if requested
+        if create_separate_files and project_path:
+            from pathlib import Path
+            
+            sections_dir = Path(project_path) / "sections"
+            sections_dir.mkdir(exist_ok=True)
+            
+            main_tex_includes = []
+            
+            for section_name, content in sections.items():
+                if section_name != "preamble" and content.strip():
+                    # Clean up content for separate file
+                    clean_content = content.strip()
+                    
+                    # Create section file
+                    section_file = sections_dir / f"{section_name}.tex"
+                    with open(section_file, 'w', encoding='utf-8') as f:
+                        f.write(clean_content)
+                    
+                    # Add to main document includes (relative path from documents dir)
+                    main_tex_includes.append(f"\\input{{../sections/{section_name}}}")
+            
+            # Create main document structure
+            if main_tex_includes:
+                main_doc_path = Path(project_path) / "documents" / "main.tex"
+                main_doc_path.parent.mkdir(parents=True, exist_ok=True)
+                
+                # Extract clean preamble (without \begin{document})
+                preamble = sections.get('preamble', '').strip()
+                
+                main_document = f"""{preamble}
+
+\\begin{{document}}
+
+\\maketitle
+
+{chr(10).join(main_tex_includes)}
+
+\\end{{document}}
+"""
+                
+                with open(main_doc_path, 'w', encoding='utf-8') as f:
+                    f.write(main_document)
+                
+                return f"Document sections extracted and modularized:\n- Main document: {main_doc_path}\n- Sections directory: {sections_dir}\n- Created {len(main_tex_includes)} separate section files"
+        
+        # Return structured section information
+        result = "Extracted document sections:\n\n"
+        for section_name, content in sections.items():
+            preview = content[:100] + "..." if len(content) > 100 else content
+            result += f"**{section_name.upper()}:**\n{preview}\n\n"
+        
+        return result
         
     except Exception as e:
         return f"Error extracting document sections: {str(e)}"
 
 def register_document_tools(server):
     """Register document generation tools with the MCP server"""
-    server.tools["generate_latex_document"] = generate_latex_document_tool
-    server.tools["compile_latex"] = compile_latex_tool
-    server.tools["format_research_content"] = format_research_content_tool
-    server.tools["generate_bibliography"] = generate_bibliography_tool
-    server.tools["extract_document_sections"] = extract_document_sections_tool
+    
+    server.register_tool(
+        name="generate_latex_document",
+        description="Generate LaTeX research document",
+        parameters={
+            "type": "object",
+            "properties": {
+                "title": {"type": "string", "description": "Document title"},
+                "author": {"type": "string", "description": "Author name"},
+                "abstract": {"type": "string", "description": "Abstract content"},
+                "introduction": {"type": "string", "description": "Introduction section"},
+                "methodology": {"type": "string", "description": "Methodology section"},
+                "results": {"type": "string", "description": "Results section"},
+                "discussion": {"type": "string", "description": "Discussion section"},
+                "conclusion": {"type": "string", "description": "Conclusion section"},
+                "bibliography": {"type": "string", "description": "Bibliography content"},
+                "project_path": {"type": "string", "description": "Project path for saving"}
+            },
+            "required": ["title"]
+        },
+        handler=generate_latex_document_tool
+    )
+    
+    server.register_tool(
+        name="compile_latex",
+        description="Compile LaTeX document to PDF",
+        parameters={
+            "type": "object",
+            "properties": {
+                "tex_file_path": {"type": "string", "description": "Path to .tex file"},
+                "output_format": {"type": "string", "description": "Output format (pdf)", "default": "pdf"}
+            },
+            "required": ["tex_file_path"]
+        },
+        handler=compile_latex_tool
+    )
+    
+    server.register_tool(
+        name="format_research_content",
+        description="Format research content according to academic standards",
+        parameters={
+            "type": "object",
+            "properties": {
+                "content": {"type": "string", "description": "Content to format"},
+                "content_type": {"type": "string", "description": "Type of content (section, equation, citation)", "default": "section"},
+                "formatting_style": {"type": "string", "description": "Formatting style (academic)", "default": "academic"}
+            },
+            "required": ["content"]
+        },
+        handler=format_research_content_tool
+    )
+    
+    server.register_tool(
+        name="generate_bibliography",
+        description="Generate LaTeX bibliography from reference list",
+        parameters={
+            "type": "object",
+            "properties": {
+                "references": {"type": "array", "items": {"type": "object"}, "description": "List of references"}
+            },
+            "required": ["references"]
+        },
+        handler=generate_bibliography_tool
+    )
+    
+    server.register_tool(
+        name="extract_document_sections",
+        description="Extract and identify sections from document content for modular LaTeX management",
+        parameters={
+            "type": "object",
+            "properties": {
+                "document_content": {"type": "string", "description": "Document content to analyze"},
+                "project_path": {"type": "string", "description": "Project path for creating separate files"},
+                "create_separate_files": {"type": "boolean", "description": "Create separate .tex files for each section", "default": False}
+            },
+            "required": ["document_content"]
+        },
+        handler=extract_document_sections_tool
+    )
+    
+    server.register_tool(
+        name="extract_document_sections",
+        description="Extract and modularize document sections",
+        parameters={
+            "type": "object",
+            "properties": {
+                "document_content": {"type": "string", "description": "Full document content"},
+                "project_path": {"type": "string", "description": "Project path for saving sections"},
+                "create_separate_files": {"type": "boolean", "description": "Flag to create separate section files", "default": False}
+            },
+            "required": ["document_content"]
+        },
+        handler=extract_document_sections_tool
+    )
+
+# Export functions for MCP server registration
+__all__ = [
+    'generate_latex_document_tool',
+    'compile_latex_tool', 
+    'format_research_content_tool',
+    'generate_bibliography_tool',
+    'extract_document_sections_tool',
+    'register_document_tools'
+]
