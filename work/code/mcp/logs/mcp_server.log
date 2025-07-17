@@ -132,3 +132,328 @@
 2025-07-17 08:30:07,888 - srrd_builder - INFO - logging_setup.py:97 - Tool call successful: extract_key_concepts
 2025-07-17 08:30:21,447 - srrd_builder - INFO - logging_setup.py:102 - Tool call initiated: clarify_research_goals
 2025-07-17 08:30:21,453 - srrd_builder - INFO - logging_setup.py:97 - Tool call successful: clarify_research_goals
+2025-07-17 17:25:01,980 - srrd_builder - WARNING - server.py:41 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-17 17:25:01,980 - srrd_builder - INFO - server.py:344 - Registered tool: generate_latex_document
+2025-07-17 17:25:01,980 - srrd_builder - INFO - server.py:344 - Registered tool: compile_latex
+2025-07-17 17:25:01,980 - srrd_builder - INFO - server.py:344 - Registered tool: format_research_content
+2025-07-17 17:25:01,980 - srrd_builder - INFO - server.py:344 - Registered tool: generate_bibliography
+2025-07-17 17:25:01,980 - srrd_builder - INFO - server.py:344 - Registered tool: extract_document_sections
+2025-07-17 17:25:01,980 - srrd_builder - INFO - server.py:344 - Registered tool: extract_document_sections
+2025-07-17 17:25:01,980 - srrd_builder - INFO - server.py:344 - Registered tool: store_bibliography_reference
+2025-07-17 17:25:01,980 - srrd_builder - INFO - server.py:344 - Registered tool: retrieve_bibliography_references
+2025-07-17 17:25:01,980 - srrd_builder - INFO - server.py:344 - Registered tool: generate_document_with_database_bibliography
+2025-07-17 17:25:01,980 - srrd_builder - INFO - server.py:46 - MCP Server initialized on port 8083
+2025-07-17 17:25:01,980 - srrd_builder - INFO - server.py:47 - Registered 24 tools
+2025-07-17 17:25:01,980 - srrd_builder - INFO - server.py:159 - Starting MCP server on localhost:8083
+2025-07-17 18:53:47,226 - srrd_builder - WARNING - server.py:41 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-17 18:53:47,227 - srrd_builder - INFO - server.py:344 - Registered tool: generate_latex_document
+2025-07-17 18:53:47,227 - srrd_builder - INFO - server.py:344 - Registered tool: compile_latex
+2025-07-17 18:53:47,227 - srrd_builder - INFO - server.py:344 - Registered tool: format_research_content
+2025-07-17 18:53:47,227 - srrd_builder - INFO - server.py:344 - Registered tool: generate_bibliography
+2025-07-17 18:53:47,227 - srrd_builder - INFO - server.py:344 - Registered tool: extract_document_sections
+2025-07-17 18:53:47,227 - srrd_builder - INFO - server.py:344 - Registered tool: extract_document_sections
+2025-07-17 18:53:47,227 - srrd_builder - INFO - server.py:344 - Registered tool: store_bibliography_reference
+2025-07-17 18:53:47,227 - srrd_builder - INFO - server.py:344 - Registered tool: retrieve_bibliography_references
+2025-07-17 18:53:47,227 - srrd_builder - INFO - server.py:344 - Registered tool: generate_document_with_database_bibliography
+2025-07-17 18:53:47,227 - srrd_builder - INFO - server.py:46 - MCP Server initialized on port 8084
+2025-07-17 18:53:47,227 - srrd_builder - INFO - server.py:47 - Registered 24 tools
+2025-07-17 18:54:16,146 - srrd_builder - WARNING - server.py:41 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-17 18:54:16,147 - srrd_builder - INFO - server.py:344 - Registered tool: generate_latex_document
+2025-07-17 18:54:16,147 - srrd_builder - INFO - server.py:344 - Registered tool: compile_latex
+2025-07-17 18:54:16,147 - srrd_builder - INFO - server.py:344 - Registered tool: format_research_content
+2025-07-17 18:54:16,147 - srrd_builder - INFO - server.py:344 - Registered tool: generate_bibliography
+2025-07-17 18:54:16,147 - srrd_builder - INFO - server.py:344 - Registered tool: extract_document_sections
+2025-07-17 18:54:16,147 - srrd_builder - INFO - server.py:344 - Registered tool: extract_document_sections
+2025-07-17 18:54:16,147 - srrd_builder - INFO - server.py:344 - Registered tool: store_bibliography_reference
+2025-07-17 18:54:16,147 - srrd_builder - INFO - server.py:344 - Registered tool: retrieve_bibliography_references
+2025-07-17 18:54:16,147 - srrd_builder - INFO - server.py:344 - Registered tool: generate_document_with_database_bibliography
+2025-07-17 18:54:16,147 - srrd_builder - INFO - server.py:46 - MCP Server initialized on port 8084
+2025-07-17 18:54:16,147 - srrd_builder - INFO - server.py:47 - Registered 24 tools
+2025-07-17 18:59:24,537 - srrd_builder - WARNING - server.py:41 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-17 18:59:24,537 - srrd_builder - INFO - server.py:344 - Registered tool: generate_latex_document
+2025-07-17 18:59:24,537 - srrd_builder - INFO - server.py:344 - Registered tool: compile_latex
+2025-07-17 18:59:24,537 - srrd_builder - INFO - server.py:344 - Registered tool: format_research_content
+2025-07-17 18:59:24,537 - srrd_builder - INFO - server.py:344 - Registered tool: generate_bibliography
+2025-07-17 18:59:24,537 - srrd_builder - INFO - server.py:344 - Registered tool: extract_document_sections
+2025-07-17 18:59:24,537 - srrd_builder - INFO - server.py:344 - Registered tool: extract_document_sections
+2025-07-17 18:59:24,537 - srrd_builder - INFO - server.py:344 - Registered tool: store_bibliography_reference
+2025-07-17 18:59:24,537 - srrd_builder - INFO - server.py:344 - Registered tool: retrieve_bibliography_references
+2025-07-17 18:59:24,538 - srrd_builder - INFO - server.py:344 - Registered tool: generate_document_with_database_bibliography
+2025-07-17 18:59:24,538 - srrd_builder - INFO - server.py:46 - MCP Server initialized on port 8084
+2025-07-17 18:59:24,538 - srrd_builder - INFO - server.py:47 - Registered 24 tools
+2025-07-17 18:59:37,437 - srrd_builder - WARNING - server.py:41 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-17 18:59:37,437 - srrd_builder - INFO - server.py:344 - Registered tool: generate_latex_document
+2025-07-17 18:59:37,437 - srrd_builder - INFO - server.py:344 - Registered tool: compile_latex
+2025-07-17 18:59:37,437 - srrd_builder - INFO - server.py:344 - Registered tool: format_research_content
+2025-07-17 18:59:37,441 - srrd_builder - INFO - server.py:344 - Registered tool: generate_bibliography
+2025-07-17 18:59:37,441 - srrd_builder - INFO - server.py:344 - Registered tool: extract_document_sections
+2025-07-17 18:59:37,441 - srrd_builder - INFO - server.py:344 - Registered tool: extract_document_sections
+2025-07-17 18:59:37,441 - srrd_builder - INFO - server.py:344 - Registered tool: store_bibliography_reference
+2025-07-17 18:59:37,441 - srrd_builder - INFO - server.py:344 - Registered tool: retrieve_bibliography_references
+2025-07-17 18:59:37,441 - srrd_builder - INFO - server.py:344 - Registered tool: generate_document_with_database_bibliography
+2025-07-17 18:59:37,441 - srrd_builder - INFO - server.py:46 - MCP Server initialized on port 8084
+2025-07-17 18:59:37,441 - srrd_builder - INFO - server.py:47 - Registered 24 tools
+2025-07-17 19:03:21,936 - srrd_builder - WARNING - server.py:41 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-17 19:03:21,936 - srrd_builder - INFO - server.py:346 - Registered tool: generate_latex_document
+2025-07-17 19:03:21,936 - srrd_builder - INFO - server.py:346 - Registered tool: compile_latex
+2025-07-17 19:03:21,936 - srrd_builder - INFO - server.py:346 - Registered tool: format_research_content
+2025-07-17 19:03:21,936 - srrd_builder - INFO - server.py:346 - Registered tool: generate_bibliography
+2025-07-17 19:03:21,936 - srrd_builder - INFO - server.py:346 - Registered tool: extract_document_sections
+2025-07-17 19:03:21,936 - srrd_builder - INFO - server.py:346 - Registered tool: extract_document_sections
+2025-07-17 19:03:21,936 - srrd_builder - INFO - server.py:346 - Registered tool: store_bibliography_reference
+2025-07-17 19:03:21,936 - srrd_builder - INFO - server.py:346 - Registered tool: retrieve_bibliography_references
+2025-07-17 19:03:21,936 - srrd_builder - INFO - server.py:346 - Registered tool: generate_document_with_database_bibliography
+2025-07-17 19:03:21,936 - srrd_builder - INFO - server.py:46 - MCP Server initialized on port 8084
+2025-07-17 19:03:21,936 - srrd_builder - INFO - server.py:47 - Registered 24 tools
+2025-07-17 19:05:45,885 - srrd_builder - WARNING - server.py:41 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-17 19:05:45,885 - srrd_builder - INFO - server.py:346 - Registered tool: clarify_research_goals
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: suggest_methodology
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: simulate_peer_review
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: check_quality_gates
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: initialize_project
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: save_session
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: search_knowledge
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: version_control
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: backup_project
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: restore_session
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: generate_latex_document
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: compile_latex
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: format_research_content
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: generate_bibliography
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: extract_document_sections
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: extract_document_sections
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: store_bibliography_reference
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: retrieve_bibliography_references
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: generate_document_with_database_bibliography
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: semantic_search
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: discover_patterns
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: build_knowledge_graph
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: find_similar_documents
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: extract_key_concepts
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:346 - Registered tool: generate_research_summary
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:46 - MCP Server initialized on port 8084
+2025-07-17 19:05:45,886 - srrd_builder - INFO - server.py:47 - Registered 24 tools
+2025-07-17 19:31:53,989 - srrd_builder - WARNING - server.py:41 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-17 19:31:53,989 - srrd_builder - INFO - server.py:346 - Registered tool: clarify_research_goals
+2025-07-17 19:31:53,989 - srrd_builder - INFO - server.py:346 - Registered tool: suggest_methodology
+2025-07-17 19:31:53,989 - srrd_builder - INFO - server.py:346 - Registered tool: simulate_peer_review
+2025-07-17 19:31:53,989 - srrd_builder - INFO - server.py:346 - Registered tool: check_quality_gates
+2025-07-17 19:31:53,989 - srrd_builder - INFO - server.py:346 - Registered tool: initialize_project
+2025-07-17 19:31:53,989 - srrd_builder - INFO - server.py:346 - Registered tool: save_session
+2025-07-17 19:31:53,989 - srrd_builder - INFO - server.py:346 - Registered tool: search_knowledge
+2025-07-17 19:31:53,989 - srrd_builder - INFO - server.py:346 - Registered tool: version_control
+2025-07-17 19:31:53,989 - srrd_builder - INFO - server.py:346 - Registered tool: backup_project
+2025-07-17 19:31:53,989 - srrd_builder - INFO - server.py:346 - Registered tool: restore_session
+2025-07-17 19:31:53,989 - srrd_builder - INFO - server.py:346 - Registered tool: generate_latex_document
+2025-07-17 19:31:53,989 - srrd_builder - INFO - server.py:346 - Registered tool: compile_latex
+2025-07-17 19:31:53,989 - srrd_builder - INFO - server.py:346 - Registered tool: format_research_content
+2025-07-17 19:31:53,989 - srrd_builder - INFO - server.py:346 - Registered tool: generate_bibliography
+2025-07-17 19:31:53,989 - srrd_builder - INFO - server.py:346 - Registered tool: extract_document_sections
+2025-07-17 19:31:53,989 - srrd_builder - INFO - server.py:346 - Registered tool: extract_document_sections
+2025-07-17 19:31:53,989 - srrd_builder - INFO - server.py:346 - Registered tool: store_bibliography_reference
+2025-07-17 19:31:53,990 - srrd_builder - INFO - server.py:346 - Registered tool: retrieve_bibliography_references
+2025-07-17 19:31:53,990 - srrd_builder - INFO - server.py:346 - Registered tool: generate_document_with_database_bibliography
+2025-07-17 19:31:53,990 - srrd_builder - INFO - server.py:346 - Registered tool: semantic_search
+2025-07-17 19:31:53,990 - srrd_builder - INFO - server.py:346 - Registered tool: discover_patterns
+2025-07-17 19:31:53,990 - srrd_builder - INFO - server.py:346 - Registered tool: build_knowledge_graph
+2025-07-17 19:31:53,990 - srrd_builder - INFO - server.py:346 - Registered tool: find_similar_documents
+2025-07-17 19:31:53,990 - srrd_builder - INFO - server.py:346 - Registered tool: extract_key_concepts
+2025-07-17 19:31:53,990 - srrd_builder - INFO - server.py:346 - Registered tool: generate_research_summary
+2025-07-17 19:31:53,990 - srrd_builder - INFO - server.py:46 - MCP Server initialized on port 8084
+2025-07-17 19:31:53,990 - srrd_builder - INFO - server.py:47 - Registered 24 tools
+2025-07-17 19:33:43,101 - srrd_builder - WARNING - server.py:41 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-17 19:33:43,101 - srrd_builder - INFO - server.py:346 - Registered tool: clarify_research_goals
+2025-07-17 19:33:43,101 - srrd_builder - INFO - server.py:346 - Registered tool: suggest_methodology
+2025-07-17 19:33:43,101 - srrd_builder - INFO - server.py:346 - Registered tool: simulate_peer_review
+2025-07-17 19:33:43,101 - srrd_builder - INFO - server.py:346 - Registered tool: check_quality_gates
+2025-07-17 19:33:43,101 - srrd_builder - INFO - server.py:346 - Registered tool: initialize_project
+2025-07-17 19:33:43,101 - srrd_builder - INFO - server.py:346 - Registered tool: save_session
+2025-07-17 19:33:43,101 - srrd_builder - INFO - server.py:346 - Registered tool: search_knowledge
+2025-07-17 19:33:43,101 - srrd_builder - INFO - server.py:346 - Registered tool: version_control
+2025-07-17 19:33:43,101 - srrd_builder - INFO - server.py:346 - Registered tool: backup_project
+2025-07-17 19:33:43,101 - srrd_builder - INFO - server.py:346 - Registered tool: restore_session
+2025-07-17 19:33:43,101 - srrd_builder - INFO - server.py:346 - Registered tool: generate_latex_document
+2025-07-17 19:33:43,101 - srrd_builder - INFO - server.py:346 - Registered tool: compile_latex
+2025-07-17 19:33:43,101 - srrd_builder - INFO - server.py:346 - Registered tool: format_research_content
+2025-07-17 19:33:43,101 - srrd_builder - INFO - server.py:346 - Registered tool: generate_bibliography
+2025-07-17 19:33:43,101 - srrd_builder - INFO - server.py:346 - Registered tool: extract_document_sections
+2025-07-17 19:33:43,101 - srrd_builder - INFO - server.py:346 - Registered tool: extract_document_sections
+2025-07-17 19:33:43,101 - srrd_builder - INFO - server.py:346 - Registered tool: store_bibliography_reference
+2025-07-17 19:33:43,101 - srrd_builder - INFO - server.py:346 - Registered tool: retrieve_bibliography_references
+2025-07-17 19:33:43,101 - srrd_builder - INFO - server.py:346 - Registered tool: generate_document_with_database_bibliography
+2025-07-17 19:33:43,101 - srrd_builder - INFO - server.py:346 - Registered tool: semantic_search
+2025-07-17 19:33:43,102 - srrd_builder - INFO - server.py:346 - Registered tool: discover_patterns
+2025-07-17 19:33:43,102 - srrd_builder - INFO - server.py:346 - Registered tool: build_knowledge_graph
+2025-07-17 19:33:43,102 - srrd_builder - INFO - server.py:346 - Registered tool: find_similar_documents
+2025-07-17 19:33:43,102 - srrd_builder - INFO - server.py:346 - Registered tool: extract_key_concepts
+2025-07-17 19:33:43,102 - srrd_builder - INFO - server.py:346 - Registered tool: generate_research_summary
+2025-07-17 19:33:43,102 - srrd_builder - INFO - server.py:46 - MCP Server initialized on port 8084
+2025-07-17 19:33:43,102 - srrd_builder - INFO - server.py:47 - Registered 24 tools
+2025-07-17 19:38:25,782 - srrd_builder - WARNING - server.py:41 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: clarify_research_goals
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: suggest_methodology
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: simulate_peer_review
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: check_quality_gates
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: initialize_project
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: save_session
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: search_knowledge
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: version_control
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: backup_project
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: restore_session
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: generate_latex_document
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: compile_latex
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: format_research_content
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: generate_bibliography
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: extract_document_sections
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: extract_document_sections
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: store_bibliography_reference
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: retrieve_bibliography_references
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: generate_document_with_database_bibliography
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: semantic_search
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: discover_patterns
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: build_knowledge_graph
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: find_similar_documents
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: extract_key_concepts
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:346 - Registered tool: generate_research_summary
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:46 - MCP Server initialized on port 8084
+2025-07-17 19:38:25,783 - srrd_builder - INFO - server.py:47 - Registered 24 tools
+2025-07-17 19:38:49,934 - srrd_builder - WARNING - server.py:41 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: clarify_research_goals
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: suggest_methodology
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: simulate_peer_review
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: check_quality_gates
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: initialize_project
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: save_session
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: search_knowledge
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: version_control
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: backup_project
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: restore_session
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: generate_latex_document
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: compile_latex
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: format_research_content
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: generate_bibliography
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: extract_document_sections
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: extract_document_sections
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: store_bibliography_reference
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: retrieve_bibliography_references
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: generate_document_with_database_bibliography
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: semantic_search
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: discover_patterns
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: build_knowledge_graph
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: find_similar_documents
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: extract_key_concepts
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:346 - Registered tool: generate_research_summary
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:46 - MCP Server initialized on port 8084
+2025-07-17 19:38:49,935 - srrd_builder - INFO - server.py:47 - Registered 24 tools
+2025-07-17 19:39:06,023 - srrd_builder - WARNING - server.py:41 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: clarify_research_goals
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: suggest_methodology
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: simulate_peer_review
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: check_quality_gates
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: initialize_project
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: save_session
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: search_knowledge
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: version_control
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: backup_project
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: restore_session
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: generate_latex_document
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: compile_latex
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: format_research_content
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: generate_bibliography
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: extract_document_sections
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: extract_document_sections
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: store_bibliography_reference
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: retrieve_bibliography_references
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: generate_document_with_database_bibliography
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: semantic_search
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: discover_patterns
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: build_knowledge_graph
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: find_similar_documents
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: extract_key_concepts
+2025-07-17 19:39:06,023 - srrd_builder - INFO - server.py:346 - Registered tool: generate_research_summary
+2025-07-17 19:39:06,024 - srrd_builder - INFO - server.py:46 - MCP Server initialized on port 8084
+2025-07-17 19:39:06,024 - srrd_builder - INFO - server.py:47 - Registered 24 tools
+2025-07-17 19:49:32,154 - srrd_builder - WARNING - server.py:41 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: clarify_research_goals
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: suggest_methodology
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: simulate_peer_review
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: check_quality_gates
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: initialize_project
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: save_session
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: search_knowledge
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: version_control
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: backup_project
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: restore_session
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: generate_latex_document
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: compile_latex
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: format_research_content
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: generate_bibliography
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: extract_document_sections
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: extract_document_sections
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: store_bibliography_reference
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: retrieve_bibliography_references
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: generate_document_with_database_bibliography
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: semantic_search
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: discover_patterns
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: build_knowledge_graph
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: find_similar_documents
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: extract_key_concepts
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:346 - Registered tool: generate_research_summary
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:46 - MCP Server initialized on port 8084
+2025-07-17 19:49:32,154 - srrd_builder - INFO - server.py:47 - Registered 24 tools
+2025-07-17 19:50:04,332 - srrd_builder - WARNING - server.py:41 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: clarify_research_goals
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: suggest_methodology
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: simulate_peer_review
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: check_quality_gates
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: initialize_project
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: save_session
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: search_knowledge
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: version_control
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: backup_project
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: restore_session
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: generate_latex_document
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: compile_latex
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: format_research_content
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: generate_bibliography
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: extract_document_sections
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: extract_document_sections
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: store_bibliography_reference
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: retrieve_bibliography_references
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: generate_document_with_database_bibliography
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: semantic_search
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: discover_patterns
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: build_knowledge_graph
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: find_similar_documents
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: extract_key_concepts
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:346 - Registered tool: generate_research_summary
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:46 - MCP Server initialized on port 8084
+2025-07-17 19:50:04,332 - srrd_builder - INFO - server.py:47 - Registered 24 tools
+2025-07-17 19:54:12,082 - srrd_builder - WARNING - server.py:41 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: clarify_research_goals
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: suggest_methodology
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: simulate_peer_review
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: check_quality_gates
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: initialize_project
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: save_session
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: search_knowledge
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: version_control
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: backup_project
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: restore_session
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: generate_latex_document
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: compile_latex
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: format_research_content
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: generate_bibliography
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: extract_document_sections
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: extract_document_sections
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: store_bibliography_reference
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: retrieve_bibliography_references
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: generate_document_with_database_bibliography
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: semantic_search
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: discover_patterns
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: build_knowledge_graph
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: find_similar_documents
+2025-07-17 19:54:12,082 - srrd_builder - INFO - server.py:346 - Registered tool: extract_key_concepts
+2025-07-17 19:54:12,083 - srrd_builder - INFO - server.py:346 - Registered tool: generate_research_summary
+2025-07-17 19:54:12,083 - srrd_builder - INFO - server.py:46 - MCP Server initialized on port 8084
+2025-07-17 19:54:12,083 - srrd_builder - INFO - server.py:47 - Registered 24 tools

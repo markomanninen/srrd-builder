@@ -1,107 +1,39 @@
 #!/usr/bin/env python3
 """
 SRRD-Builder MCP Server for Claude Desktop
-Model Context Protocol server providing 21 research assistance tools
+Model Context Protocol server providing 24 research assistance tools
+Version: UPDATED_20250717_1834
 """
 import asyncio
 import json
 import sys
 import os
 from pathlib import Path
-import contextlib
-import io
 
-# Completely suppress all output during imports
-with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-    # Add current directory to path for imports
-    sys.path.append(str(Path(__file__).parent))
-    
-    # Import everything silently
-    from tools import register_all_tools
+# Add current directory to path for imports
+sys.path.append(str(Path(__file__).parent))
+
+from tools import register_all_tools
 
 class ClaudeMCPServer:
     def __init__(self):
         self.tools = {}
+        self._register_tools()
         
-        # Complete output suppression during initialization
-        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-            # Skip config manager to avoid "Config fil..." messages
-            self._register_tools_minimal()
-        
-    def _register_tools_minimal(self):
-        """Register MCP tools with minimal dependencies"""
-        # Import and register tools one by one to avoid config issues
-        try:
-            # Import tools modules directly
-            from tools.research_planning import (
-                clarify_research_goals,
-                suggest_methodology
-            )
-            from tools.quality_assurance import (
-                simulate_peer_review,
-                check_quality_gates
-            )
-            from tools.document_generation import (
-                generate_latex_document_tool,
-                compile_latex_tool,
-                format_research_content_tool,
-                generate_bibliography_tool,
-                extract_document_sections_tool
-            )
-            from tools.search_discovery import (
-                semantic_search_tool,
-                discover_patterns_tool,
-                build_knowledge_graph_tool,
-                find_similar_documents_tool,
-                extract_key_concepts_tool,
-                generate_research_summary_tool
-            )
-            from tools.storage_management import (
-                initialize_project_tool,
-                save_session_tool,
-                search_knowledge_tool,
-                version_control_tool,
-                backup_project_tool,
-                restore_session_tool
-            )
-            
-            # Register tools directly
-            self.tools = {
-                "clarify_research_goals": clarify_research_goals,
-                "suggest_methodology": suggest_methodology,
-                "simulate_peer_review": simulate_peer_review,
-                "check_quality_gates": check_quality_gates,
-                "generate_latex_document": generate_latex_document_tool,
-                "compile_latex": compile_latex_tool,
-                "format_research_content": format_research_content_tool,
-                "generate_bibliography": generate_bibliography_tool,
-                "extract_document_sections": extract_document_sections_tool,
-                "semantic_search": semantic_search_tool,
-                "discover_patterns": discover_patterns_tool,
-                "build_knowledge_graph": build_knowledge_graph_tool,
-                "find_similar_documents": find_similar_documents_tool,
-                "extract_key_concepts": extract_key_concepts_tool,
-                "generate_research_summary": generate_research_summary_tool,
-                "initialize_project": initialize_project_tool,
-                "save_session": save_session_tool,
-                "search_knowledge": search_knowledge_tool,
-                "version_control": version_control_tool,
-                "backup_project": backup_project_tool,
-                "restore_session": restore_session_tool
-            }
-        except Exception:
-            # Fallback: create mock tools if imports fail
-            self.tools = {
-                "clarify_research_goals": self._mock_tool,
-                "suggest_methodology": self._mock_tool,
-                "simulate_peer_review": self._mock_tool,
-                "semantic_search": self._mock_tool,
-                "generate_latex_document": self._mock_tool
-            }
-
-    async def _mock_tool(self, **kwargs):
-        """Mock tool for fallback"""
-        return "SRRD-Builder tool executed successfully (mock mode)"
+    def _register_tools(self):
+        """Register MCP tools using the standard registration system"""
+    def _register_tools(self):
+        """Register MCP tools using the standard registration system"""
+        # Use the existing registration system from tools module
+        register_all_tools(self)
+    
+    def register_tool(self, name, description, parameters, handler):
+        """Register a tool with the MCP server"""
+        self.tools[name] = {
+            'description': description,
+            'parameters': parameters,
+            'handler': handler
+        }
 
     async def handle_request(self, request_data):
         """Handle MCP request from Claude Desktop"""
@@ -141,9 +73,9 @@ class ClaudeMCPServer:
                 
                 if tool_name in self.tools:
                     try:
-                        # Execute tool with complete output suppression
-                        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-                            result = await self.tools[tool_name](**tool_args)
+                        # Call the handler function from the tool dict
+                        handler = self.tools[tool_name]['handler']
+                        result = await handler(**tool_args)
                         
                         return {
                             "jsonrpc": "2.0",
@@ -455,6 +387,48 @@ class ClaudeMCPServer:
                         "project_path": {"type": "string", "description": "Project path"}
                     },
                     "required": ["session_id", "project_path"]
+                }
+            },
+            "store_bibliography_reference": {
+                "description": "Store a bibliography reference in the vector database",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "reference": {"type": "object", "description": "Reference data with title, authors, year, journal, etc."},
+                        "project_path": {"type": "string", "description": "Project path for vector database"}
+                    },
+                    "required": ["reference"]
+                }
+            },
+            "retrieve_bibliography_references": {
+                "description": "Retrieve relevant bibliography references from vector database",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "query": {"type": "string", "description": "Search query for finding relevant references"},
+                        "project_path": {"type": "string", "description": "Project path for vector database"},
+                        "max_results": {"type": "integer", "description": "Maximum number of references to retrieve"}
+                    },
+                    "required": ["query"]
+                }
+            },
+            "generate_document_with_database_bibliography": {
+                "description": "Generate LaTeX document with bibliography retrieved from vector database",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "title": {"type": "string", "description": "Document title"},
+                        "author": {"type": "string", "description": "Author name"},
+                        "abstract": {"type": "string", "description": "Abstract content"},
+                        "introduction": {"type": "string", "description": "Introduction section"},
+                        "methodology": {"type": "string", "description": "Methodology section"},
+                        "results": {"type": "string", "description": "Results section"},
+                        "discussion": {"type": "string", "description": "Discussion section"},
+                        "conclusion": {"type": "string", "description": "Conclusion section"},
+                        "project_path": {"type": "string", "description": "Project path for saving"},
+                        "bibliography_query": {"type": "string", "description": "Query to retrieve relevant bibliography from database"}
+                    },
+                    "required": ["title", "bibliography_query"]
                 }
             }
         }

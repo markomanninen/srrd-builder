@@ -15,6 +15,7 @@ except ImportError:
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 import json
+import logging
 
 # Optional sentence transformers import
 try:
@@ -23,12 +24,27 @@ try:
 except ImportError:
     SENTENCE_TRANSFORMERS_AVAILABLE = False
 
+# Get logger for this module
+logger = logging.getLogger("srrd_builder.vector_manager")
+
 class VectorManager:
     """Vector database manager for semantic search capabilities"""
     
-    def __init__(self, db_path: str = "data/vector_db", config_path: str = "config/vector_collections.yaml"):
-        self.db_path = Path(db_path)
-        self.config_path = Path(config_path)
+    def __init__(self, db_path: str = None, config_path: str = None):
+        # Use absolute paths from storage module if not provided
+        if db_path is None:
+            from . import get_project_root
+            project_root = get_project_root()
+            self.db_path = project_root / ".srrd" / "vector_db"
+        else:
+            self.db_path = Path(db_path)
+            
+        if config_path is None:
+            from . import get_config_path
+            self.config_path = get_config_path()
+        else:
+            self.config_path = Path(config_path)
+            
         self.client = None
         self.collections = {}
         self.embedding_model = None
@@ -42,11 +58,11 @@ class VectorManager:
                                    This may require downloading ~90MB on first use
         """
         if not CHROMADB_AVAILABLE:
-            print("ℹ️  VectorManager: ChromaDB not available. Vector search features will be limited.")
+            logger.info("ChromaDB not available. Vector search features will be limited.")
             return
         
         try:
-            print("🔧 VectorManager: Initializing vector database...")
+            logger.info("Initializing vector database...")
             
             # Initialize ChromaDB client
             self.db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -67,6 +83,10 @@ class VectorManager:
                         "knowledge_base": {
                             "name": "knowledge_base", 
                             "metadata": {"hnsw:space": "cosine"}
+                        },
+                        "research_literature": {
+                            "name": "research_literature",
+                            "metadata": {"hnsw:space": "cosine"}
                         }
                     }
                 }
@@ -74,29 +94,43 @@ class VectorManager:
             # Skip embedding model for now - too unreliable for initialization
             self.embedding_model = None
             if enable_embedding_model:
-                print("ℹ️  VectorManager: Embedding model loading skipped for reliable startup.")
-                print("    Use enable_embedding_model() method later if needed.")
+                logger.info("Embedding model loading skipped for reliable startup.")
+                logger.info("Use enable_embedding_model() method later if needed.")
             else:
-                print("ℹ️  VectorManager: Embedding model disabled for faster startup.")
+                logger.info("Embedding model disabled for faster startup.")
             
             # Create collections (without embeddings for now)
-            print("📚 VectorManager: Setting up collections...")
-            for collection_config in self.config["collections"].values():
-                try:
-                    collection = self.client.get_or_create_collection(
-                        name=collection_config["name"],
-                        metadata=collection_config.get("metadata", {})
-                    )
-                    self.collections[collection_config["name"]] = collection
-                    print(f"    ✓ Collection '{collection_config['name']}' ready")
-                except Exception as e:
-                    print(f"    ✗ Failed to create collection '{collection_config['name']}': {e}")
+            logger.info("Setting up collections...")
+            collections_config = self.config.get("vector_collections", self.config.get("collections", {}))
             
-            print("🎉 VectorManager: Initialization completed!")
+            # Always ensure research_literature collection exists
+            if "research_literature" not in collections_config:
+                collections_config["research_literature"] = {
+                    "name": "research_literature",
+                    "metadata": {"hnsw:space": "cosine"}
+                }
+            
+            for collection_name, collection_config in collections_config.items():
+                try:
+                    # Use hnsw space metadata as default if no specific metadata provided
+                    metadata = collection_config.get("metadata", {"hnsw:space": "cosine"})
+                    if not metadata:
+                        metadata = {"hnsw:space": "cosine"}
+                    
+                    collection = self.client.get_or_create_collection(
+                        name=collection_name,
+                        metadata=metadata
+                    )
+                    self.collections[collection_name] = collection
+                    logger.debug(f"Collection '{collection_name}' ready")
+                except Exception as e:
+                    logger.error(f"Failed to create collection '{collection_name}': {e}")
+            
+            logger.info("Vector database initialization completed!")
             
         except Exception as e:
-            print(f"❌ VectorManager: Initialization failed: {e}")
-            print("    Vector search features will be disabled.")
+            logger.error(f"Vector database initialization failed: {e}")
+            logger.info("Vector search features will be disabled.")
             self.client = None
             self.collections = {}
             self.embedding_model = None
@@ -105,11 +139,11 @@ class VectorManager:
                           metadata: Dict[str, Any], doc_id: str):
         """Add document to collection with embedding"""
         if not self.client:
-            print("Vector database not available")
+            logger.warning("Vector database not available")
             return
             
         if collection_name not in self.collections:
-            print(f"Collection {collection_name} not found")
+            logger.warning(f"Collection {collection_name} not found")
             return
         
         try:
@@ -129,13 +163,21 @@ class VectorManager:
                 ids=[doc_id]
             )
         except Exception as e:
-            print(f"Error adding document: {e}")
+            logger.error(f"Error adding document: {e}")
     
     async def search_knowledge(self, query: str, collection: str = "research_docs", 
                              n_results: int = 5) -> Dict[str, Any]:
         """Search for relevant knowledge"""
-        if not self.client or collection not in self.collections:
+        if not self.client:
             # Fallback: return empty results
+            return {
+                "documents": [],
+                "metadatas": [],
+                "distances": []
+            }
+            
+        if collection not in self.collections:
+            logger.warning(f"Collection '{collection}' not found. Available collections: {list(self.collections.keys())}")
             return {
                 "documents": [],
                 "metadatas": [],
@@ -164,7 +206,7 @@ class VectorManager:
             }
             
         except Exception as e:
-            print(f"Error searching: {e}")
+            logger.error(f"Error searching: {e}")
             return {
                 "documents": [],
                 "metadatas": [],
@@ -175,7 +217,7 @@ class VectorManager:
                              collection: str = "research_docs") -> str:
         """Store research content with metadata"""
         if not self.client:
-            print("Vector database not available")
+            logger.warning("Vector database not available")
             return "Vector database not available"
         
         try:
@@ -213,7 +255,7 @@ class VectorManager:
             return related_content
             
         except Exception as e:
-            print(f"Error retrieving related content: {e}")
+            logger.error(f"Error retrieving related content: {e}")
             return []
     
     def _is_model_cached(self, model_name: str = 'all-MiniLM-L6-v2') -> bool:
@@ -237,24 +279,24 @@ class VectorManager:
             True if model was loaded successfully, False otherwise
         """
         if not SENTENCE_TRANSFORMERS_AVAILABLE:
-            print("❌ sentence-transformers not available. Install with: pip install sentence-transformers")
+            logger.error("sentence-transformers not available. Install with: pip install sentence-transformers")
             return False
-            
+        
         if self.embedding_model is not None:
-            print("✅ Embedding model already loaded!")
+            logger.info("Embedding model already loaded!")
             return True
             
         model_name = 'all-MiniLM-L6-v2'
         is_cached = self._is_model_cached(model_name)
         
         if is_cached:
-            print("📥 Loading cached embedding model...")
+            logger.info("Loading cached embedding model...")
         else:
-            print("📥 Downloading embedding model (first time setup)...")
-            print(f"    Model: {model_name} (~90MB)")
-            print("    This may take 1-2 minutes depending on connection speed...")
-            print("    The model will be cached locally for future use.")
-            print("    Press Ctrl+C to cancel if needed.")
+            logger.info("Downloading embedding model (first time setup)...")
+            logger.info(f"Model: {model_name} (~90MB)")
+            logger.info("This may take 1-2 minutes depending on connection speed...")
+            logger.info("The model will be cached locally for future use.")
+            logger.info("Press Ctrl+C to cancel if needed.")
         
         try:
             import asyncio
@@ -269,25 +311,25 @@ class VectorManager:
             )
             
             if is_cached:
-                print("✅ Cached embedding model loaded successfully!")
+                logger.info("Cached embedding model loaded successfully!")
             else:
-                print("✅ Embedding model downloaded and loaded successfully!")
+                logger.info("Embedding model downloaded and loaded successfully!")
             return True
             
         except asyncio.TimeoutError:
-            print(f"⏱️  Model loading timed out after {timeout} seconds")
-            print("    This may be due to slow internet connection or large download.")
-            print("    Vector search will continue with fallback text-based similarity.")
-            print("    Try again later with better internet connection.")
+            logger.warning(f"Model loading timed out after {timeout} seconds")
+            logger.warning("This may be due to slow internet connection or large download.")
+            logger.warning("Vector search will continue with fallback text-based similarity.")
+            logger.warning("Try again later with better internet connection.")
             self.embedding_model = None
             return False
         except KeyboardInterrupt:
-            print("\n🛑 Model download cancelled by user.")
-            print("    Vector search will use fallback text-based similarity.")
+            logger.info("Model download cancelled by user.")
+            logger.info("Vector search will use fallback text-based similarity.")
             self.embedding_model = None
             return False
         except Exception as e:
-            print(f"❌ Failed to load embedding model: {e}")
-            print("    Vector search will use fallback text-based similarity.")
+            logger.error(f"Failed to load embedding model: {e}")
+            logger.info("Vector search will use fallback text-based similarity.")
             self.embedding_model = None
             return False

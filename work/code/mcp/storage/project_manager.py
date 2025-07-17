@@ -1,8 +1,12 @@
 from pathlib import Path
 from typing import Dict, Any, Optional
+import logging
 from .git_manager import GitManager
 from .sqlite_manager import SQLiteManager
 from .vector_manager import VectorManager
+
+# Get logger for this module
+logger = logging.getLogger("srrd_builder.project_manager")
 
 class ProjectManager:
     def __init__(self, project_path: str):
@@ -13,24 +17,24 @@ class ProjectManager:
 
     async def initialize_project(self, name: str, description: str, domain: str) -> Dict[str, Any]:
         """Initialize complete project structure"""
-        print(f"🚀 Initializing project '{name}' in domain '{domain}'...")
+        logger.info(f"Initializing project '{name}' in domain '{domain}'...")
         
-        print("📁 Creating directory structure...")
+        logger.debug("Creating directory structure...")
         self.create_directory_structure()
         
-        print("🔧 Initializing Git repository...")
+        logger.debug("Initializing Git repository...")
         self.git_manager.initialize_repository()
         
-        print("🗄️  Setting up database...")
+        logger.debug("Setting up database...")
         await self.sqlite_manager.initialize_database()
         
-        print("🔍 Initializing vector search capabilities...")
+        logger.debug("Initializing vector search capabilities...")
         await self.vector_manager.initialize(enable_embedding_model=False)
         
-        print("💾 Creating project record...")
+        logger.debug("Creating project record...")
         project_id = await self.sqlite_manager.create_project(name, description, domain)
         
-        print(f"✅ Project '{name}' initialized successfully! (ID: {project_id})")
+        logger.info(f"Project '{name}' initialized successfully! (ID: {project_id})")
         return {"project_id": project_id, "status": "initialized"}
 
     def create_directory_structure(self) -> bool:

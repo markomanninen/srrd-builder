@@ -27,6 +27,7 @@ class ComprehensiveTestSuite:
         self.server = None
         self.test_project_path = None
         self.test_results = []
+        self.project_managers = []  # Track project managers for cleanup
         
     async def setup_test_environment(self):
         """Setup test environment with temporary directories"""
@@ -44,10 +45,11 @@ class ComprehensiveTestSuite:
         print("🧹 Cleaning up test environment...")
         
         try:
-            # Close any database connections
-            if hasattr(self, 'project_manager') and self.project_manager:
-                if hasattr(self.project_manager, 'sqlite_manager') and self.project_manager.sqlite_manager:
-                    await self.project_manager.sqlite_manager.close()
+            # Close any project manager connections
+            for project_manager in self.project_managers:
+                if hasattr(project_manager, 'sqlite_manager') and project_manager.sqlite_manager:
+                    if hasattr(project_manager.sqlite_manager, 'connection') and project_manager.sqlite_manager.connection:
+                        await project_manager.sqlite_manager.connection.close()
                     
             # Clean up test directory
             if self.test_project_path and os.path.exists(self.test_project_path):
@@ -153,15 +155,18 @@ class ComprehensiveTestSuite:
             self.log_test_result("Vector Manager Initialization", True, "Initialized successfully")
             
             # Test document storage
-            result = vector_manager.store_research_content(
-                "This is a test research document about quantum mechanics",
-                {"title": "Test Document", "domain": "physics"}
+            await vector_manager.add_document(
+                collection_name="research_literature",
+                document="This is a test research document about quantum mechanics",
+                doc_id="test_doc_1",
+                metadata={"title": "Test Document", "domain": "physics", "type": "research_document"}
             )
-            self.log_test_result("Vector Document Storage", True, result)
+            self.log_test_result("Vector Document Storage", True, "Document stored successfully")
             
             # Test search
-            search_results = vector_manager.retrieve_related_content("quantum mechanics", limit=3)
-            self.log_test_result("Vector Search", True, f"Found {len(search_results)} results")
+            search_results = await vector_manager.search_knowledge("quantum mechanics", collection="research_literature", n_results=3)
+            result_count = len(search_results.get('documents', [[]])[0]) if search_results.get('documents') else 0
+            self.log_test_result("Vector Search", True, f"Found {result_count} results")
             
         except Exception as e:
             self.log_test_result("Vector Manager Tests", False, str(e))
@@ -169,14 +174,31 @@ class ComprehensiveTestSuite:
         # Test Project Manager (integration)
         try:
             project_manager = ProjectManager(self.test_project_path)
+            self.project_managers.append(project_manager)  # Track for cleanup
             
-            result = project_manager.initialize_project(
+            result = await project_manager.initialize_project(
                 "Comprehensive Test Project",
                 "Testing all project management features",
                 "theoretical_physics"
             )
             
-            self.log_test_result("Project Manager Integration", True, result)
+            if isinstance(result, dict) and result.get('status') == 'initialized':
+                project_id = result.get('project_id')
+                self.log_test_result("Project Manager Integration", True, f"Project initialized with ID: {project_id}")
+                
+                # Test if we can add content to the vector store
+                if hasattr(project_manager, 'vector_manager') and project_manager.vector_manager is not None:
+                    await project_manager.vector_manager.add_document(
+                        collection_name="research_literature",
+                        document="Integration test document about theoretical physics",
+                        doc_id="integration_test_1",
+                        metadata={"type": "test_document", "domain": "theoretical_physics"}
+                    )
+                    self.log_test_result("Project Manager Vector Integration", True, "Document stored successfully")
+                else:
+                    self.log_test_result("Project Manager Vector Integration", False, "Vector manager not available")
+            else:
+                self.log_test_result("Project Manager Integration", False, f"Unexpected result: {result}")
             
         except Exception as e:
             self.log_test_result("Project Manager Integration", False, str(e))
@@ -188,7 +210,7 @@ class ComprehensiveTestSuite:
         # Test Research Planning Tools
         if "clarify_research_goals" in self.server.tools:
             try:
-                result = await self.server.tools["clarify_research_goals"](
+                result = await self.server.tools["clarify_research_goals"]["handler"](
                     research_area="quantum gravity",
                     initial_goals="Develop a new approach to unify quantum mechanics and general relativity",
                     experience_level="graduate",
@@ -207,7 +229,7 @@ class ComprehensiveTestSuite:
         
         if "suggest_methodology" in self.server.tools:
             try:
-                result = await self.server.tools["suggest_methodology"](
+                result = await self.server.tools["suggest_methodology"]["handler"](
                     research_goals="alternative physics theories",
                     domain="theoretical_physics",
                     novel_theory_flag=True,
@@ -226,7 +248,7 @@ class ComprehensiveTestSuite:
         # Test Quality Assurance Tools
         if "simulate_peer_review" in self.server.tools:
             try:
-                result = await self.server.tools["simulate_peer_review"](
+                result = await self.server.tools["simulate_peer_review"]["handler"](
                     document_content={
                         "title": "Novel Quantum Gravity Framework",
                         "abstract": "This paper presents a revolutionary approach to quantum gravity that challenges existing paradigms",
@@ -249,7 +271,7 @@ class ComprehensiveTestSuite:
         
         if "check_quality_gates" in self.server.tools:
             try:
-                result = await self.server.tools["check_quality_gates"](
+                result = await self.server.tools["check_quality_gates"]["handler"](
                     research_content={
                         "title": "Test Research Paper",
                         "abstract": "This is a test abstract for quality gate validation",
@@ -272,7 +294,8 @@ class ComprehensiveTestSuite:
         # Test Document Generation Tools
         if "generate_latex_document" in self.server.tools:
             try:
-                result = await self.server.tools["generate_latex_document"](
+                handler = self.server.tools["generate_latex_document"]["handler"]
+                result = await handler(
                     title="Test Research Document",
                     author="Test Author",
                     abstract="This is a comprehensive test of the LaTeX document generation system",
@@ -294,7 +317,8 @@ class ComprehensiveTestSuite:
         
         if "format_research_content" in self.server.tools:
             try:
-                result = await self.server.tools["format_research_content"](
+                handler = self.server.tools["format_research_content"]["handler"]
+                result = await handler(
                     content="This is test content that needs academic formatting for publication",
                     content_type="section",
                     formatting_style="academic"
@@ -327,7 +351,7 @@ class ComprehensiveTestSuite:
                     }
                 ]
                 
-                result = await self.server.tools["generate_bibliography"](references=test_references)
+                result = await self.server.tools["generate_bibliography"]["handler"](references=test_references)
                 
                 if "Generated bibliography" in str(result):
                     self.log_test_result("Generate Bibliography Tool", True, "Bibliography generated")
@@ -340,7 +364,7 @@ class ComprehensiveTestSuite:
         # Test Search and Discovery Tools
         if "semantic_search" in self.server.tools:
             try:
-                result = await self.server.tools["semantic_search"](
+                result = await self.server.tools["semantic_search"]["handler"](
                     query="quantum mechanics theoretical framework",
                     collection="research_docs",
                     limit=5,
@@ -364,7 +388,7 @@ class ComprehensiveTestSuite:
                 The approach uses novel computational techniques and advanced algorithms.
                 """
                 
-                result = await self.server.tools["discover_patterns"](
+                result = await self.server.tools["discover_patterns"]["handler"](
                     content=test_content,
                     pattern_type="research_themes",
                     min_frequency=1
@@ -380,7 +404,7 @@ class ComprehensiveTestSuite:
         
         if "extract_key_concepts" in self.server.tools:
             try:
-                result = await self.server.tools["extract_key_concepts"](
+                result = await self.server.tools["extract_key_concepts"]["handler"](
                     text="quantum mechanics general relativity theoretical framework mathematical analysis computational modeling",
                     max_concepts=10,
                     concept_types=["technical_terms", "theories", "methods"]
@@ -397,7 +421,7 @@ class ComprehensiveTestSuite:
         # Test Storage Management Tools
         if "initialize_project" in self.server.tools:
             try:
-                result = await self.server.tools["initialize_project"](
+                result = await self.server.tools["initialize_project"]["handler"](
                     name="Comprehensive Test Project Tool",
                     description="Testing project initialization through MCP tool",
                     domain="theoretical_physics",
@@ -419,29 +443,48 @@ class ComprehensiveTestSuite:
         try:
             # Create project and add data
             project_manager = ProjectManager(self.test_project_path)
-            project_manager.initialize_project(
+            self.project_managers.append(project_manager)  # Track for cleanup
+            result = await project_manager.initialize_project(
                 "Persistence Test",
                 "Testing data persistence",
                 "theoretical_physics"
             )
             
-            # Add some research content
-            if hasattr(project_manager, 'vector_manager') and project_manager.vector_manager is not None:
-                project_manager.vector_manager.store_research_content(
-                    "Persistent test content about quantum field theory",
-                    {"type": "research_note", "created": "test"}
-                )
+            # Verify project initialization was successful
+            if isinstance(result, dict) and result.get('status') == 'initialized':
+                self.log_test_result("Project Initialization Persistence", True, f"Project ID: {result.get('project_id')}")
+            else:
+                self.log_test_result("Project Initialization Persistence", False, f"Unexpected result: {result}")
+                return
             
-            # Verify data persists by creating new manager
-            project_manager2 = ProjectManager(self.test_project_path)
+            # Add some research content to vector store
+            if hasattr(project_manager, 'vector_manager') and project_manager.vector_manager is not None:
+                await project_manager.vector_manager.add_document(
+                    collection_name="research_literature",
+                    document="Persistent test content about quantum field theory",
+                    doc_id="persistence_test_1",
+                    metadata={"type": "research_note", "created": "test"}
+                )
+                self.log_test_result("Vector Storage Persistence", True, "Document stored successfully")
+                
+                # Test retrieval
+                search_results = await project_manager.vector_manager.search_knowledge(
+                    "quantum field theory", 
+                    collection="research_literature", 
+                    n_results=1
+                )
+                found_docs = len(search_results.get('documents', [[]])[0]) if search_results.get('documents') else 0
+                self.log_test_result("Vector Retrieval Persistence", True, f"Found {found_docs} documents")
+            else:
+                self.log_test_result("Vector Storage Persistence", False, "Vector manager not available")
             
             # Check if project files exist
             project_files = list(Path(self.test_project_path).glob("**/*"))
             
             if len(project_files) > 0:
-                self.log_test_result("Storage Persistence", True, f"Found {len(project_files)} persistent files")
+                self.log_test_result("File System Persistence", True, f"Found {len(project_files)} persistent files")
             else:
-                self.log_test_result("Storage Persistence", False, "No persistent files found")
+                self.log_test_result("File System Persistence", False, "No persistent files found")
                 
         except Exception as e:
             self.log_test_result("Storage Persistence", False, str(e))
@@ -453,7 +496,7 @@ class ComprehensiveTestSuite:
         # Test invalid tool parameters
         if "clarify_research_goals" in self.server.tools:
             try:
-                result = await self.server.tools["clarify_research_goals"](
+                result = await self.server.tools["clarify_research_goals"]["handler"](
                     invalid_param="test"
                 )
                 self.log_test_result("Tool Error Handling", False, "Expected error but got result")

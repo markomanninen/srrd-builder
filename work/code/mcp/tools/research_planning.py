@@ -279,5 +279,36 @@ async def suggest_methodology(**kwargs) -> Dict[str, Any]:
 
 def register_research_tools(server):
     """Register research planning tools with the MCP server"""
-    server.tools["clarify_research_goals"] = clarify_research_goals
-    server.tools["suggest_methodology"] = suggest_methodology
+    
+    server.register_tool(
+        name="clarify_research_goals",
+        description="Clarify research objectives through Socratic questioning",
+        parameters={
+            "type": "object",
+            "properties": {
+                "research_area": {"type": "string"},
+                "initial_goals": {"type": "string"}, 
+                "experience_level": {"type": "string"},
+                "domain_specialization": {"type": "string"},
+                "novel_theory_mode": {"type": "boolean"}
+            },
+            "required": ["research_area", "initial_goals"]
+        },
+        handler=clarify_research_goals
+    )
+    
+    server.register_tool(
+        name="suggest_methodology",
+        description="Recommend appropriate research methodologies",
+        parameters={
+            "type": "object",
+            "properties": {
+                "research_goals": {"type": "string"},
+                "domain": {"type": "string"},
+                "constraints": {"type": "object"},
+                "novel_theory_flag": {"type": "boolean"}
+            },
+            "required": ["research_goals", "domain"]
+        },
+        handler=suggest_methodology
+    )

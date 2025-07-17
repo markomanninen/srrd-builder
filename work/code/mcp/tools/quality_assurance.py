@@ -332,5 +332,35 @@ async def check_quality_gates(**kwargs) -> Dict[str, Any]:
 
 def register_quality_tools(server):
     """Register quality assurance tools with the MCP server"""
-    server.tools["simulate_peer_review"] = simulate_peer_review
-    server.tools["check_quality_gates"] = check_quality_gates
+    
+    server.register_tool(
+        name="simulate_peer_review",
+        description="AI-powered peer review simulation",
+        parameters={
+            "type": "object",
+            "properties": {
+                "document_content": {"type": "object", "description": "Document content to review"},
+                "domain": {"type": "string", "description": "Research domain"},
+                "review_type": {"type": "string", "description": "Type of review"},
+                "novel_theory_mode": {"type": "boolean", "description": "Novel theory mode flag"}
+            },
+            "required": ["document_content", "domain"]
+        },
+        handler=simulate_peer_review
+    )
+    
+    server.register_tool(
+        name="check_quality_gates",
+        description="Check research quality gates and standards",
+        parameters={
+            "type": "object",
+            "properties": {
+                "research_content": {"type": "object", "description": "Research content to check"},
+                "phase": {"type": "string", "description": "Research phase (planning, execution, analysis, writing)"},
+                "domain_standards": {"type": "object", "description": "Domain-specific quality standards"},
+                "innovation_criteria": {"type": "object", "description": "Innovation criteria (optional)"}
+            },
+            "required": ["research_content", "phase"]
+        },
+        handler=check_quality_gates
+    )

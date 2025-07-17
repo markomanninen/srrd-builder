@@ -13,6 +13,7 @@ from pathlib import Path
 from datetime import datetime
 
 # Add parent directory to path to access storage modules
+import sys
 sys.path.append(str(Path(__file__).parent.parent))
 
 from storage.project_manager import ProjectManager
@@ -388,6 +389,199 @@ async def extract_document_sections_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error extracting document sections: {str(e)}"
 
+async def store_bibliography_reference_tool(**kwargs) -> str:
+    """Store a bibliography reference in the vector database for future retrieval"""
+    
+    try:
+        reference = kwargs.get('reference', {})
+        project_path = kwargs.get('project_path', '')
+        
+        if not reference:
+            return "Error: Missing required parameter 'reference'"
+        
+        # Import vector manager for storage
+        from storage.vector_manager import VectorManager
+        import os
+        
+        vector_manager = VectorManager()
+        
+        # Initialize the vector manager
+        await vector_manager.initialize()
+        
+        # Check if research_literature collection exists
+        if "research_literature" not in vector_manager.collections:
+            return "Error: research_literature collection not available in vector database"
+        
+        # Format reference for storage
+        reference_text = f"""
+        Title: {reference.get('title', 'Unknown Title')}
+        Authors: {reference.get('authors', 'Unknown Authors')}
+        Year: {reference.get('year', 'Unknown Year')}
+        Journal: {reference.get('journal', 'Unknown Journal')}
+        Abstract: {reference.get('abstract', 'No abstract available')}
+        Keywords: {reference.get('keywords', [])}
+        DOI: {reference.get('doi', 'No DOI')}
+        """
+        
+        # Store in research_literature collection
+        doc_id = f"ref_{reference.get('title', 'unknown').replace(' ', '_').lower()}"
+        
+        await vector_manager.add_document(
+            collection_name="research_literature",
+            document=reference_text,
+            doc_id=doc_id,
+            metadata={
+                "type": "bibliography_reference",
+                "title": reference.get('title', ''),
+                "authors": ', '.join(reference.get('authors', [])) if isinstance(reference.get('authors'), list) else str(reference.get('authors', '')),
+                "year": str(reference.get('year', '')),
+                "journal": reference.get('journal', ''),
+                "doi": reference.get('doi', ''),
+                "keywords": ', '.join(reference.get('keywords', [])) if isinstance(reference.get('keywords'), list) else str(reference.get('keywords', ''))
+            }
+        )
+        
+        return f"Bibliography reference stored successfully: {reference.get('title', 'Unknown Title')}"
+        
+    except Exception as e:
+        error_msg = f"Error storing bibliography reference: {str(e)}"
+        return error_msg
+
+async def retrieve_bibliography_references_tool(**kwargs) -> str:
+    """Retrieve relevant bibliography references from the vector database based on search query"""
+    
+    try:
+        query = kwargs.get('query', '')
+        max_results = kwargs.get('max_results', 5)
+        
+        if not query:
+            return "Error: Missing required parameter 'query'"
+        
+        # Import vector manager for retrieval
+        from storage.vector_manager import VectorManager
+        import os
+        
+        vector_manager = VectorManager()
+        
+        # Initialize the vector manager
+        await vector_manager.initialize()
+        
+        # Check if research_literature collection exists
+        if "research_literature" not in vector_manager.collections:
+            return "Error: research_literature collection not available in vector database"
+        
+        # Search for relevant references
+        results = await vector_manager.search_knowledge(
+            query=query,
+            collection="research_literature",
+            n_results=max_results
+        )
+        
+        # Format results as LaTeX bibliography
+        bib_entries = []
+        found_refs = []
+        
+        metadatas = results.get('metadatas', [])
+        if metadatas and len(metadatas) > 0:
+            # metadatas is a list of lists, get the first list
+            metadata_list = metadatas[0] if isinstance(metadatas[0], list) else metadatas
+            
+            for metadata in metadata_list:
+                if metadata and metadata.get('type') == 'bibliography_reference':
+                    title = metadata.get('title', 'Unknown Title')
+                    authors = metadata.get('authors', 'Unknown Authors')
+                    year = metadata.get('year', 'Unknown Year')
+                    journal = metadata.get('journal', '')
+                    
+                    # Create LaTeX bibitem
+                    ref_key = title.replace(' ', '_').lower()[:20]
+                    if journal:
+                        bib_entry = f"\\bibitem{{{ref_key}}} {authors}. {title}. \\textit{{{journal}}}, {year}."
+                    else:
+                        bib_entry = f"\\bibitem{{{ref_key}}} {authors}. {title}. {year}."
+                    
+                    bib_entries.append(bib_entry)
+                    found_refs.append({
+                        'key': ref_key,
+                        'title': title,
+                        'authors': authors,
+                        'year': year,
+                        'journal': journal
+                    })
+        
+        if not bib_entries:
+            return f"No bibliography references found for query: {query}"
+        
+        bibliography = '\n\n'.join(bib_entries)
+        
+        return f"Retrieved {len(bib_entries)} bibliography references:\n\n{bibliography}\n\nReference keys for citations: {[ref['key'] for ref in found_refs]}"
+        
+    except Exception as e:
+        return f"Error retrieving bibliography references: {str(e)}"
+
+async def generate_document_with_database_bibliography_tool(**kwargs) -> str:
+    """Generate LaTeX document with bibliography retrieved from vector database"""
+    
+    try:
+        title = kwargs.get('title', 'Untitled Research Paper')
+        author = kwargs.get('author', 'SRRD Builder')
+        abstract = kwargs.get('abstract', '')
+        introduction = kwargs.get('introduction', '')
+        methodology = kwargs.get('methodology', '')
+        results = kwargs.get('results', '')
+        discussion = kwargs.get('discussion', '')
+        conclusion = kwargs.get('conclusion', '')
+        project_path = kwargs.get('project_path', '')
+        bibliography_query = kwargs.get('bibliography_query', '')
+        
+        # Retrieve bibliography from database if query provided
+        bibliography = ''
+        if bibliography_query:
+            bib_result = await retrieve_bibliography_references_tool(
+                query=bibliography_query,
+                project_path=project_path,
+                max_results=10
+            )
+            
+            # Extract bibliography section from result
+            if "Retrieved" in bib_result and "bibliography references:" in bib_result:
+                bib_lines = bib_result.split('\n')
+                bib_entries = []
+                for line in bib_lines:
+                    line = line.strip()
+                    if line.startswith('\\bibitem'):
+                        bib_entries.append(line)
+                bibliography = '\n'.join(bib_entries)
+        
+        # Generate document using existing template
+        latex_content = LATEX_TEMPLATE.format(
+            title=title,
+            author=author,
+            date=datetime.now().strftime("%B %d, %Y"),
+            abstract=abstract,
+            introduction=introduction,
+            methodology=methodology,
+            results=results,
+            discussion=discussion,
+            conclusion=conclusion,
+            bibliography=bibliography
+        )
+        
+        # Save to project if path provided
+        if project_path:
+            doc_path = Path(project_path) / "documents" / f"{title.replace(' ', '_').lower()}_with_db_bib.tex"
+            doc_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            with open(doc_path, 'w', encoding='utf-8') as f:
+                f.write(latex_content)
+            
+            return f"LaTeX document with database bibliography generated successfully at: {doc_path}"
+        else:
+            return f"LaTeX document with database bibliography generated:\n{latex_content[:500]}..."
+            
+    except Exception as e:
+        return f"Error generating document with database bibliography: {str(e)}"
+
 def register_document_tools(server):
     """Register document generation tools with the MCP server"""
     
@@ -484,7 +678,58 @@ def register_document_tools(server):
         },
         handler=extract_document_sections_tool
     )
-
+    
+    server.register_tool(
+        name="store_bibliography_reference",
+        description="Store a bibliography reference in the vector database",
+        parameters={
+            "type": "object",
+            "properties": {
+                "reference": {"type": "object", "description": "Reference data with title, authors, year, journal, etc."},
+                "project_path": {"type": "string", "description": "Project path for vector database"}
+            },
+            "required": ["reference"]
+        },
+        handler=store_bibliography_reference_tool
+    )
+    
+    server.register_tool(
+        name="retrieve_bibliography_references",
+        description="Retrieve relevant bibliography references from vector database",
+        parameters={
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "Search query for finding relevant references"},
+                "project_path": {"type": "string", "description": "Project path for vector database"},
+                "max_results": {"type": "integer", "description": "Maximum number of references to retrieve", "default": 5}
+            },
+            "required": ["query"]
+        },
+        handler=retrieve_bibliography_references_tool
+    )
+    
+    server.register_tool(
+        name="generate_document_with_database_bibliography",
+        description="Generate LaTeX document with bibliography retrieved from vector database",
+        parameters={
+            "type": "object",
+            "properties": {
+                "title": {"type": "string", "description": "Document title"},
+                "author": {"type": "string", "description": "Author name"},
+                "abstract": {"type": "string", "description": "Abstract content"},
+                "introduction": {"type": "string", "description": "Introduction section"},
+                "methodology": {"type": "string", "description": "Methodology section"},
+                "results": {"type": "string", "description": "Results section"},
+                "discussion": {"type": "string", "description": "Discussion section"},
+                "conclusion": {"type": "string", "description": "Conclusion section"},
+                "project_path": {"type": "string", "description": "Project path for saving"},
+                "bibliography_query": {"type": "string", "description": "Query to retrieve relevant bibliography from database"}
+            },
+            "required": ["title", "bibliography_query"]
+        },
+        handler=generate_document_with_database_bibliography_tool
+    )
+    
 # Export functions for MCP server registration
 __all__ = [
     'generate_latex_document_tool',
@@ -492,5 +737,8 @@ __all__ = [
     'format_research_content_tool',
     'generate_bibliography_tool',
     'extract_document_sections_tool',
+    'store_bibliography_reference_tool',
+    'retrieve_bibliography_references_tool',
+    'generate_document_with_database_bibliography_tool',
     'register_document_tools'
 ]

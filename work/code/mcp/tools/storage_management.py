@@ -45,7 +45,7 @@ async def search_knowledge_tool(**kwargs) -> str:
         return "Error: Missing required parameters (query, project_path)"
     
     project_manager = ProjectManager(project_path)
-    results = project_manager.vector_manager.search_knowledge(query, collection)
+    results = await project_manager.vector_manager.search_knowledge(query, collection)
     return f"Search results: {results}"
 
 async def version_control_tool(**kwargs) -> str:
@@ -90,9 +90,92 @@ async def restore_session_tool(**kwargs) -> str:
 
 def register_storage_tools(server):
     """Register storage management tools with the MCP server"""
-    server.tools["initialize_project"] = initialize_project_tool
-    server.tools["save_session"] = save_session_tool
-    server.tools["search_knowledge"] = search_knowledge_tool
-    server.tools["version_control"] = version_control_tool
-    server.tools["backup_project"] = backup_project_tool
-    server.tools["restore_session"] = restore_session_tool
+    
+    server.register_tool(
+        name="initialize_project",
+        description="Initialize a new research project with Git-based storage",
+        parameters={
+            "type": "object",
+            "properties": {
+                "name": {"type": "string", "description": "Project name"},
+                "description": {"type": "string", "description": "Project description"},
+                "domain": {"type": "string", "description": "Research domain"},
+                "project_path": {"type": "string", "description": "Path where project will be created"}
+            },
+            "required": ["name", "description", "domain", "project_path"]
+        },
+        handler=initialize_project_tool
+    )
+    
+    server.register_tool(
+        name="save_session",
+        description="Save current research session data",
+        parameters={
+            "type": "object",
+            "properties": {
+                "session_data": {"type": "object", "description": "Session data to save"},
+                "project_path": {"type": "string", "description": "Project path"}
+            },
+            "required": ["session_data", "project_path"]
+        },
+        handler=save_session_tool
+    )
+    
+    server.register_tool(
+        name="search_knowledge",
+        description="Search knowledge base using vector search",
+        parameters={
+            "type": "object",
+            "properties": {
+                "query": {"type": "string", "description": "Search query"},
+                "project_path": {"type": "string", "description": "Project path"},
+                "collection": {"type": "string", "description": "Collection to search"}
+            },
+            "required": ["query", "project_path"]
+        },
+        handler=search_knowledge_tool
+    )
+    
+    server.register_tool(
+        name="version_control",
+        description="Perform Git version control operations",
+        parameters={
+            "type": "object",
+            "properties": {
+                "action": {"type": "string", "description": "Git action (commit, push, pull, etc.)"},
+                "message": {"type": "string", "description": "Commit message"},
+                "project_path": {"type": "string", "description": "Project path"},
+                "files": {"type": "array", "items": {"type": "string"}, "description": "Files to include"}
+            },
+            "required": ["action", "message", "project_path"]
+        },
+        handler=version_control_tool
+    )
+    
+    server.register_tool(
+        name="backup_project",
+        description="Backup project to specified location",
+        parameters={
+            "type": "object",
+            "properties": {
+                "project_path": {"type": "string", "description": "Project path to backup"},
+                "backup_location": {"type": "string", "description": "Backup destination"}
+            },
+            "required": ["project_path"]
+        },
+        handler=backup_project_tool
+    )
+    
+    server.register_tool(
+        name="restore_session",
+        description="Restore a previous research session",
+        parameters={
+            "type": "object",
+            "properties": {
+                "session_id": {"type": "integer", "description": "Session ID to restore"},
+                "project_path": {"type": "string", "description": "Project path"}
+            },
+            "required": ["session_id", "project_path"]
+        },
+        handler=restore_session_tool
+    )

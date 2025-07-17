@@ -109,7 +109,9 @@ class MCPServer:
             
             if tool_name in self.tools:
                 try:
-                    result = await self.tools[tool_name](**tool_args)
+                    # Call the handler function from the tool dict
+                    handler = self.tools[tool_name]['handler']
+                    result = await handler(**tool_args)
                     return {
                         "jsonrpc": "2.0",
                         "id": msg_id,
@@ -167,7 +169,7 @@ class MCPServer:
             config.server.host, 
             self.port
         ):
-            print(f"SRRD Builder MCP Server running on ws://{config.server.host}:{self.port}")
+            self.logger.info(f"SRRD Builder MCP Server running on ws://{config.server.host}:{self.port}")
             await asyncio.Future()  # run forever
 
     async def handle_mcp_message(self, websocket, path):

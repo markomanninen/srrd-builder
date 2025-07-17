@@ -27,7 +27,7 @@ class DatabaseConfig:
 class VectorConfig:
     """Vector database configuration"""
     backend: str = "chromadb"
-    persist_directory: str = "data/vector_db"
+    persist_directory: str = "../../../.srrd/knowledge.db"
     embedding_model: str = "all-MiniLM-L6-v2"
     max_chunk_size: int = 1000
     chunk_overlap: int = 100

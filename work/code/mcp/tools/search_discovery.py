@@ -16,6 +16,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from storage.project_manager import ProjectManager
 from storage.vector_manager import VectorManager
+from storage import get_srrd_db_path
 
 async def semantic_search_tool(**kwargs) -> str:
     """Perform semantic search across research documents"""
@@ -36,7 +37,7 @@ async def semantic_search_tool(**kwargs) -> str:
             project_manager = ProjectManager(project_path)
             vector_manager = project_manager.vector_manager
         else:
-            vector_manager = VectorManager()
+            vector_manager = VectorManager()  # Uses absolute paths by default
             try:
                 await vector_manager.initialize(enable_embedding_model=False)
             except Exception as e:
@@ -220,7 +221,7 @@ async def find_similar_documents_tool(**kwargs) -> str:
             project_manager = ProjectManager(project_path)
             vector_manager = project_manager.vector_manager
         else:
-            vector_manager = VectorManager()
+            vector_manager = VectorManager()  # Uses absolute paths by default
             try:
                 await vector_manager.initialize(enable_embedding_model=False)
             except Exception as e:
@@ -370,9 +371,97 @@ async def generate_research_summary_tool(**kwargs) -> str:
 
 def register_search_tools(server):
     """Register search and discovery tools with the MCP server"""
-    server.tools["semantic_search"] = semantic_search_tool
-    server.tools["discover_patterns"] = discover_patterns_tool
-    server.tools["build_knowledge_graph"] = build_knowledge_graph_tool
-    server.tools["find_similar_documents"] = find_similar_documents_tool
-    server.tools["extract_key_concepts"] = extract_key_concepts_tool
-    server.tools["generate_research_summary"] = generate_research_summary_tool
+    
+    server.register_tool(
+        name="semantic_search",
+        description="Perform semantic search across research documents",
+        parameters={
+            "type": "object",
+            "properties": {
+                "query": {"type": "string"},
+                "collection": {"type": "string"},
+                "limit": {"type": "integer"},
+                "similarity_threshold": {"type": "number"},
+                "project_path": {"type": "string"}
+            },
+            "required": ["query"]
+        },
+        handler=semantic_search_tool
+    )
+    
+    server.register_tool(
+        name="discover_patterns",
+        description="Discover patterns and themes in research content",
+        parameters={
+            "type": "object",
+            "properties": {
+                "content": {"type": "string", "description": "Content to analyze"},
+                "pattern_type": {"type": "string", "description": "Type of patterns to discover"},
+                "min_frequency": {"type": "integer", "description": "Minimum frequency threshold"}
+            },
+            "required": ["content"]
+        },
+        handler=discover_patterns_tool
+    )
+    
+    server.register_tool(
+        name="build_knowledge_graph",
+        description="Build knowledge graph from research documents",
+        parameters={
+            "type": "object",
+            "properties": {
+                "documents": {"type": "array", "items": {"type": "string"}, "description": "List of documents"},
+                "relationship_types": {"type": "array", "items": {"type": "string"}, "description": "Types of relationships"},
+                "project_path": {"type": "string", "description": "Project path"}
+            },
+            "required": ["documents"]
+        },
+        handler=build_knowledge_graph_tool
+    )
+    
+    server.register_tool(
+        name="find_similar_documents",
+        description="Find documents similar to target document",
+        parameters={
+            "type": "object",
+            "properties": {
+                "target_document": {"type": "string", "description": "Target document content"},
+                "collection": {"type": "string", "description": "Collection to search"},
+                "max_results": {"type": "integer", "description": "Maximum results"},
+                "similarity_threshold": {"type": "number", "description": "Similarity threshold"},
+                "project_path": {"type": "string", "description": "Project path"}
+            },
+            "required": ["target_document"]
+        },
+        handler=find_similar_documents_tool
+    )
+    
+    server.register_tool(
+        name="extract_key_concepts",
+        description="Extract key concepts from research text",
+        parameters={
+            "type": "object",
+            "properties": {
+                "text": {"type": "string", "description": "Text to analyze"},
+                "concept_types": {"type": "array", "items": {"type": "string"}, "description": "Types of concepts"},
+                "max_concepts": {"type": "integer", "description": "Maximum concepts to extract"}
+            },
+            "required": ["text"]
+        },
+        handler=extract_key_concepts_tool
+    )
+    
+    server.register_tool(
+        name="generate_research_summary",
+        description="Generate summary of research documents",
+        parameters={
+            "type": "object",
+            "properties": {
+                "documents": {"type": "array", "items": {"type": "string"}, "description": "Documents to summarize"},
+                "summary_type": {"type": "string", "description": "Type of summary"},
+                "max_length": {"type": "integer", "description": "Maximum summary length"}
+            },
+            "required": ["documents"]
+        },
+        handler=generate_research_summary_tool
+    )
