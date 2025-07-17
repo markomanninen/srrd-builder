@@ -158,6 +158,14 @@ if command -v srrd &> /dev/null; then
     else
         echo "⚠️  CLI help command failed"
     fi
+    
+    # Run comprehensive CLI tests
+    echo "Running comprehensive CLI tests..."
+    if ./test_cli.sh; then
+        echo "✅ All CLI tests passed"
+    else
+        echo "⚠️  Some CLI tests failed (see output above)"
+    fi
 else
     echo "❌ SRRD CLI not available in PATH"
 fi

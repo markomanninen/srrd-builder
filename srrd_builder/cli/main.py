@@ -31,6 +31,18 @@ def create_parser():
         help='Initialize SRRD in current Git repository'
     )
     init_parser.add_argument(
+        '--domain',
+        choices=['physics', 'cs', 'bio', 'general'],
+        default='general',
+        help='Research domain (default: general)'
+    )
+    init_parser.add_argument(
+        '--template',
+        choices=['minimal', 'standard', 'full'],
+        default='standard', 
+        help='Template complexity (default: standard)'
+    )
+    init_parser.add_argument(
         '--force',
         action='store_true',
         help='Force initialization even if .srrd directory exists'
@@ -91,31 +103,76 @@ def create_parser():
     # Set default values for serve command when no subcommand is given
     serve_parser.set_defaults(port=8080, host='localhost')
     
-    # srrd generate command
+    # srrd generate command with subcommands
     generate_parser = subparsers.add_parser(
         'generate',
-        help='Generate research documents'
+        help='LaTeX compilation and build automation'
     )
-    generate_parser.add_argument(
-        'doc_type',
-        choices=['proposal', 'manuscript', 'latex'],
-        help='Type of document to generate'
+    
+    generate_subparsers = generate_parser.add_subparsers(
+        dest='subcommand',
+        help='Generation actions'
     )
-    generate_parser.add_argument(
+    
+    # generate pdf subcommand
+    pdf_parser = generate_subparsers.add_parser(
+        'pdf',
+        help='Compile LaTeX document to PDF'
+    )
+    pdf_parser.add_argument(
+        'input',
+        help='Input .tex file to compile'
+    )
+    pdf_parser.add_argument(
+        '--output',
+        help='Output directory (default: same as input)'
+    )
+    
+    # generate template subcommand
+    template_parser = generate_subparsers.add_parser(
+        'template',
+        help='Generate LaTeX template (no AI content)'
+    )
+    template_parser.add_argument(
+        'template_type',
+        choices=['proposal', 'paper', 'thesis'],
+        help='Type of template to generate'
+    )
+    template_parser.add_argument(
         '--title',
         required=True,
         help='Document title'
     )
-    generate_parser.add_argument(
+    template_parser.add_argument(
         '--output',
-        default='./documents',
-        help='Output directory (default: ./documents)'
+        default='work/drafts/',
+        help='Output directory (default: work/drafts/)'
     )
     
     # srrd status command
     status_parser = subparsers.add_parser(
         'status',
         help='Check SRRD server and project status'
+    )
+    
+    # srrd publish command
+    publish_parser = subparsers.add_parser(
+        'publish',
+        help='Move finalized work from drafts to publications'
+    )
+    publish_parser.add_argument(
+        'draft_name',
+        help='Name of draft to publish (without .tex extension)'
+    )
+    publish_parser.add_argument(
+        '--version',
+        default='v1.0',
+        help='Publication version (default: v1.0)'
+    )
+    publish_parser.add_argument(
+        '--force',
+        action='store_true',
+        help='Overwrite existing publication'
     )
     
     # srrd configure command
@@ -174,6 +231,9 @@ def main():
     elif args.command == 'status':
         from .commands.status import handle_status
         return handle_status(args)
+    elif args.command == 'publish':
+        from .commands.publish import handle_publish
+        return handle_publish(args)
     elif args.command == 'configure':
         from .commands.configure import handle_configure
         return handle_configure(args)
