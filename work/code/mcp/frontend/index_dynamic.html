@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRRD-Builder MCP Server Test Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            min-height: 100vh;
+            box-shadow: 0 0 30px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+            border-bottom: 4px solid #3498db;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-connected { background: #28a745; }
+        .status-disconnected { background: #dc3545; }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #2980b9, #3498db);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .tools-section {
+            display: grid;
+            gap: 25px;
+        }
+
+        .tool-category {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            border: 1px solid #e9ecef;
+        }
+
+        .tool-category h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .tool-button {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        .tool-button:hover {
+            background: linear-gradient(135deg, #2980b9, #3498db);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        .tool-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .console-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            border: 1px solid #e9ecef;
+        }
+
+        .console-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #e74c3c;
+            padding-bottom: 10px;
+        }
+
+        .console {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            height: 600px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            border: 2px solid #34495e;
+        }
+
+        .console-line {
+            margin-bottom: 8px;
+            padding: 5px 0;
+        }
+
+        .console-timestamp {
+            color: #95a5a6;
+            font-size: 0.8rem;
+        }
+
+        .console-info { color: #3498db; }
+        .console-success { color: #2ecc71; }
+        .console-error { color: #e74c3c; }
+        .console-warning { color: #f39c12; }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats {
+            background: #e8f5e8;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 SRRD-Builder MCP Server Test Interface</h1>
+            <p>Dynamic test interface for all available research tools</p>
+        </div>
+
+        <div class="status-bar">
+            <div>
+                <span class="status-indicator status-disconnected" id="statusIndicator"></span>
+                <span id="statusText">Disconnected</span>
+                <span id="toolCount"></span>
+            </div>
+            <div class="controls">
+                <button class="btn" id="connectBtn" onclick="connectToServer()">Connect to Server</button>
+                <button class="btn" id="refreshBtn" onclick="refreshTools()" disabled>Refresh Tools</button>
+                <button class="btn" onclick="clearConsole()">Clear Console</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="tools-section" id="toolsSection">
+                <div class="stats hidden" id="statsPanel">
+                    <h4>📊 Server Statistics</h4>
+                    <div id="serverStats">
+                        <div><strong>Server URL:</strong> ws://localhost:8765</div>
+                        <div><strong>Connected:</strong> <span id="connectionStatus">No</span></div>
+                        <div><strong>Total Tools:</strong> <span id="totalTools">0</span></div>
+                        <div><strong>Last Updated:</strong> <span id="lastUpdated">Never</span></div>
+                    </div>
+                </div>
+
+                <div class="tool-category">
+                    <h3>🔌 Getting Started</h3>
+                    <p>Click "Connect to Server" to discover all available tools dynamically!</p>
+                    <br>
+                    <p><strong>Prerequisites:</strong></p>
+                    <ul>
+                        <li>MCP server running: <code>srrd-server</code></li>
+                        <li>Server accessible on localhost:8765</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="console-section">
+                <h3>📟 Test Console</h3>
+                <div class="console" id="console">
+                    <div class="console-line">
+                        <span class="console-timestamp">[Ready]</span>
+                        <span class="console-info">🚀 SRRD-Builder MCP Frontend Test Interface Ready</span>
+                    </div>
+                    <div class="console-line">
+                        <span class="console-info">
+To get started:
+1. Make sure MCP server is running: srrd-server
+2. Click "Connect to Server"
+3. Test individual tools or run diagnostics
+
+Ready for testing! 🧪</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="mcp-client.js"></script>
+    <script>
+        let mcpClient = null;
+        let availableTools = [];
+
+        const toolCategories = {
+            'clarify_research_goals': 'research',
+            'suggest_methodology': 'research', 
+            'simulate_peer_review': 'quality',
+            'check_quality_gates': 'quality',
+            'initialize_project': 'storage',
+            'save_session': 'storage',
+            'restore_session': 'storage',
+            'search_knowledge': 'search',
+            'version_control': 'storage',
+            'backup_project': 'storage',
+            'generate_latex_document': 'document',
+            'compile_latex': 'document',
+            'format_research_content': 'document',
+            'generate_bibliography': 'document',
+            'extract_document_sections': 'document',
+            'store_bibliography_reference': 'storage',
+            'retrieve_bibliography_references': 'storage',
+            'generate_document_with_database_bibliography': 'document',
+            'semantic_search': 'search',
+            'discover_patterns': 'search',
+            'build_knowledge_graph': 'search',
+            'find_similar_documents': 'search',
+            'extract_key_concepts': 'search',
+            'generate_research_summary': 'search',
+            'explain_methodology': 'methodology',
+            'compare_approaches': 'methodology',
+            'validate_design': 'methodology',
+            'ensure_ethics': 'methodology',
+            'initiate_paradigm_challenge': 'novel',
+            'develop_alternative_framework': 'novel',
+            'compare_paradigms': 'novel',
+            'validate_novel_theory': 'novel',
+            'cultivate_innovation': 'novel',
+            'assess_foundational_assumptions': 'novel',
+            'generate_critical_questions': 'novel',
+            'evaluate_paradigm_shift_potential': 'novel'
+        };
+
+        const categoryInfo = {
+            'research': { title: '🧪 Research Planning & Goal Setting', icon: '🎯' },
+            'quality': { title: '✅ Quality Assurance & Review', icon: '🔍' },
+            'storage': { title: '🗄️ Storage & Project Management', icon: '💾' },
+            'document': { title: '📄 Document Generation & LaTeX', icon: '📝' },
+            'search': { title: '🔍 Search & Discovery', icon: '🔎' },
+            'methodology': { title: '⚗️ Methodology & Validation', icon: '🧬' },
+            'novel': { title: '🚀 Novel Theory Development', icon: '🌟' }
+        };
+
+        function log(message, type = 'info') {
+            const console = document.getElementById('console');
+            const timestamp = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.className = 'console-line';
+            
+            let icon = '';
+            switch(type) {
+                case 'success': icon = '✅'; break;
+                case 'error': icon = '❌'; break;
+                case 'warning': icon = '⚠️'; break;
+                default: icon = 'ℹ️'; break;
+            }
+            
+            line.innerHTML = `
+                <span class="console-timestamp">[${timestamp}]</span>
+                <span class="console-${type}">${icon} ${message}</span>
+            `;
+            
+            console.appendChild(line);
+            console.scrollTop = console.scrollHeight;
+        }
+
+        async function connectToServer() {
+            const connectBtn = document.getElementById('connectBtn');
+            const statusIndicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            const statsPanel = document.getElementById('statsPanel');
+            
+            try {
+                connectBtn.disabled = true;
+                connectBtn.innerHTML = '<span class="loading"></span>Connecting...';
+                
+                log('Connecting to MCP server on localhost:8765...');
+                
+                mcpClient = new MCPClient('ws://localhost:8765');
+                mcpClient.onStatusChange = (connected, message) => {
+                    if (connected) {
+                        statusIndicator.className = 'status-indicator status-connected';
+                        statusText.textContent = 'Connected';
+                        document.getElementById('connectionStatus').textContent = 'Yes';
+                        document.getElementById('refreshBtn').disabled = false;
+                        statsPanel.classList.remove('hidden');
+                    } else {
+                        statusIndicator.className = 'status-indicator status-disconnected';
+                        statusText.textContent = 'Disconnected';
+                        document.getElementById('connectionStatus').textContent = 'No';
+                        document.getElementById('refreshBtn').disabled = true;
+                        statsPanel.classList.add('hidden');
+                    }
+                };
+                
+                await mcpClient.connect();
+                
+                // Get available tools
+                const toolsResult = await mcpClient.listTools();
+                const tools = toolsResult.tools || [];
+                availableTools = tools;
+                
+                log(`Successfully connected! Found ${tools.length} tools`, 'success');
+                document.getElementById('totalTools').textContent = tools.length;
+                document.getElementById('toolCount').textContent = `(${tools.length} tools available)`;
+                document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+                
+                renderTools(tools);
+                
+                connectBtn.innerHTML = 'Reconnect';
+                
+            } catch (error) {
+                log(`Connection failed: ${error.message}`, 'error');
+                log('💡 Make sure the MCP server is running: srrd-server');
+                connectBtn.innerHTML = 'Connect to Server';
+            } finally {
+                connectBtn.disabled = false;
+            }
+        }
+
+        function renderTools(tools) {
+            const toolsSection = document.getElementById('toolsSection');
+            const statsPanel = document.getElementById('statsPanel');
+            
+            // Group tools by category
+            const categorizedTools = {};
+            
+            tools.forEach(tool => {
+                const category = toolCategories[tool.name] || 'other';
+                if (!categorizedTools[category]) {
+                    categorizedTools[category] = [];
+                }
+                categorizedTools[category].push(tool);
+            });
+            
+            // Clear existing tools (keep stats panel)
+            const existingCategories = toolsSection.querySelectorAll('.tool-category:not(#statsPanel)');
+            existingCategories.forEach(cat => {
+                if (cat !== statsPanel) {
+                    cat.remove();
+                }
+            });
+            
+            // Render each category
+            Object.keys(categorizedTools).forEach(categoryKey => {
+                const categoryTools = categorizedTools[categoryKey];
+                const categoryData = categoryInfo[categoryKey] || { title: '🔧 Other Tools', icon: '⚙️' };
+                
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'tool-category';
+                categoryDiv.innerHTML = `
+                    <h3>${categoryData.title}</h3>
+                    <div class="tool-grid" id="tools-${categoryKey}">
+                        ${categoryTools.map(tool => `
+                            <button class="tool-button" onclick="testTool('${tool.name}')">
+                                ${categoryData.icon} ${formatToolName(tool.name)}
+                                <br><small style="opacity: 0.8">${tool.description || 'No description available'}</small>
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+                
+                toolsSection.appendChild(categoryDiv);
+            });
+        }
+
+        function formatToolName(name) {
+            return name.split('_').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+        }
+
+        async function testTool(toolName) {
+            if (!mcpClient || !mcpClient.isConnected) {
+                log('Not connected to server', 'error');
+                return;
+            }
+            
+            log(`Testing tool: ${toolName}...`);
+            
+            try {
+                // Get sample arguments based on tool name
+                const toolArgs = getSampleArgs(toolName);
+                
+                const result = await mcpClient.callTool(toolName, toolArgs);
+                log(`✅ ${toolName} completed successfully`, 'success');
+                log(`Response: ${JSON.stringify(result, null, 2)}`);
+                
+            } catch (error) {
+                log(`❌ ${toolName} failed: ${error.message}`, 'error');
+            }
+        }
+
+        function getSampleArgs(toolName) {
+            const sampleArgs = {
+                // Research Planning & Goal Setting
+                'clarify_research_goals': {
+                    research_area: 'theoretical_physics',
+                    initial_goals: 'develop new theoretical framework'
+                },
+                'suggest_methodology': {
+                    research_goals: 'theoretical framework development',
+                    domain: 'physics'
+                },
+                
+                // Quality Assurance & Review
+                'simulate_peer_review': {
+                    document_content: {
+                        title: 'Test Document',
+                        abstract: 'Test abstract',
+                        methodology: 'Test methodology'
+                    },
+                    domain: 'physics'
+                },
+                'check_quality_gates': {
+                    research_content: {
+                        title: 'Test Research',
+                        methodology: 'experimental'
+                    },
+                    phase: 'publication_readiness'
+                },
+                
+                // Storage & Project Management
+                'initialize_project': {
+                    name: 'Test Research Project',
+                    description: 'Frontend test project',
+                    domain: 'physics',
+                    project_path: '/tmp/test_project'
+                },
+                'save_session': {
+                    session_data: {
+                        test: 'data'
+                    },
+                    project_path: '/tmp/test_project'
+                },
+                'restore_session': {
+                    session_id: 1,
+                    project_path: '/tmp/test_project'
+                },
+                'search_knowledge': {
+                    query: 'quantum mechanics',
+                    project_path: '/tmp/test_project'
+                },
+                'version_control': {
+                    action: 'commit',
+                    message: 'Test commit',
+                    project_path: '/tmp/test_project'
+                },
+                'backup_project': {
+                    project_path: '/tmp/test_project'
+                },
+                'store_bibliography_reference': {
+                    reference: {
+                        title: 'Test Paper',
+                        authors: ['Test Author'],
+                        year: 2024,
+                        journal: 'Test Journal'
+                    }
+                },
+                'retrieve_bibliography_references': {
+                    query: 'quantum mechanics'
+                },
+                
+                // Document Generation & LaTeX
+                'generate_latex_document': {
+                    title: 'Frontend Test Document',
+                    author: 'Test Author'
+                },
+                'compile_latex': {
+                    tex_file_path: '/tmp/test.tex'
+                },
+                'format_research_content': {
+                    content: 'This is test content for academic formatting'
+                },
+                'generate_bibliography': {
+                    references: [{
+                        title: 'Special Relativity Theory',
+                        authors: ['Einstein, A.'],
+                        year: 1905,
+                        journal: 'Annalen der Physik'
+                    }]
+                },
+                'extract_document_sections': {
+                    document_content: 'This is a test document with sections'
+                },
+                'generate_document_with_database_bibliography': {
+                    title: 'Test Document with DB Bibliography',
+                    bibliography_query: 'quantum mechanics'
+                },
+                
+                // Search & Discovery
+                'semantic_search': {
+                    query: 'quantum mechanics'
+                },
+                'discover_patterns': {
+                    content: 'quantum mechanics theoretical physics computational modeling mathematical analysis'
+                },
+                'build_knowledge_graph': {
+                    documents: ['Test document about quantum mechanics']
+                },
+                'find_similar_documents': {
+                    target_document: 'Document about quantum physics research'
+                },
+                'extract_key_concepts': {
+                    text: 'quantum mechanics theoretical physics computational modeling'
+                },
+                'generate_research_summary': {
+                    documents: ['Test document 1', 'Test document 2']
+                },
+                
+                // Methodology & Validation
+                'explain_methodology': {
+                    research_question: 'How do quantum effects influence macroscopic behavior?',
+                    domain: 'physics'
+                },
+                'compare_approaches': {
+                    approaches: ['experimental', 'theoretical'],
+                    domain: 'physics'
+                },
+                'validate_design': {
+                    research_design: {
+                        methodology: 'experimental',
+                        objectives: ['test quantum effects']
+                    },
+                    domain: 'physics'
+                },
+                'ensure_ethics': {
+                    research_plan: {
+                        methodology: 'experimental',
+                        participants: 'none'
+                    },
+                    domain: 'physics'
+                },
+                
+                // Novel Theory Development
+                'initiate_paradigm_challenge': {
+                    domain: 'physics',
+                    current_paradigm: 'standard model',
+                    challenge_area: 'quantum gravity'
+                },
+                'develop_alternative_framework': {
+                    challenged_paradigm: 'standard model',
+                    domain: 'physics',
+                    alternative_principles: ['test principle 1', 'test principle 2']
+                },
+                'compare_paradigms': {
+                    original_paradigm: 'classical mechanics',
+                    alternative_paradigm: 'quantum mechanics',
+                    domain: 'physics'
+                },
+                'validate_novel_theory': {
+                    theory_framework: {
+                        name: 'Test Theory',
+                        principles: ['principle 1']
+                    },
+                    domain: 'physics'
+                },
+                'cultivate_innovation': {
+                    research_context: {
+                        domain: 'physics',
+                        current_state: 'exploring quantum effects'
+                    }
+                },
+                'assess_foundational_assumptions': {
+                    theory_framework: {
+                        name: 'Test Theory',
+                        assumptions: ['assumption 1']
+                    },
+                    domain: 'physics'
+                },
+                'generate_critical_questions': {
+                    research_area: 'quantum mechanics',
+                    theory_framework: {
+                        name: 'Test Theory'
+                    },
+                    domain: 'physics'
+                },
+                'evaluate_paradigm_shift_potential': {
+                    theory_framework: {
+                        name: 'Test Theory',
+                        principles: ['new principle']
+                    },
+                    domain: 'physics'
+                }
+            };
+            
+            return sampleArgs[toolName] || {
+                // Fallback for any unknown tools
+                test_parameter: 'test_value'
+            };
+        }
+
+        async function refreshTools() {
+            if (!mcpClient || !mcpClient.isConnected) {
+                log('Not connected to server', 'error');
+                return;
+            }
+            
+            try {
+                log('Refreshing tool list...');
+                const toolsResult = await mcpClient.listTools();
+                const tools = toolsResult.tools || [];
+                availableTools = tools;
+                
+                log(`Tool list refreshed! Found ${tools.length} tools`, 'success');
+                document.getElementById('totalTools').textContent = tools.length;
+                document.getElementById('toolCount').textContent = `(${tools.length} tools available)`;
+                document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+                
+                renderTools(tools);
+                
+            } catch (error) {
+                log(`Failed to refresh tools: ${error.message}`, 'error');
+            }
+        }
+
+        function clearConsole() {
+            const console = document.getElementById('console');
+            console.innerHTML = `
+                <div class="console-line">
+                    <span class="console-timestamp">[${new Date().toLocaleTimeString()}]</span>
+                    <span class="console-info">🧹 Console cleared</span>
+                </div>
+            `;
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            log('🚀 SRRD-Builder MCP Frontend Test Interface Ready');
+            log('');
+            log('To get started:');
+            log('1. Make sure MCP server is running: srrd-server');
+            log('2. Click "Connect to Server"');
+            log('3. Test individual tools or run diagnostics');
+            log('');
+            log('Ready for testing! 🧪');
+        });
+    </script>
+</body>
+</html>
