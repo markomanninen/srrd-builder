@@ -99,8 +99,15 @@ class MethodologyAdvisoryTool:
             }
         }
 
-async def explain_methodology(research_question: str, domain: str, methodology_type: str = None) -> str:
-    """Provide detailed explanation of research methodologies"""
+async def explain_methodology(**kwargs) -> str:
+    """Explain methodology for research question"""
+    
+    research_question = kwargs.get("research_question")
+    domain = kwargs.get("domain")
+    methodology_type = kwargs.get("methodology_type")
+    
+    if not research_question or not domain:
+        return "Error: Missing required parameters (research_question, domain)"
     
     tool = MethodologyAdvisoryTool()
     
@@ -177,8 +184,15 @@ def _calculate_suitability(research_question: str, methodology_info: Dict) -> fl
     
     return min(score, 1.0)
 
-async def compare_approaches(approach_a: str, approach_b: str, research_context: str) -> str:
+async def compare_approaches(**kwargs) -> str:
     """Compare different research approaches"""
+    
+    approach_a = kwargs.get("approach_a")
+    approach_b = kwargs.get("approach_b")
+    research_context = kwargs.get("research_context")
+    
+    if not approach_a or not approach_b or not research_context:
+        return "Error: Missing required parameters (approach_a, approach_b, research_context)"
     
     tool = MethodologyAdvisoryTool()
     
@@ -249,8 +263,15 @@ async def compare_approaches(approach_a: str, approach_b: str, research_context:
     
     return json.dumps(comparison, indent=2)
 
-async def validate_design(research_design: Dict, domain: str, constraints: Dict = None) -> str:
+async def validate_design(**kwargs) -> str:
     """Validate research design and provide improvement suggestions"""
+    
+    research_design = kwargs.get("research_design")
+    domain = kwargs.get("domain")
+    constraints = kwargs.get("constraints")
+    
+    if not research_design or not domain:
+        return "Error: Missing required parameters (research_design, domain)"
     
     validation_results = {
         "design_overview": research_design,
@@ -372,8 +393,15 @@ async def validate_design(research_design: Dict, domain: str, constraints: Dict 
     
     return json.dumps(validation_results, indent=2)
 
-async def ensure_ethics(research_proposal: Dict, domain: str, participant_type: str = "adults") -> str:
+async def ensure_ethics(**kwargs) -> str:
     """Provide ethical review and compliance checking"""
+    
+    research_proposal = kwargs.get("research_proposal")
+    domain = kwargs.get("domain")
+    participant_type = kwargs.get("participant_type", "adults")
+    
+    if not research_proposal or not domain:
+        return "Error: Missing required parameters (research_proposal, domain)"
     
     tool = MethodologyAdvisoryTool()
     
@@ -398,9 +426,10 @@ async def ensure_ethics(research_proposal: Dict, domain: str, participant_type: 
     
     # Autonomy analysis
     autonomy_issues = []
-    if "informed_consent" not in research_proposal:
+    proposal_dict = research_proposal if isinstance(research_proposal, dict) else {}
+    if "informed_consent" not in proposal_dict:
         autonomy_issues.append("Informed consent procedure not specified")
-    if "voluntary_participation" not in research_proposal:
+    if "voluntary_participation" not in proposal_dict:
         autonomy_issues.append("Voluntary participation not addressed")
     if participant_type in ["minors", "vulnerable_populations"]:
         autonomy_issues.append("Special consent procedures needed for vulnerable populations")
@@ -412,9 +441,9 @@ async def ensure_ethics(research_proposal: Dict, domain: str, participant_type: 
     
     # Beneficence/Non-maleficence analysis
     benefit_risk_issues = []
-    if "risk_assessment" not in research_proposal:
+    if "risk_assessment" not in proposal_dict:
         benefit_risk_issues.append("Risk assessment not provided")
-    if "potential_benefits" not in research_proposal:
+    if "potential_benefits" not in proposal_dict:
         benefit_risk_issues.append("Potential benefits not specified")
     
     ethics_review["ethical_framework_analysis"]["analysis"]["beneficence"] = {
@@ -424,9 +453,9 @@ async def ensure_ethics(research_proposal: Dict, domain: str, participant_type: 
     
     # Justice analysis
     justice_issues = []
-    if "participant_selection" not in research_proposal:
+    if "participant_selection" not in proposal_dict:
         justice_issues.append("Fair participant selection criteria not specified")
-    if "data_sharing" not in research_proposal:
+    if "data_sharing" not in proposal_dict:
         justice_issues.append("Data sharing and benefit distribution not addressed")
     
     ethics_review["ethical_framework_analysis"]["analysis"]["justice"] = {
@@ -436,12 +465,12 @@ async def ensure_ethics(research_proposal: Dict, domain: str, participant_type: 
     
     # Compliance checklist
     compliance_items = {
-        "IRB_approval": "ethics_approval" in research_proposal,
-        "informed_consent_form": "informed_consent" in research_proposal,
-        "data_protection_plan": "data_protection" in research_proposal,
-        "risk_mitigation_plan": "risk_mitigation" in research_proposal,
-        "adverse_event_reporting": "adverse_event_plan" in research_proposal,
-        "data_retention_policy": "data_retention" in research_proposal
+        "IRB_approval": "ethics_approval" in proposal_dict,
+        "informed_consent_form": "informed_consent" in proposal_dict,
+        "data_protection_plan": "data_protection" in proposal_dict,
+        "risk_mitigation_plan": "risk_mitigation" in proposal_dict,
+        "adverse_event_reporting": "adverse_event_plan" in proposal_dict,
+        "data_retention_policy": "data_retention" in proposal_dict
     }
     
     ethics_review["compliance_checklist"] = {
@@ -474,7 +503,7 @@ async def ensure_ethics(research_proposal: Dict, domain: str, participant_type: 
     
     # Generate recommendations
     recommendations = []
-    if any("❌" in status for status in compliance_items.values()):
+    if any(not status for status in compliance_items.values()):
         recommendations.append("Complete all missing compliance documentation")
     if estimated_risk in ["moderate_risk", "high_risk"]:
         recommendations.append("Develop comprehensive risk mitigation plan")

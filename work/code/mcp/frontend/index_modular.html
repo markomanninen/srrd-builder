@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRRD-Builder MCP Server - Scientific Research Interface</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 SRRD-Builder MCP Server</h1>
+            <p>Scientific Research Interface</p>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-info">
+                <span class="status-indicator" id="statusIndicator"></span>
+                <span class="status-text" id="statusText">Disconnected</span>
+                <span class="tool-count" id="toolCount"></span>
+            </div>
+            <div class="controls">
+                <button class="btn btn-primary" id="connectBtn">Connect to Server</button>
+                <button class="btn btn-primary" id="refreshBtn" disabled>Refresh Tools</button>
+                <button class="btn btn-primary" onclick="clearConsole()">Clear Console</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="tools-section" id="toolsSection">
+                <div class="tool-category">
+                    <h3>🔌 Getting Started</h3>
+                    <p>Click "Connect to Server" to discover all available tools!</p>
+                    <br>
+                    <p><strong>Prerequisites:</strong></p>
+                    <ul>
+                        <li>MCP server running: <code>srrd-server</code></li>
+                        <li>Server accessible on localhost:8765</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="console-section">
+                <h3>📟 Test Console</h3>
+                <div class="console" id="console">
+                    <div class="console-line">
+                        <span class="console-timestamp">[Ready]</span>
+                        <span class="console-info">SRRD-Builder MCP Frontend Ready</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- External Scripts -->
+    <script src="mcp-client.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

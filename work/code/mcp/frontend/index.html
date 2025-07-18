@@ -88,11 +88,14 @@
             grid-template-columns: 2fr 1fr;
             gap: 30px;
             padding: 30px;
+            height: calc(100vh - 200px); /* Adjust based on header + status bar height */
         }
 
         .tools-section {
             display: grid;
             gap: 25px;
+            overflow-y: auto;
+            height: 100%;
         }
 
         .tool-category {
@@ -176,6 +179,11 @@
             border-radius: 10px;
             padding: 25px;
             border: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: sticky;
+            top: 30px;
         }
 
         .console {
@@ -183,7 +191,7 @@
             color: #f3f4f6;
             padding: 20px;
             border-radius: 8px;
-            height: 400px;
+            flex: 1;
             overflow-y: auto;
             font-family: 'Monaco', 'Consolas', monospace;
             font-size: 0.85rem;

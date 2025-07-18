@@ -8,6 +8,7 @@ class SRRDFrontendApp {
         this.mcpClient = null;
         this.availableTools = [];
         this.currentModal = null;
+        this.isConnected = false;
         this.toolCategories = {
             'clarify_research_goals': 'research',
             'suggest_methodology': 'research', 
@@ -93,20 +94,44 @@ class SRRDFrontendApp {
     // Initialize method for external calls
     initialize() {
         // Already initialized in constructor, but allow re-initialization
-        this.log('🔄 Re-initializing SRRD Frontend...');
+        this.log('Re-initializing SRRD Frontend...');
         return this;
     }
 
     init() {
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.setupApplication());
+        } else {
+            this.setupApplication();
+        }
+    }
+
+    setupApplication() {
         this.setupEventListeners();
-        this.log('🚀 SRRD-Builder MCP Frontend Ready');
+        this.initializeUI();
+        this.log('SRRD-Builder MCP Frontend Ready');
         this.log('');
         this.log('To get started:');
         this.log('1. Make sure MCP server is running: srrd-server');
         this.log('2. Click "Connect to Server"');
         this.log('3. Test individual tools with custom parameters');
         this.log('');
-        this.log('Ready for testing! 🧪');
+        this.log('Ready for testing');
+    }
+
+    initializeUI() {
+        // Set initial UI state
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('statusText');
+        
+        if (statusIndicator) {
+            statusIndicator.className = 'status-indicator disconnected';
+        }
+        
+        if (statusText) {
+            statusText.textContent = 'Disconnected';
+        }
     }
 
     setupEventListeners() {
@@ -128,6 +153,9 @@ class SRRDFrontendApp {
             clearBtn.addEventListener('click', () => this.clearConsole());
         }
 
+        // Make clearConsole available globally for onclick handlers
+        window.clearConsole = () => this.clearConsole();
+
         // Escape key to close modal
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.currentModal) {
@@ -144,17 +172,17 @@ class SRRDFrontendApp {
         const line = document.createElement('div');
         line.className = 'console-line';
         
-        let icon = '';
+        let prefix = '';
         switch(type) {
-            case 'success': icon = '✅'; break;
-            case 'error': icon = '❌'; break;
-            case 'warning': icon = '⚠️'; break;
-            default: icon = 'ℹ️'; break;
+            case 'success': prefix = '[SUCCESS]'; break;
+            case 'error': prefix = '[ERROR]'; break;
+            case 'warning': prefix = '[WARNING]'; break;
+            default: prefix = '[INFO]'; break;
         }
         
         line.innerHTML = `
             <span class="console-timestamp">[${timestamp}]</span>
-            <span class="console-${type}">${icon} ${message}</span>
+            <span class="console-${type}">${prefix} ${message}</span>
         `;
         
         console.appendChild(line);
@@ -165,28 +193,34 @@ class SRRDFrontendApp {
         const connectBtn = document.getElementById('connectBtn');
         const statusIndicator = document.getElementById('statusIndicator');
         const statusText = document.getElementById('statusText');
-        const statsPanel = document.getElementById('statsPanel');
+        const refreshBtn = document.getElementById('refreshBtn');
         
         try {
             this.setButtonLoading(connectBtn, 'Connecting...');
             statusIndicator.className = 'status-indicator connecting';
+            statusText.textContent = 'Connecting...';
             
             this.log('Connecting to MCP server on localhost:8765...');
+            
+            // Check if MCPClient is available
+            if (typeof MCPClient === 'undefined') {
+                throw new Error('MCPClient not loaded. Make sure mcp-client.js is included.');
+            }
             
             this.mcpClient = new MCPClient('ws://localhost:8765');
             this.mcpClient.onStatusChange = (connected, message) => {
                 if (connected) {
                     statusIndicator.className = 'status-indicator connected';
                     statusText.textContent = 'Connected';
-                    document.getElementById('connectionStatus').textContent = 'Yes';
-                    document.getElementById('refreshBtn').disabled = false;
-                    statsPanel.classList.remove('hidden');
+                    if (refreshBtn) refreshBtn.disabled = false;
+                    this.isConnected = true;
                 } else {
                     statusIndicator.className = 'status-indicator disconnected';
                     statusText.textContent = 'Disconnected';
-                    document.getElementById('connectionStatus').textContent = 'No';
-                    document.getElementById('refreshBtn').disabled = true;
-                    statsPanel.classList.add('hidden');
+                    if (refreshBtn) refreshBtn.disabled = true;
+                    this.isConnected = false;
+                    // Update button text when disconnected
+                    if (connectBtn) connectBtn.innerHTML = 'Connect to Server';
                 }
             };
             
@@ -202,22 +236,32 @@ class SRRDFrontendApp {
             
             this.renderTools(tools);
             
-            connectBtn.innerHTML = '🔄 Reconnect';
+            // Mark as connected - will be set after setButtonLoading
+            this.isConnected = true;
             
         } catch (error) {
             this.log(`Connection failed: ${error.message}`, 'error');
-            this.log('💡 Make sure the MCP server is running: srrd-server');
+            this.log('Make sure the MCP server is running: srrd-server');
             statusIndicator.className = 'status-indicator disconnected';
             statusText.textContent = 'Connection Failed';
+            this.isConnected = false;
         } finally {
             this.setButtonLoading(connectBtn, null);
+            
+            // Update button text based on connection state
+            if (this.isConnected) {
+                connectBtn.innerHTML = 'Reconnect';
+            } else {
+                connectBtn.innerHTML = 'Connect to Server';
+            }
         }
     }
 
     updateStats(toolCount) {
-        document.getElementById('totalTools').textContent = toolCount;
-        document.getElementById('toolCount').textContent = `(${toolCount} tools available)`;
-        document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+        const toolCountElement = document.getElementById('toolCount');
+        if (toolCountElement) {
+            toolCountElement.textContent = `(${toolCount} tools available)`;
+        }
     }
 
     renderTools(tools) {
@@ -316,11 +360,11 @@ class SRRDFrontendApp {
             const toolArgs = this.getDefaultParameters(toolName);
             const result = await this.mcpClient.callTool(toolName, toolArgs);
             
-            this.log(`✅ ${toolName} completed successfully`, 'success');
+            this.log(`${toolName} completed successfully`, 'success');
             this.log(`Response: ${JSON.stringify(result, null, 2)}`);
             
         } catch (error) {
-            this.log(`❌ ${toolName} failed: ${error.message}`, 'error');
+            this.log(`${toolName} failed: ${error.message}`, 'error');
         } finally {
             if (toolCard) {
                 toolCard.classList.remove('executing');
@@ -500,11 +544,11 @@ class SRRDFrontendApp {
         try {
             const result = await this.mcpClient.callTool(toolName, params);
             
-            this.log(`✅ ${toolName} completed successfully`, 'success');
+            this.log(`${toolName} completed successfully`, 'success');
             this.log(`Response: ${JSON.stringify(result, null, 2)}`);
             
         } catch (error) {
-            this.log(`❌ ${toolName} failed: ${error.message}`, 'error');
+            this.log(`${toolName} failed: ${error.message}`, 'error');
         } finally {
             if (toolCard) {
                 toolCard.classList.remove('executing');
@@ -558,7 +602,7 @@ class SRRDFrontendApp {
             console.innerHTML = `
                 <div class="console-line">
                     <span class="console-timestamp">[${new Date().toLocaleTimeString()}]</span>
-                    <span class="console-info">🧹 Console cleared</span>
+                    <span class="console-info">[INFO] Console cleared</span>
                 </div>
             `;
         }
@@ -573,7 +617,10 @@ class SRRDFrontendApp {
             button.innerHTML = `<span class="loading"></span>${loadingText}`;
         } else {
             button.disabled = false;
-            button.innerHTML = button.dataset.originalText || button.innerHTML;
+            // Only restore original text if no other text has been set
+            if (button.dataset.originalText && button.innerHTML.includes('loading')) {
+                button.innerHTML = button.dataset.originalText;
+            }
         }
     }
 
@@ -651,7 +698,7 @@ class SRRDFrontendApp {
                 action: 'commit',
                 message: 'Added new theoretical analysis',
                 project_path: '/tmp/physics_project',
-                files: ['analysis.tex', 'data.json']
+                files: []  // Empty files list will commit all changes
             },
             'backup_project': {
                 project_path: '/tmp/physics_project',
@@ -771,9 +818,9 @@ class SRRDFrontendApp {
                 domain: 'physics'
             },
             'compare_approaches': {
-                approaches: ['theoretical modeling', 'experimental verification', 'computational simulation'],
-                domain: 'physics',
-                criteria: ['accuracy', 'feasibility', 'cost']
+                approach_a: 'theoretical modeling',
+                approach_b: 'experimental verification',
+                research_context: 'quantum physics research methodology comparison'
             },
             'validate_design': {
                 research_design: {
@@ -785,7 +832,7 @@ class SRRDFrontendApp {
                 domain: 'physics'
             },
             'ensure_ethics': {
-                research_plan: {
+                research_proposal: {
                     methodology: 'theoretical analysis',
                     data_sources: 'published literature',
                     participants: 'none',
@@ -864,9 +911,11 @@ class SRRDFrontendApp {
     }
 }
 
-// Initialize the application when the page loads
+// Global initialization - Create the app instance
 let app;
-window.addEventListener('load', () => {
+
+// Initialize the application when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
     app = new SRRDFrontendApp();
 });
 

@@ -2,6 +2,9 @@
 Novel Theory Development MCP Tools
 Specialized framework for developing theories that challenge existing paradigms
 """
+import json
+from typing import Dict, List, Any, Optional
+from datetime import datetime
 
 import json
 from typing import Dict, List, Any, Optional
@@ -85,111 +88,135 @@ class NovelTheoryDevelopmentTool:
             ]
         }
 
-async def initiate_paradigm_challenge(domain: str, current_paradigm: str, challenge_area: str, 
-                                    novel_theory_mode: bool = True) -> str:
-    """Begin systematic challenge of existing paradigms"""
+async def initiate_paradigm_challenge(**kwargs) -> str:
+    """Challenge existing paradigms with structured analysis"""
+    
+    domain = kwargs.get("domain")
+    current_paradigm = kwargs.get("current_paradigm", "Mainstream approach")
+    challenge_area = kwargs.get("challenge_area", "core assumptions")
+    innovation_level = kwargs.get("innovation_level", "high")
+    
+    if not domain:
+        return "Error: Missing required parameter (domain)"
     
     tool = NovelTheoryDevelopmentTool()
     
-    challenge_framework = {
+    # Document challenge initiation
+    paradigm_state = {
         "domain": domain,
         "current_paradigm": current_paradigm,
         "challenge_area": challenge_area,
-        "novel_theory_mode": novel_theory_mode,
-        "paradigm_analysis": {},
-        "challenge_strategy": {},
-        "foundational_questions": [],
-        "development_roadmap": {},
-        "next_steps": []
+        "innovation_level": innovation_level,
+        "challenge_type": _determine_challenge_type(challenge_area),
+        "challenge_reasoning": {},
+        "alternative_directions": [],
+        "paradigm_strengths": [],
+        "paradigm_weaknesses": [],
+        "challenge_methodology": {},
+        "innovation_opportunities": []
     }
     
     # Analyze current paradigm
-    if domain in tool.paradigm_types:
-        paradigm_info = tool.paradigm_types[domain]
-        challenge_framework["paradigm_analysis"] = {
-            "mainstream_paradigms": paradigm_info["mainstream_paradigms"],
-            "foundational_assumptions": paradigm_info["foundational_assumptions"],
-            "validation_criteria": paradigm_info["validation_criteria"],
-            "target_paradigm": current_paradigm
-        }
-    else:
-        challenge_framework["paradigm_analysis"] = {
-            "note": f"Custom analysis needed for domain: {domain}",
-            "target_paradigm": current_paradigm
-        }
-    
-    # Develop challenge strategy
-    challenge_framework["challenge_strategy"] = {
-        "approach": "systematic_deconstruction" if novel_theory_mode else "incremental_refinement",
-        "challenge_type": _determine_challenge_type(challenge_area),
-        "methodology": [
-            "Identify foundational assumptions",
-            "Question unexamined premises",
-            "Develop alternative framework",
-            "Test competing predictions",
-            "Seek paradigm-independent evidence"
-        ],
-        "equal_treatment_principle": novel_theory_mode
+    paradigm_analysis = {
+        "domain": domain,
+        "paradigm": current_paradigm,
+        "core_assumptions": [],
+        "methodological_commitments": [],
+        "explanatory_successes": [],
+        "known_limitations": [],
+        "potential_blind_spots": []
     }
     
-    # Generate foundational questions
-    challenge_framework["foundational_questions"] = [
-        f"What if {current_paradigm} is fundamentally limited in explaining {challenge_area}?",
-        f"What assumptions in {current_paradigm} are taken for granted but never tested?",
-        f"How might {challenge_area} look completely different under an alternative framework?",
-        "What anomalies or unexplained phenomena does the current paradigm struggle with?",
-        "What would a theory optimized for explaining these anomalies look like?"
-    ]
-    
-    # Create development roadmap
-    challenge_framework["development_roadmap"] = {
-        "phase_1_deconstruction": {
-            "duration": "2-4 weeks",
-            "activities": [
-                "Map all foundational assumptions",
-                "Identify untested premises",
-                "Catalog paradigm limitations",
-                "Review historical paradigm shifts"
-            ]
-        },
-        "phase_2_alternative_development": {
-            "duration": "3-6 months",
-            "activities": [
-                "Develop alternative principles",
-                "Create mathematical framework",
-                "Generate testable predictions",
-                "Design validation experiments"
-            ]
-        },
-        "phase_3_rigorous_testing": {
-            "duration": "6-12 months",
-            "activities": [
-                "Test competing predictions",
-                "Seek paradigm-independent evidence",
-                "Simulate peer review",
-                "Refine theoretical framework"
-            ]
-        },
-        "phase_4_paradigm_comparison": {
-            "duration": "3-6 months",
-            "activities": [
-                "Equal-treatment comparison",
-                "Explanatory power analysis",
-                "Predictive accuracy assessment",
-                "Coherence evaluation"
-            ]
-        }
+    # Determine challenge strategy
+    challenge_strategy = {
+        "primary_approach": f"Challenge {challenge_area} within {domain}",
+        "innovation_level": innovation_level,
+        "challenge_type": paradigm_state["challenge_type"],
+        "methodological_requirements": [],
+        "theoretical_requirements": [],
+        "empirical_requirements": []
     }
     
-    # Next steps
-    challenge_framework["next_steps"] = [
-        "Use 'assess_foundational_assumptions' to map current paradigm assumptions",
-        "Apply 'generate_critical_questions' for deeper Socratic exploration",
-        "Develop alternative framework with 'develop_alternative_framework'",
-        "Begin systematic comparison with 'compare_paradigms'"
+    if paradigm_state["challenge_type"] == "foundational_challenge":
+        challenge_strategy["methodological_requirements"] = [
+            "Identify core assumptions",
+            "Examine logical foundations",
+            "Explore alternative axioms"
+        ]
+        challenge_strategy["theoretical_requirements"] = [
+            "Develop alternative theoretical framework",
+            "Maintain explanatory power",
+            "Generate new predictions"
+        ]
+    
+    paradigm_state["challenge_reasoning"] = paradigm_analysis
+    paradigm_state["challenge_methodology"] = challenge_strategy
+    
+    # Generate initial challenge directions
+    challenge_directions = []
+    if "assumptions" in challenge_area.lower():
+        challenge_directions.append("Question fundamental assumptions")
+        challenge_directions.append("Explore alternative foundational principles")
+    if "methodology" in challenge_area.lower():
+        challenge_directions.append("Develop alternative research methods")
+        challenge_directions.append("Question measurement approaches")
+    if "interpretation" in challenge_area.lower():
+        challenge_directions.append("Reinterpret existing evidence")
+        challenge_directions.append("Develop alternative explanatory frameworks")
+    
+    paradigm_state["alternative_directions"] = challenge_directions
+    
+    # Identify innovation opportunities
+    innovation_opportunities = [
+        f"Novel theoretical framework for {domain}",
+        "Paradigm-shifting research methodology",
+        "Alternative interpretation of existing evidence",
+        "Integration with other domains",
+        "Technological innovation applications"
     ]
     
-    return json.dumps(challenge_framework, indent=2)
+    paradigm_state["innovation_opportunities"] = innovation_opportunities
+    
+    # Generate comprehensive challenge report
+    challenge_report = f"""
+🎯 PARADIGM CHALLENGE INITIATED: {domain}
+
+**Current Paradigm**: {current_paradigm}
+**Challenge Area**: {challenge_area}
+**Challenge Type**: {paradigm_state["challenge_type"]}
+**Innovation Level**: {innovation_level}
+
+**Challenge Strategy**:
+- Primary Approach: {challenge_strategy["primary_approach"]}
+- Methodological Requirements: {len(challenge_strategy["methodological_requirements"])} identified
+- Theoretical Requirements: {len(challenge_strategy["theoretical_requirements"])} identified
+
+**Alternative Directions Identified**:
+"""
+    
+    for i, direction in enumerate(challenge_directions, 1):
+        challenge_report += f"{i}. {direction}\n"
+    
+    challenge_report += f"""
+**Innovation Opportunities**:
+"""
+    
+    for i, opportunity in enumerate(innovation_opportunities, 1):
+        challenge_report += f"{i}. {opportunity}\n"
+    
+    challenge_report += f"""
+**Next Steps**:
+1. Develop alternative theoretical framework
+2. Design paradigm comparison studies
+3. Identify crucial experimental tests
+4. Engage with expert community
+5. Validate innovative approach
+
+**Challenge Status**: Initiated - Ready for framework development
+"""
+    
+    return challenge_report
+
 
 def _determine_challenge_type(challenge_area: str) -> str:
     """Determine the type of paradigm challenge"""
@@ -204,15 +231,23 @@ def _determine_challenge_type(challenge_area: str) -> str:
     else:
         return "comprehensive_challenge"
 
-async def develop_alternative_framework(domain: str, core_principles: List[str], 
-                                      mathematical_basis: str = None, 
-                                      target_phenomena: List[str] = None) -> str:
+async def develop_alternative_framework(**kwargs) -> str:
     """Construct alternative theoretical frameworks"""
+    
+    domain = kwargs.get("domain")
+    challenged_paradigm = kwargs.get("challenged_paradigm")
+    alternative_principles = kwargs.get("alternative_principles", [])
+    mathematical_basis = kwargs.get("mathematical_basis")
+    target_phenomena = kwargs.get("target_phenomena", [])
+    
+    if not domain:
+        return "Error: Missing required parameter (domain)"
     
     framework_development = {
         "domain": domain,
+        "challenged_paradigm": challenged_paradigm,
         "alternative_framework": {
-            "core_principles": core_principles,
+            "core_principles": alternative_principles,
             "mathematical_basis": mathematical_basis,
             "target_phenomena": target_phenomena or []
         },
@@ -227,7 +262,7 @@ async def develop_alternative_framework(domain: str, core_principles: List[str],
     coherence_issues = []
     coherence_strengths = []
     
-    if len(core_principles) < 2:
+    if len(alternative_principles) < 2:
         coherence_issues.append("Framework needs more foundational principles")
     else:
         coherence_strengths.append("Multiple core principles specified")
@@ -250,14 +285,14 @@ async def develop_alternative_framework(domain: str, core_principles: List[str],
     
     # Analyze predictive capacity
     predictions = []
-    for principle in core_principles:
+    for principle in alternative_principles:
         # Generate potential predictions based on principles
         predictions.append(f"If '{principle}' is true, then we should observe...")
     
     framework_development["predictive_capacity"] = {
         "potential_predictions": predictions,
         "testability": "high" if mathematical_basis else "medium",
-        "novel_predictions": f"Framework should generate {len(core_principles)} major predictions"
+        "novel_predictions": f"Framework should generate {len(alternative_principles)} major predictions"
     }
     
     # Create validation plan
@@ -278,8 +313,8 @@ async def develop_alternative_framework(domain: str, core_principles: List[str],
     
     # Framework analysis
     framework_development["framework_analysis"] = {
-        "innovation_level": _assess_innovation_level(core_principles),
-        "paradigm_compatibility": _assess_compatibility(core_principles, domain),
+        "innovation_level": _assess_innovation_level(alternative_principles),
+        "paradigm_compatibility": _assess_compatibility(alternative_principles, domain),
         "development_priority": _prioritize_development(framework_development)
     }
     
@@ -334,13 +369,20 @@ def _prioritize_development(framework_dev: Dict) -> List[str]:
     
     return priorities
 
-async def compare_paradigms(mainstream_paradigm: str, alternative_paradigm: str, 
-                          comparison_criteria: List[str], domain: str) -> str:
+async def compare_paradigms(**kwargs) -> str:
     """Equal-treatment comparison of competing theories"""
+    
+    original_paradigm = kwargs.get("original_paradigm")
+    alternative_paradigm = kwargs.get("alternative_paradigm")
+    comparison_criteria = kwargs.get("comparison_criteria", [])
+    domain = kwargs.get("domain")
+    
+    if not original_paradigm or not alternative_paradigm or not domain:
+        return "Error: Missing required parameters (original_paradigm, alternative_paradigm, domain)"
     
     comparison = {
         "comparison_overview": {
-            "mainstream_paradigm": mainstream_paradigm,
+            "mainstream_paradigm": original_paradigm,
             "alternative_paradigm": alternative_paradigm,
             "domain": domain,
             "comparison_criteria": comparison_criteria,
@@ -356,7 +398,7 @@ async def compare_paradigms(mainstream_paradigm: str, alternative_paradigm: str,
     # Create detailed comparison for each criterion
     for criterion in comparison_criteria:
         comparison["detailed_comparison"][criterion] = {
-            "mainstream_assessment": f"Assessment of {mainstream_paradigm} on {criterion}",
+            "mainstream_assessment": f"Assessment of {original_paradigm} on {criterion}",
             "alternative_assessment": f"Assessment of {alternative_paradigm} on {criterion}",
             "comparative_analysis": f"Comparative analysis for {criterion}",
             "evidence_quality": "high",  # Would be determined by actual analysis
@@ -402,9 +444,9 @@ async def compare_paradigms(mainstream_paradigm: str, alternative_paradigm: str,
     
     # Generate recommendation
     if comparison["scoring_matrix"]["weighted_totals"]["alternative_total"] > 0.6:
-        comparison["recommendation"] = f"The alternative paradigm '{alternative_paradigm}' shows sufficient promise to warrant serious investigation and development. While '{mainstream_paradigm}' currently has stronger empirical support, the alternative approach offers novel insights that could advance the field."
+        comparison["recommendation"] = f"The alternative paradigm '{alternative_paradigm}' shows sufficient promise to warrant serious investigation and development. While '{original_paradigm}' currently dominates, the alternative offers genuine theoretical advances."
     else:
-        comparison["recommendation"] = f"The alternative paradigm '{alternative_paradigm}' requires further development before it can seriously challenge '{mainstream_paradigm}'. Focus on strengthening weak areas identified in the comparison."
+        comparison["recommendation"] = f"The alternative paradigm '{alternative_paradigm}' requires further development before it can seriously challenge '{original_paradigm}'. Focus on strengthening weak areas identified in the comparison."
     
     # Next steps
     comparison["next_steps"] = [
@@ -417,13 +459,21 @@ async def compare_paradigms(mainstream_paradigm: str, alternative_paradigm: str,
     
     return json.dumps(comparison, indent=2)
 
-async def validate_novel_theory(theory_framework: Dict, domain: str, 
-                               validation_criteria: List[str] = None) -> str:
+async def validate_novel_theory(**kwargs) -> str:
     """Rigorous validation of alternative theoretical approaches"""
     
-    if not validation_criteria:
-        validation_criteria = ["logical_consistency", "empirical_testability", "explanatory_power", 
-                             "predictive_accuracy", "theoretical_elegance", "paradigm_compatibility"]
+    theory_framework = kwargs.get("theory_framework", {})
+    domain = kwargs.get("domain")
+    validation_criteria = kwargs.get("validation_criteria", [
+        "logical_consistency", "empirical_testability", "explanatory_power", 
+        "predictive_accuracy", "theoretical_elegance", "paradigm_compatibility"
+    ])
+    
+    if not domain:
+        return "Error: Missing required parameter (domain)"
+    
+    if not theory_framework:
+        return "Error: Missing required parameter (theory_framework)"
     
     validation_results = {
         "theory_overview": theory_framework,
@@ -597,8 +647,16 @@ def _validate_paradigm_compatibility(theory: Dict) -> Dict:
         "improvement_suggestions": ["Identify areas of compatibility", "Explain paradigm differences clearly"]
     }
 
-async def cultivate_innovation(research_idea: str, domain: str, innovation_goals: List[str]) -> str:
+async def cultivate_innovation(**kwargs) -> str:
     """Systematic development of novel ideas to publication readiness"""
+    
+    research_context = kwargs.get("research_context", {})
+    domain = research_context.get("domain") or kwargs.get("domain")
+    research_idea = research_context.get("current_state") or kwargs.get("research_idea", "Novel research idea")
+    innovation_goals = research_context.get("challenges", []) or kwargs.get("innovation_goals", [])
+    
+    if not domain:
+        return "Error: Missing required parameter (domain)"
     
     cultivation_plan = {
         "research_idea": research_idea,
@@ -702,8 +760,15 @@ async def cultivate_innovation(research_idea: str, domain: str, innovation_goals
     
     return json.dumps(cultivation_plan, indent=2)
 
-async def assess_foundational_assumptions(domain: str, current_paradigm: str) -> str:
-    """Deep analysis of ontological and epistemological foundations"""
+async def assess_foundational_assumptions(**kwargs) -> str:
+    """Challenge basic assumptions underlying theories"""
+    
+    domain = kwargs.get("domain")
+    theory_framework = kwargs.get("theory_framework", {})
+    current_paradigm = theory_framework.get("name", "Current Theory")
+    
+    if not domain:
+        return "Error: Missing required parameter (domain)"
     
     tool = NovelTheoryDevelopmentTool()
     
@@ -719,11 +784,14 @@ async def assess_foundational_assumptions(domain: str, current_paradigm: str) ->
     }
     
     # Get domain-specific information
-    if domain in tool.paradigm_types:
-        paradigm_info = tool.paradigm_types[domain]
-        assumptions = paradigm_info["foundational_assumptions"]
-    else:
-        assumptions = ["Assumption mapping needed for this domain"]
+    # Use generic assumptions since paradigm_types doesn't exist in the tool class
+    assumptions = [
+        "Reality is fundamentally material/physical",
+        "Causation follows deterministic patterns",
+        "Knowledge can be objectively measured",
+        "The observer can be separated from the observed",
+        "Natural laws are universal and invariant"
+    ]
     
     # Ontological analysis (what exists)
     assessment["ontological_analysis"] = {
@@ -820,9 +888,16 @@ def _assess_assumption_testability(assumption: str) -> str:
     else:
         return "Potentially testable - requires methodology development"
 
-async def generate_critical_questions(research_area: str, paradigm_context: str, 
-                                    innovation_level: str = "high") -> str:
+async def generate_critical_questions(**kwargs) -> str:
     """Generate Socratic questioning specific to paradigm innovation"""
+    
+    research_area = kwargs.get("research_area")
+    theory_framework = kwargs.get("theory_framework", {})
+    paradigm_context = theory_framework.get("name") or kwargs.get("paradigm_context", "Current paradigm")
+    innovation_level = kwargs.get("innovation_level", "high")
+    
+    if not research_area:
+        return "Error: Missing required parameter (research_area)"
     
     tool = NovelTheoryDevelopmentTool()
     
@@ -892,13 +967,21 @@ def _get_question_purpose(category: str) -> str:
     }
     return purposes.get(category, "Support systematic inquiry and paradigm examination")
 
-async def evaluate_paradigm_shift_potential(theory_framework: Dict, domain: str, 
-                                          paradigm_metrics: List[str] = None) -> str:
+async def evaluate_paradigm_shift_potential(**kwargs) -> str:
     """Assess the transformative research potential"""
     
-    if not paradigm_metrics:
-        paradigm_metrics = ["explanatory_scope", "predictive_power", "mathematical_elegance", 
-                           "empirical_support", "paradigm_coherence", "revolutionary_potential"]
+    theory_framework = kwargs.get("theory_framework", {})
+    domain = kwargs.get("domain")
+    paradigm_metrics = kwargs.get("paradigm_metrics", [
+        "explanatory_scope", "predictive_power", "mathematical_elegance", 
+        "empirical_support", "paradigm_coherence", "revolutionary_potential"
+    ])
+    
+    if not domain:
+        return "Error: Missing required parameter (domain)"
+    
+    if not theory_framework:
+        return "Error: Missing required parameter (theory_framework)"
     
     evaluation = {
         "theory_framework": theory_framework,
