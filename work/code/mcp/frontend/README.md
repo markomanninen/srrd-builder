@@ -1,53 +1,26 @@
-# Frontend Testing for SRRD-Builder MCP Server
+# Enhanced Frontend Interface for SRRD-Builder MCP Server
 
-This directory contains a comprehensive web-based testing interface for the SRRD-Builder MCP Server.
+This directory contains a modern, comprehensive web-based testing interface for the SRRD-Builder MCP Server with advanced parameter editing capabilities and academic-themed UI.
 
-## 🚀 Quick Start
+## 🎨 **New Enhanced Features**
 
-### Method 1: Using VS Code Tasks (Recommended)
+### **🔧 Modular Architecture**
+- **Separated Stylesheets**: `styles.css` with academic/scientific theme
+- **Modular JavaScript**: `app.js` with comprehensive tool management
+- **Clean HTML Structure**: `index.html` as the main entry point
+- **Dynamic Tool Discovery**: Automatically loads all available MCP tools
 
-1. **Open VS Code Command Palette**: `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux)
-2. **Type**: `Tasks: Run Task`
-3. **Select**: `SRRD: Full Frontend Test Setup`
+### **⚙️ Advanced Parameter Editing**
+- **Modal Parameter Editor**: Edit tool parameters with JSON validation
+- **Parameter Templates**: Quick templates (minimal, full, empty) for each tool
+- **Real-time Validation**: JSON syntax checking and error reporting
+- **Category Filtering**: Tools organized by research categories
 
-This will:
-- Start the MCP server
-- Start the frontend test server  
-- Open the test interface in your browser
-
-### Method 2: Manual Setup
-
-1. **Start the MCP Server**:
-   ```bash
-   cd work/code/mcp
-   python3 run_server.py
-   ```
-
-2. **Start the Frontend Server**:
-   ```bash
-   cd work/code/mcp
-   python3 -m http.server 8080 --directory frontend
-   ```
-
-3. **Open in Browser**:
-   ```bash
-   open http://localhost:8080
-   ```
-
-## 🧪 Testing Features
-
-### **Web Interface Testing**
-- **Modern UI**: Responsive design with real-time feedback
-- **Tool Testing**: Click buttons to test individual MCP tools
-- **Custom Parameters**: Test tools with custom JSON parameters
-- **Real-time Output**: See responses and logs in real-time
-- **Export Results**: Download test results as JSON
-
-### **Automated Test Suite**
-- **Comprehensive Testing**: Tests all 21 MCP tools automatically
-- **Error Handling**: Validates error responses and edge cases
-- **Performance Monitoring**: Tracks response times and success rates
-- **Progress Tracking**: Real-time progress updates during test execution
+### **🎯 Academic UI Theme**
+- **Professional Typography**: Inter font family optimized for research interfaces
+- **Scientific Color Palette**: Blue-based academic color scheme
+- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
+- **Modern Interactions**: Smooth animations and intuitive controls
 
 ### **WebSocket Integration**
 - **Real MCP Protocol**: Uses actual WebSocket connections to MCP server
@@ -78,6 +51,71 @@ Automated test runner:
 - Comprehensive test cases for all tool categories
 - Performance monitoring and reporting
 - Error validation and edge case testing
+
+## 🚀 Quick Start
+
+### Method 1: Using VS Code Tasks (Recommended)
+
+1. **Open VS Code Command Palette**: `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux)
+2. **Type**: `Tasks: Run Task`
+3. **Select**: `SRRD: Start Frontend Test Server`
+
+This will:
+- Start the frontend test server on localhost:8080
+- Automatically serve the enhanced interface
+
+### Method 2: Manual Setup
+
+1. **Start the MCP Server**:
+   ```bash
+   cd work/code/mcp
+   python3 run_server.py
+   ```
+
+2. **Start the Frontend Server**:
+   ```bash
+   cd work/code/mcp
+   python3 -m http.server 8080 --directory frontend
+   ```
+
+3. **Open in Browser**:
+   ```bash
+   open http://localhost:8080
+   ```
+
+## 📁 **File Structure**
+
+```
+frontend/
+├── index.html              # Enhanced main interface (NEW)
+├── styles.css              # Academic theme stylesheet (NEW)
+├── app.js                  # Main application logic (NEW)
+├── mcp-client.js           # WebSocket MCP client
+├── test-suite.js           # Automated test suite
+├── index_dynamic.html      # Legacy dynamic interface
+├── index_old_backup.html   # Backup of previous version
+└── README.md               # This documentation
+```
+
+## 🛠️ **Enhanced Testing Features**
+
+### **🎮 Interactive Tool Testing**
+- **Dynamic Tool Discovery**: Automatically discovers all 38+ MCP tools
+- **Category Organization**: Tools grouped by research function
+- **One-Click Testing**: Run tools with default parameters instantly
+- **Custom Parameter Editing**: Full JSON parameter editor with validation
+
+### **📝 Parameter Editor**
+- **Modal Interface**: Clean popup editor for tool parameters
+- **Template System**: Pre-built parameter templates for each tool
+- **JSON Validation**: Real-time syntax checking and error highlighting
+- **Smart Defaults**: Intelligent default parameters based on tool requirements
+
+### **📊 Real-time Monitoring**
+- **Connection Status**: Live WebSocket connection monitoring
+- **Statistics Dashboard**: Success rates, error counts, tool counts
+- **Console Logging**: Detailed logs with timestamps and categorization
+- **Export Functionality**: Download results and logs as JSON
 
 ## 🎯 How to Test Different Scenarios
 

@@ -2,25 +2,35 @@
 
 ## Implementation Status
 
-**Last Updated**: January 2025
+**Last Updated**: July 2025
 
-This specification documents both the current implementation and planned features of the SRRD-Builder MCP server.
+This specification documents the current implementation of the SRRD-Builder MCP server with dual architecture support.
 
-### Current Implementation
-- ✅ **Core MCP Protocol**: WebSocket and stdio communication
+### Current Implementation ✅ COMPLETE
+- ✅ **Dual Server Architecture**: Both stdio (project-aware) and WebSocket (global) protocols
+- ✅ **38+ Research Tools**: Complete toolkit for scientific research lifecycle
 - ✅ **Research Planning**: Socratic questioning and methodology suggestions  
 - ✅ **Quality Assurance**: Peer review simulation and quality gates
 - ✅ **Document Generation**: LaTeX generation and compilation with advanced bibliography
 - ✅ **Storage Management**: Git, SQLite, and vector database integration
 - ✅ **Search & Discovery**: Semantic search, pattern discovery, concept extraction
-- ✅ **Enhanced Database**: Novel theory support and paradigm comparison tables
+- ✅ **Novel Theory Framework**: Complete paradigm innovation toolkit with equal treatment validation
+- ✅ **Web Frontend**: Dynamic interface for testing all tools
+- ✅ **Global Package**: Pip-installable with dual CLI (`srrd` and `srrd-server`)
 
-### Planned Features  
-- 🔄 **Methodology Advisory**: Detailed methodology explanation and validation
-- 🔄 **Novel Theory Tools**: Complete paradigm innovation toolkit
-- 🔄 **Global Package**: Pip-installable global installation
-- 🔄 **Journal Templates**: Major journal and conference formats
-- 🔄 **Advanced LaTeX**: Syntax validation, figure integration
+### System Architecture
+
+#### 1. Project-Aware Server (`srrd serve`)
+- **Protocol**: stdio (standard input/output)
+- **Integration**: Claude Desktop, VS Code MCP extensions
+- **Context**: Project-specific databases, configuration, and session state
+- **Use Case**: Daily research workflow within SRRD projects
+
+#### 2. Global WebSocket Server (`srrd-server`)
+- **Protocol**: WebSocket on localhost:8765
+- **Integration**: Web interfaces, external applications, testing/demos
+- **Context**: Global tool access without project dependencies
+- **Use Case**: Demonstrations, web applications, external tool integration
 
 ## Overview
 
@@ -38,7 +48,7 @@ The Model Context Protocol (MCP) server is a critical component of the SRRD-Buil
 - **High-End Methodologies**: Implementation of advanced research methodologies across disciplines
 - **Best Practices Enforcement**: Ensure adherence to established scientific standards and institutional requirements
 - **Ethical Guidance**: Integrated ethical review and compliance checking
-- **Risk Assessment**: Proactive identification and mitigation of research risks
+- **Validation Framework**: Comprehensive validation for both standard and novel theories
 
 ### 3. Research Lifecycle Management
 - **Planning Phase**: Complete research proposal development with interactive refinement

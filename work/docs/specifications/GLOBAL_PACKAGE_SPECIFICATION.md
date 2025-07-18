@@ -2,7 +2,7 @@
 
 ## Overview
 
-The SRRD-Builder is a Python package that provides LaTeX-based scientific document generation with MCP server integration for interactive AI-guided research assistance. It's designed to work within Git-based research projects.
+The SRRD-Builder is a Python package that provides LaTeX-based scientific document generation with dual MCP server architecture for both project-aware research assistance and global demo/external access.
 
 ## Installation and Architecture
 
@@ -14,45 +14,66 @@ cd srrd-builder
 ./setup.sh
 
 # Verify global CLI availability
-srrd --version                    # ✅ Works from any directory
-srrd-server --version            # ✅ Global WebSocket server for demos/external access
+srrd --version                    # ✅ Project-aware CLI (stdio MCP for Claude/VS Code)
+srrd-server --version            # ✅ Global WebSocket server (demos/web interfaces)
 ```
 
-**Note**: `./setup.sh` automatically runs `pip install -e .` which makes both `srrd` and `srrd-server` commands globally available. Use `srrd serve` for project-aware server management, and `srrd-server` for standalone WebSocket demos.
+**Note**: `./setup.sh` automatically runs `pip install -e .` which makes both `srrd` and `srrd-server` commands globally available. The dual architecture supports both integrated research workflows and standalone demonstrations.
+
+### Dual Server Architecture
+
+#### 1. Project-Aware Server (`srrd serve`)
+- **Purpose**: Integration with Claude Desktop/VS Code within research projects
+- **Protocol**: stdio (standard input/output)
+- **Context**: Project-specific data and configuration
+- **Entry Point**: `srrd_builder.cli.main:main`
+- **Use Case**: Daily research work, manuscript writing, project management
+
+#### 2. Global WebSocket Server (`srrd-server`)
+- **Purpose**: Demos, web interfaces, and external tool integration  
+- **Protocol**: WebSocket on localhost:8765
+- **Context**: Global tool access without project dependency
+- **Entry Point**: `srrd_builder.server.launcher:main`
+- **Use Case**: Testing, demonstrations, web application integration
 
 ### Package Structure
 
 ```
 srrd-builder/
 ├── srrd_builder/                 # Main package directory  
-│   ├── cli/                     # ✅ Command-line interface
-│   │   ├── main.py             # Main CLI entry point
+│   ├── cli/                     # ✅ Project-aware CLI interface
+│   │   ├── main.py             # Main CLI entry point (stdio MCP)
 │   │   └── commands/           # Individual commands (init, generate, serve, etc.)
 │   ├── config/                 # ✅ Configuration management  
 │   │   └── defaults.json       # Package defaults
-│   └── server/                 # ✅ Global server launcher
-│       └── launcher.py         # Global MCP server launcher
-├── work/code/mcp/              # ✅ MCP server implementation
-│   ├── server.py              # Main MCP server
-│   ├── tools/                 # 40+ MCP tools (research, latex, quality, etc.)
+│   └── server/                 # ✅ Global WebSocket server launcher
+│       └── launcher.py         # Global MCP server launcher (WebSocket)
+├── work/code/mcp/              # ✅ MCP server implementation (shared by both)
+│   ├── server.py              # Main MCP server (38+ tools)
+│   ├── tools/                 # Research, LaTeX, quality, novel theory tools
 │   ├── config/                # Server configuration
-│   │   └── default_config.json # Local MCP server config
+│   │   └── default_config.json # MCP server config
+│   ├── frontend/              # ✅ Web interface for global server
+│   │   ├── index_dynamic.html # Dynamic tool discovery interface
+│   │   └── mcp-client.js      # WebSocket MCP client
 │   └── storage/               # Storage management (Git, SQLite, Vector DB)
-├── setup.py                   # ✅ Package setup with global entry points
+├── setup.py                   # ✅ Package setup with dual entry points
 ├── requirements.txt           # ✅ Dependencies
 └── README.md                  # ✅ Documentation
 ```
 
 ### Key Features
-- ✅ **Global CLI Access**: `srrd` commands work from any directory after setup
-- ✅ **Local MCP Server**: Each project runs its own MCP server instance
-- ✅ **In-Memory Templates**: LaTeX templates built into the system (no external files needed)
+- ✅ **Dual CLI Access**: Both `srrd` and `srrd-server` commands work globally after setup
+- ✅ **Project-Aware MCP**: Each project runs its own MCP server instance with context
+- ✅ **Global WebSocket Demo**: Standalone server for testing and external integration
+- ✅ **Web Frontend**: Dynamic interface for testing all 38 tools
+- ✅ **In-Memory Templates**: LaTeX templates built into the system
 - ✅ **Environment Config**: Use `SRRD_*` environment variables for configuration
 - ✅ **Project-Specific**: Each project has its own `.srrd/` configuration and data
 
 ## MCP Server Access Methods
 
-### Project-Aware Server Management (`srrd serve`)
+### 1. Project-Aware Server Management (`srrd serve`)
 ```bash
 # Within an SRRD project directory (has .srrd/ folder)
 cd /path/to/your/research/project
@@ -62,20 +83,35 @@ srrd serve stop                  # Stop the server
 srrd serve restart               # Restart the server
 srrd serve status                # Check server status
 ```
-**Use case**: Research workflow within a specific project with project-specific databases, config, and context.
+**Use case**: Research workflow within a specific project with project-specific databases, configuration, and context. Integrates with Claude Desktop/VS Code via stdio protocol.
 
-### Global WebSocket Server (`srrd-server`)
+### 2. Global WebSocket Server (`srrd-server`)
 ```bash
 # Can run from anywhere - no project context needed
 srrd-server                      # Start WebSocket server on default port 8765
 srrd-server --port 8080          # Start on custom port
-srrd-server --stdio              # Start in stdio mode for Claude Desktop
+srrd-server --with-frontend      # Start with web interface on port 8080
+srrd-server --frontend-port 9000 # Custom frontend port
 ```
-**Use case**: Web GUI demos, external tool access, testing, or Claude Desktop integration.
+**Use case**: Web GUI demos, external tool access, testing, and standalone demonstrations. Provides WebSocket API for custom applications.
+
+### 3. Web Interface Testing
+```bash
+# Start complete demo system
+srrd-server --with-frontend --frontend-port 8080
+
+# Open browser to http://localhost:8080
+# Features:
+# - Dynamic discovery of all 38 tools
+# - Real-time WebSocket connection status
+# - Test interface for every tool
+# - Categorized tool organization
+# - Live console output
+```
 
 ## Usage Workflow
 
-### 1. Project Initialization
+### 1. Project Initialization (for project-aware usage)
 ```bash
 # Navigate to any Git repository
 cd /path/to/your/research/project
@@ -89,12 +125,23 @@ srrd init
 # ├── sessions.db         # SQLite database
 # ├── knowledge.db        # Vector database
 # └── templates/          # Local templates
+# work/                   # Research work area
+# publications/           # Final outputs
 
-# Start interactive MCP server
-srrd serve --port 8080
+# Start project-aware MCP server
+srrd serve start
 ```
 
-### 2. Generate Research Documents
+### 2. Global Demo Usage (no project needed)
+```bash
+# Start complete demo system
+srrd-server --with-frontend
+
+# Open http://localhost:8080 in browser
+# Connect to server and test all tools
+```
+
+### 3. Generate Research Documents
 ```bash
 # Generate research proposal
 srrd generate proposal \

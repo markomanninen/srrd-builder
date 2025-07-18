@@ -1,23 +1,25 @@
 # SRRD-Builder
 
-**S**cientific **R**esearch **R**equirement **D**ocument Builder - A neurosymbolic (symbolic + LLM) tool for generating scientific research requirement documents with AI-driven research guidance.
+**S**cientific **R**esearch **R**equirement **D**ocument Builder - A comprehensive AI-powered toolkit for scientific research collaboration and document generation.
 
 ## Overview
 
 SRRD-Builder is designed to support the full scientific research lifecycle, from initial planning to publication-ready documents. It features special capabilities for novel theory development in fundamental physics, ensuring equal treatment and rigorous development of alternative paradigms.
 
-The project provides a **Model Context Protocol (MCP) server** that integrates with Claude Desktop and VS Code, offering 30+ research tools for document generation, knowledge management, and research quality assurance.
+The project provides a **Model Context Protocol (MCP) server** that integrates with Claude Desktop and VS Code, offering 38+ research tools for document generation, knowledge management, and research quality assurance.
 
 ## Key Features
 
-- **MCP (Model Context Protocol) Server** for interactive research guidance
-- **CLI Tool (`srrd`)** for server management and configuration
-- **30+ Research Tools** including document generation, semantic search, and quality gates
+- **Dual MCP Server Architecture** for both project-aware and global access
+- **CLI Tool (`srrd`)** for project-aware server management and configuration
+- **Global WebSocket Server (`srrd-server`)** for demos and web interfaces
+- **38+ Research Tools** including document generation, semantic search, and quality gates
 - **LaTeX Document Generation** with automatic bibliography integration
 - **Vector Database Storage** for semantic search and knowledge management
 - **Git-based Project Management** with session restoration
 - **Socratic Questioning Engine** for progressive research refinement
 - **Novel Theory Development Framework** for paradigm innovation in physics
+- **Web Frontend Interface** for testing and demonstration
 - **Local Storage Integration** (Git, SQLite, Vector DB)
 
 ## Quick Start
@@ -31,68 +33,117 @@ cd srrd-builder
 
 This will:
 - Install Python dependencies
-- Install the `srrd` CLI tool
+- Install the `srrd` and `srrd-server` CLI tools
 - Configure LaTeX (if needed)
 - Set up Claude Desktop configuration
 - Test all components
 
-### 📱 CLI Usage
+### 📱 Server Access Methods
 
-After installation, use the `srrd` command-line tool:
+SRRD-Builder provides two ways to access the MCP server:
+
+#### 1. Project-Aware Server (`srrd serve`)
+For use within SRRD projects with Claude Desktop/VS Code integration:
 
 ```bash
+# Initialize a new research project
+cd /path/to/your/git/repo
+srrd init
+
+# Start project-aware MCP server
+srrd serve start
+
 # Check configuration and server status
 srrd configure --status
 
-# Start the MCP server
-srrd serve start
-
 # Stop the MCP server  
-srrd serve stop
+srrd serve stop  
+```
 
-# Restart the MCP server
-srrd serve restart
+#### 2. Global WebSocket Server (`srrd-server`)
+For demos, web interfaces, and external access:
+
+```bash
+# Start global WebSocket server only
+srrd-server
+
+# Start with web frontend interface
+srrd-server --with-frontend
+
+# Use custom ports
+srrd-server --port 9000 --frontend-port 8080
 
 # Get help
-srrd --help
+srrd-server --help
 ```
 
 ### 🔧 Requirements
 - Python 3.8+
 - LaTeX distribution (MacTeX on macOS, TeXLive on Linux)
-- Claude Desktop or VS Code with MCP support
-- Git
+- Claude Desktop or VS Code with MCP support (for project-aware mode)
+- Git (for project initialization)
 
 ## Usage
 
-### With Claude Desktop
+### Method 1: With Claude Desktop (Project-Aware)
 
 1. Install using `./setup.sh`
-2. Check status: `srrd configure --status`
-3. Start server: `srrd serve start`
-4. Restart Claude Desktop
-5. Use SRRD-Builder tools in your conversations
+2. Initialize project: `cd /path/to/git/repo && srrd init`
+3. Check status: `srrd configure --status`
+4. Start server: `srrd serve start`
+5. Restart Claude Desktop
+6. Use SRRD-Builder tools in your conversations
+
+### Method 2: Web Interface Demo (Global)
+
+1. Start the complete demo system: `srrd-server --with-frontend`
+2. Open web interface: http://localhost:8080
+3. Click "Connect to Server"
+4. Test any of the 38 available tools
 
 ### Available Tools
 
-The MCP server provides 30+ tools organized by category:
+The MCP server provides 38+ tools organized by category:
 
-- **Project Management**: Initialize projects, save/restore sessions
-- **Research Planning**: Clarify goals, suggest methodologies, quality gates
-- **Document Generation**: LaTeX compilation, bibliography management
-- **Knowledge Management**: Semantic search, concept extraction, pattern discovery
-- **Storage**: Vector database operations, document similarity
-- **Quality Assurance**: Peer review simulation, research validation
+- **🧪 Research Planning & Goal Setting** (2 tools): Clarify goals, suggest methodologies
+- **✅ Quality Assurance & Review** (2 tools): Peer review simulation, quality gates
+- **🗄️ Storage & Project Management** (6 tools): Initialize projects, save/restore sessions
+- **📄 Document Generation & LaTeX** (6 tools): LaTeX compilation, bibliography management
+- **🔍 Search & Discovery** (6 tools): Semantic search, concept extraction, pattern discovery
+- **⚗️ Methodology & Validation** (4 tools): Methodology explanation, design validation
+- **🚀 Novel Theory Development** (8 tools): Paradigm innovation, equal treatment validation
 
 ### Example Workflow
 
 ```
-# In Claude Desktop:
+# Method 1: In Claude Desktop (project-aware):
 "Initialize a new research project on quantum computing"
 "Generate a LaTeX document with bibliography from my vector database"
 "Perform semantic search for related documents"
 "Simulate peer review of my methodology section"
+
+# Method 2: In Web Interface (global demo):
+1. Open http://localhost:8080 in browser
+2. Click "Connect to Server"
+3. Test tools by clicking category buttons
+4. View real-time results in console
 ```
+
+## Server Architecture
+
+SRRD-Builder uses a dual server architecture to support different use cases:
+
+### Project-Aware Server (`srrd serve`)
+- **Purpose**: Integration with Claude Desktop/VS Code within research projects
+- **Protocol**: stdio (standard input/output)
+- **Context**: Project-specific data and configuration
+- **Use Case**: Daily research work, manuscript writing, project management
+
+### Global WebSocket Server (`srrd-server`)
+- **Purpose**: Demos, web interfaces, and external tool integration
+- **Protocol**: WebSocket on localhost:8765
+- **Context**: Global tool access without project dependency
+- **Use Case**: Testing, demonstrations, web application integration
 
 ## Documentation
 
@@ -118,7 +169,9 @@ The MCP server provides 30+ tools organized by category:
 
 ### Common Issues
 
-1. **MCP Server not responding**: Check status with `srrd configure --status` and restart with `srrd serve restart`
+1. **Project-aware server not responding**: Check status with `srrd configure --status` and restart with `srrd serve restart`
+2. **Global server connection failed**: Ensure `srrd-server` is running and check port 8765 availability
+3. **Web interface can't connect**: Make sure WebSocket server is running with `srrd-server`
 2. **Claude Desktop not finding tools**: Ensure server is running (`srrd serve start`) and restart Claude Desktop
 3. **LaTeX compilation errors**: Verify LaTeX installation with `pdflatex --version`
 4. **Import errors**: Ensure virtual environment is activated: `source venv/bin/activate`

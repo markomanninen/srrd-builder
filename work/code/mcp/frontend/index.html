@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRRD-Builder MCP Server - Frontend Test Interface</title>
+    <title>SRRD-Builder MCP Server - Scientific Research Interface</title>
     <style>
         * {
             margin: 0;
@@ -12,155 +12,51 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
             min-height: 100vh;
-            padding: 20px;
+            color: #333;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
+            min-height: 100vh;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
 
         .header {
-            background: linear-gradient(135deg, #2c3e50, #3498db);
+            background: linear-gradient(135deg, #1f2937, #374151);
             color: white;
-            padding: 30px;
+            padding: 40px;
             text-align: center;
         }
 
         .header h1 {
             font-size: 2.5rem;
             margin-bottom: 10px;
-            font-weight: 300;
         }
 
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        .status {
-            padding: 20px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #e9ecef;
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
         }
 
         .status-indicator {
-            display: inline-block;
             width: 12px;
             height: 12px;
             border-radius: 50%;
+            background: #dc2626;
             margin-right: 8px;
         }
 
-        .status-connected {
-            background: #28a745;
-        }
-
-        .status-disconnected {
-            background: #dc3545;
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            padding: 30px;
-        }
-
-        .panel {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 25px;
-            border: 1px solid #e9ecef;
-        }
-
-        .panel h3 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            font-size: 1.3rem;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-        }
-
-        .tool-grid {
-            display: grid;
-            gap: 15px;
-        }
-
-        .tool-button {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            border: none;
-            padding: 15px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            text-align: left;
-        }
-
-        .tool-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
-        }
-
-        .tool-button:active {
-            transform: translateY(0);
-        }
-
-        .output-panel {
-            grid-column: 1 / -1;
-            margin-top: 20px;
-        }
-
-        .output {
-            background: #2c3e50;
-            color: #ecf0f1;
-            padding: 20px;
-            border-radius: 8px;
-            font-family: 'Monaco', 'Menlo', monospace;
-            max-height: 400px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            border: 2px solid #34495e;
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
-        .input-group input, .input-group textarea, .input-group select {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #bdc3c7;
-            border-radius: 6px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-
-        .input-group input:focus, .input-group textarea:focus, .input-group select:focus {
-            outline: none;
-            border-color: #3498db;
-        }
-
-        .controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
+        .status-indicator.connected {
+            background: #059669;
         }
 
         .btn {
@@ -168,54 +64,260 @@
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
         }
 
         .btn-primary {
-            background: #3498db;
+            background: #3b82f6;
             color: white;
         }
 
-        .btn-success {
-            background: #27ae60;
-            color: white;
+        .btn-primary:hover {
+            background: #2563eb;
         }
 
-        .btn-danger {
-            background: #e74c3c;
-            color: white;
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
         }
 
-        .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            padding: 30px;
         }
 
-        .footer {
-            background: #2c3e50;
-            color: white;
-            text-align: center;
+        .tools-section {
+            display: grid;
+            gap: 25px;
+        }
+
+        .tool-category {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 25px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .tool-category h3 {
+            color: #1f2937;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .tool-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
             padding: 20px;
+            transition: all 0.2s;
+        }
+
+        .tool-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .tool-name {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1f2937;
+        }
+
+        .tool-description {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-bottom: 15px;
+        }
+
+        .tool-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-tool {
+            flex: 1;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-tool:hover {
+            background: #2563eb;
+        }
+
+        .btn-edit {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-edit:hover {
+            background: #4b5563;
+        }
+
+        .console-section {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 25px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .console {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.85rem;
+        }
+
+        .console-line {
+            margin-bottom: 8px;
+        }
+
+        .console-timestamp {
+            color: #9ca3af;
+            font-size: 0.8rem;
+        }
+
+        .console-info { color: #60a5fa; }
+        .console-success { color: #34d399; }
+        .console-error { color: #f87171; }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .modal-subtitle {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .modal-body {
+            padding: 32px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-footer {
+            padding: 24px 32px;
+            border-top: 1px solid #e5e7eb;
+            background: #f9fafb;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+            font-size: 0.9rem;
+        }
+
+        .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+
+        .form-help {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 6px;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .hidden {
+            display: none !important;
         }
 
         .loading {
             display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3b82f6;
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            margin-right: 8px;
         }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-
-        .hidden {
-            display: none;
         }
     </style>
 </head>
@@ -223,439 +325,379 @@
     <div class="container">
         <div class="header">
             <h1>🧠 SRRD-Builder MCP Server</h1>
-            <p>Neurosymbolic Scientific Research Requirement Document Builder - Frontend Test Interface</p>
+            <p>Scientific Research Interface</p>
         </div>
 
-        <div class="status">
-            <span class="status-indicator status-disconnected" id="statusIndicator"></span>
-            <span id="statusText">Disconnected from MCP Server</span>
-            <div class="controls">
-                <button class="btn btn-success" onclick="connect()">Connect to Server</button>
-                <button class="btn btn-danger" onclick="disconnect()">Disconnect</button>
-                <button class="btn btn-primary" onclick="runDiagnostics()">Run Diagnostics</button>
+        <div class="status-bar">
+            <div style="display: flex; align-items: center;">
+                <span class="status-indicator" id="statusIndicator"></span>
+                <span id="statusText">Disconnected</span>
+                <span id="toolCount"></span>
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <button class="btn btn-primary" id="connectBtn">Connect to Server</button>
+                <button class="btn btn-primary" id="refreshBtn" disabled>Refresh Tools</button>
+                <button class="btn btn-primary" onclick="clearConsole()">Clear Console</button>
             </div>
         </div>
 
         <div class="main-content">
-            <div class="panel">
-                <h3>🧪 Research Planning Tools</h3>
-                <div class="tool-grid">
-                    <button class="tool-button" onclick="testTool('clarify_research_goals')">
-                        🎯 Clarify Research Goals
-                    </button>
-                    <button class="tool-button" onclick="testTool('suggest_methodology')">
-                        📋 Suggest Methodology
-                    </button>
+            <div class="tools-section" id="toolsSection">
+                <div class="tool-category">
+                    <h3>🔌 Getting Started</h3>
+                    <p>Click "Connect to Server" to discover all available tools!</p>
+                    <br>
+                    <p><strong>Prerequisites:</strong></p>
+                    <ul>
+                        <li>MCP server running: <code>srrd-server</code></li>
+                        <li>Server accessible on localhost:8765</li>
+                    </ul>
                 </div>
             </div>
 
-            <div class="panel">
-                <h3>✅ Quality Assurance Tools</h3>
-                <div class="tool-grid">
-                    <button class="tool-button" onclick="testTool('simulate_peer_review')">
-                        👥 Simulate Peer Review
-                    </button>
-                    <button class="tool-button" onclick="testTool('check_quality_gates')">
-                        🚪 Check Quality Gates
-                    </button>
+            <div class="console-section">
+                <h3>📟 Test Console</h3>
+                <div class="console" id="console">
+                    <div class="console-line">
+                        <span class="console-timestamp">[Ready]</span>
+                        <span class="console-info">🚀 SRRD-Builder MCP Frontend Ready</span>
+                    </div>
                 </div>
             </div>
-
-            <div class="panel">
-                <h3>📄 Document Generation</h3>
-                <div class="tool-grid">
-                    <button class="tool-button" onclick="testTool('generate_latex_document')">
-                        📝 Generate LaTeX Document
-                    </button>
-                    <button class="tool-button" onclick="testTool('format_research_content')">
-                        📐 Format Research Content
-                    </button>
-                    <button class="tool-button" onclick="testTool('generate_bibliography')">
-                        📚 Generate Bibliography
-                    </button>
-                </div>
-            </div>
-
-            <div class="panel">
-                <h3>🔍 Search & Discovery</h3>
-                <div class="tool-grid">
-                    <button class="tool-button" onclick="testTool('semantic_search')">
-                        🔎 Semantic Search
-                    </button>
-                    <button class="tool-button" onclick="testTool('discover_patterns')">
-                        🔗 Discover Patterns
-                    </button>
-                    <button class="tool-button" onclick="testTool('extract_key_concepts')">
-                        🎯 Extract Key Concepts
-                    </button>
-                </div>
-            </div>
-
-            <div class="panel">
-                <h3>🗄️ Custom Tool Test</h3>
-                <div class="input-group">
-                    <label for="customTool">Tool Name:</label>
-                    <select id="customTool">
-                        <option value="clarify_research_goals">Clarify Research Goals</option>
-                        <option value="suggest_methodology">Suggest Methodology</option>
-                        <option value="simulate_peer_review">Simulate Peer Review</option>
-                        <option value="semantic_search">Semantic Search</option>
-                    </select>
-                </div>
-                <div class="input-group">
-                    <label for="customParams">Parameters (JSON):</label>
-                    <textarea id="customParams" rows="4" placeholder='{"research_area": "quantum physics", "experience_level": "graduate"}'></textarea>
-                </div>
-                <button class="btn btn-primary" onclick="testCustomTool()">Run Custom Test</button>
-            </div>
-
-            <div class="panel">
-                <h3>📊 Server Statistics</h3>
-                <div id="serverStats">
-                    <p>Click "Run Diagnostics" to load server statistics</p>
-                </div>
-            </div>
-
-            <div class="output-panel panel">
-                <h3>📟 Output Console</h3>
-                <div id="output" class="output">
-🚀 SRRD-Builder MCP Server Frontend Test Interface Ready
-
-This interface allows you to test the MCP server functionality through a web browser.
-
-Available actions:
-• Connect to the MCP server running on localhost:8765
-• Test individual tools with predefined or custom parameters
-• Monitor server status and performance
-• View real-time output and responses
-
-To get started:
-1. Make sure the MCP server is running (srrd-server --with-frontend)
-2. Click "Connect to Server" 
-3. Test any tool by clicking the buttons above
-4. View results in this console
-
-🆕 For ALL 38+ tools dynamically loaded, use index_dynamic.html instead!
-
-Ready for testing! 🧪
-                </div>
-                <div class="controls">
-                    <button class="btn btn-primary" onclick="clearOutput()">Clear Output</button>
-                    <button class="btn btn-success" onclick="exportResults()">Export Results</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="footer">
-            <p>🔬 SRRD-Builder MCP Server v1.0 - Neurosymbolic Research Document Generation</p>
-            <p>Frontend Test Interface • Ready for Production • 24/24 Tests Passing ✅</p>
         </div>
     </div>
 
     <script src="mcp-client.js"></script>
-    <script src="test-suite.js"></script>
     <script>
+        // Simple, clean JavaScript
         let mcpClient = null;
-        let isConnected = false;
-        let testResults = [];
+        let availableTools = [];
+        let currentModal = null;
 
-        // Initialize MCP client
-        function initializeMCPClient() {
-            mcpClient = new MCPClient('ws://localhost:8765');
+        // Tool categories
+        const toolCategories = {
+            'clarify_research_goals': 'research',
+            'suggest_methodology': 'research', 
+            'simulate_peer_review': 'quality',
+            'check_quality_gates': 'quality',
+            'initialize_project': 'storage',
+            'save_session': 'storage',
+            'restore_session': 'storage',
+            'search_knowledge': 'search',
+            'version_control': 'storage',
+            'backup_project': 'storage',
+            'generate_latex_document': 'document',
+            'compile_latex': 'document',
+            'format_research_content': 'document',
+            'generate_bibliography': 'document',
+            'extract_document_sections': 'document',
+            'store_bibliography_reference': 'storage',
+            'retrieve_bibliography_references': 'storage',
+            'generate_document_with_database_bibliography': 'document',
+            'semantic_search': 'search',
+            'discover_patterns': 'search',
+            'build_knowledge_graph': 'search',
+            'find_similar_documents': 'search',
+            'extract_key_concepts': 'search',
+            'generate_research_summary': 'search'
+        };
+
+        const categoryInfo = {
+            'research': { title: '🧪 Research Planning', icon: '🎯' },
+            'quality': { title: '✅ Quality Assurance', icon: '🔍' },
+            'storage': { title: '🗄️ Storage & Management', icon: '💾' },
+            'document': { title: '📄 Document Generation', icon: '📝' },
+            'search': { title: '🔍 Search & Discovery', icon: '🔎' }
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Frontend loaded successfully');
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            document.getElementById('connectBtn').addEventListener('click', connectToServer);
+            document.getElementById('refreshBtn').addEventListener('click', refreshTools);
             
-            // Set up callbacks
-            mcpClient.onStatusChange = updateStatus;
-            mcpClient.onMessage = handleMCPMessage;
-        }
-
-        function handleMCPMessage(message) {
-            // Handle incoming MCP messages
-            if (message.method) {
-                log(`📨 Received: ${message.method}`, 'info');
-            }
-        }
-
-        function updateStatus(connected, message) {
-            const indicator = document.getElementById('statusIndicator');
-            const text = document.getElementById('statusText');
-            
-            if (connected) {
-                indicator.className = 'status-indicator status-connected';
-                text.textContent = message || 'Connected to MCP Server';
-            } else {
-                indicator.className = 'status-indicator status-disconnected';
-                text.textContent = message || 'Disconnected from MCP Server';
-            }
-            isConnected = connected;
+            // Close modal on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && currentModal) {
+                    closeModal();
+                }
+            });
         }
 
         function log(message, type = 'info') {
-            const output = document.getElementById('output');
+            const console = document.getElementById('console');
             const timestamp = new Date().toLocaleTimeString();
-            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
-            output.textContent += `\n[${timestamp}] ${prefix} ${message}`;
-            output.scrollTop = output.scrollHeight;
-        }
-
-        function clearOutput() {
-            document.getElementById('output').textContent = '🚀 Output cleared. Ready for new tests...\n';
-        }
-
-        async function connect() {
-            if (!mcpClient) {
-                initializeMCPClient();
+            const line = document.createElement('div');
+            line.className = 'console-line';
+            
+            let icon = '';
+            switch(type) {
+                case 'success': icon = '✅'; break;
+                case 'error': icon = '❌'; break;
+                case 'warning': icon = '⚠️'; break;
+                default: icon = 'ℹ️'; break;
             }
+            
+            line.innerHTML = `
+                <span class="console-timestamp">[${timestamp}]</span>
+                <span class="console-${type}">${icon} ${message}</span>
+            `;
+            
+            console.appendChild(line);
+            console.scrollTop = console.scrollHeight;
+        }
 
+        async function connectToServer() {
+            const connectBtn = document.getElementById('connectBtn');
+            const statusIndicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            
             try {
+                connectBtn.disabled = true;
+                connectBtn.innerHTML = '<span class="loading"></span>Connecting...';
+                statusIndicator.className = 'status-indicator';
+                
                 log('Connecting to MCP server on localhost:8765...');
+                
+                mcpClient = new MCPClient('ws://localhost:8765');
+                
+                mcpClient.onStatusChange = (connected, message) => {
+                    if (connected) {
+                        statusIndicator.className = 'status-indicator connected';
+                        statusText.textContent = 'Connected';
+                        document.getElementById('refreshBtn').disabled = false;
+                    } else {
+                        statusIndicator.className = 'status-indicator';
+                        statusText.textContent = 'Disconnected';
+                        document.getElementById('refreshBtn').disabled = true;
+                    }
+                };
+                
                 await mcpClient.connect();
                 
-                // Test connection by listing tools
-                const tools = await mcpClient.listTools();
-                log(`Successfully connected! Found ${tools.tools ? tools.tools.length : 0} tools`, 'success');
+                // Get available tools
+                const toolsResult = await mcpClient.listTools();
+                const tools = toolsResult.tools || [];
+                availableTools = tools;
                 
-                loadServerStats();
+                log(`Successfully connected! Found ${tools.length} tools`, 'success');
+                document.getElementById('toolCount').textContent = ` (${tools.length} tools)`;
+                
+                renderTools(tools);
+                connectBtn.innerHTML = '🔄 Reconnect';
                 
             } catch (error) {
                 log(`Connection failed: ${error.message}`, 'error');
-                log('💡 Make sure the MCP server is running: srrd-server --with-frontend', 'info');
-                updateStatus(false, 'Connection failed');
+                statusIndicator.className = 'status-indicator';
+                statusText.textContent = 'Connection Failed';
+                connectBtn.innerHTML = 'Connect to Server';
+            } finally {
+                connectBtn.disabled = false;
             }
         }
 
-        function disconnect() {
-            if (mcpClient) {
-                mcpClient.disconnect();
-                mcpClient = null;
-            }
-            updateStatus(false, 'Disconnected by user');
-            log('Disconnected from MCP server', 'info');
+        function renderTools(tools) {
+            const toolsSection = document.getElementById('toolsSection');
+            
+            // Group tools by category
+            const categorizedTools = {};
+            
+            tools.forEach(tool => {
+                const category = toolCategories[tool.name] || 'other';
+                if (!categorizedTools[category]) {
+                    categorizedTools[category] = [];
+                }
+                categorizedTools[category].push(tool);
+            });
+            
+            // Clear existing tools
+            const existingCategories = toolsSection.querySelectorAll('.tool-category');
+            existingCategories.forEach(cat => cat.remove());
+            
+            // Render each category
+            Object.keys(categorizedTools).forEach(categoryKey => {
+                const categoryTools = categorizedTools[categoryKey];
+                const categoryData = categoryInfo[categoryKey] || { title: '🔧 Other Tools', icon: '⚙️' };
+                
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'tool-category';
+                categoryDiv.innerHTML = `
+                    <h3>${categoryData.title}</h3>
+                    <div class="tool-grid">
+                        ${categoryTools.map(tool => `
+                            <div class="tool-card">
+                                <div class="tool-name">${formatToolName(tool.name)}</div>
+                                <div class="tool-description">${tool.description || 'No description available'}</div>
+                                <div class="tool-actions">
+                                    <button class="btn-tool" onclick="runTool('${tool.name}')">▶️ Run</button>
+                                    <button class="btn-edit" onclick="editTool('${tool.name}')" title="Edit Parameters">⚙️</button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                toolsSection.appendChild(categoryDiv);
+            });
         }
 
-        async function testTool(toolName) {
-            if (!isConnected || !mcpClient) {
-                log('Please connect to the server first', 'error');
+        function formatToolName(name) {
+            return name.split('_').map(word => 
+                word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+        }
+
+        async function runTool(toolName) {
+            if (!mcpClient || !mcpClient.isConnected) {
+                log('Not connected to server', 'error');
                 return;
             }
-
-            log(`Testing tool: ${toolName}...`);
             
-            const testParams = getTestParameters(toolName);
+            log(`Running tool: ${toolName}...`);
             
             try {
-                const response = await mcpClient.callTool(toolName, testParams);
+                const result = await mcpClient.callTool(toolName, getDefaultParams(toolName));
                 log(`✅ ${toolName} completed successfully`, 'success');
-                log(`Response: ${JSON.stringify(response, null, 2)}`);
-                
-                testResults.push({
-                    tool: toolName,
-                    timestamp: new Date().toISOString(),
-                    success: true,
-                    params: testParams,
-                    response: response
-                });
-                
-                updateStats();
-                
+                log(`Response: ${JSON.stringify(result, null, 2)}`);
             } catch (error) {
                 log(`❌ ${toolName} failed: ${error.message}`, 'error');
-                testResults.push({
-                    tool: toolName,
-                    timestamp: new Date().toISOString(),
-                    success: false,
-                    error: error.message
-                });
-                
-                updateStats();
             }
         }
 
-        async function testCustomTool() {
-            const toolName = document.getElementById('customTool').value;
-            const paramsText = document.getElementById('customParams').value;
+        function editTool(toolName) {
+            const defaultParams = getDefaultParams(toolName);
+            showParameterEditor(toolName, defaultParams);
+        }
+
+        function showParameterEditor(toolName, defaultParams) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            
+            modal.innerHTML = `
+                <div class="modal" onclick="event.stopPropagation()">
+                    <div class="modal-header">
+                        <h3 class="modal-title">${formatToolName(toolName)}</h3>
+                        <p class="modal-subtitle">Configure parameters for this tool</p>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label class="form-label">Tool Parameters (JSON)</label>
+                            <textarea class="form-textarea" id="paramEditor" rows="12">${JSON.stringify(defaultParams, null, 2)}</textarea>
+                            <div class="form-help">Edit the JSON parameters above.</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                        <button class="btn btn-primary" onclick="runToolWithCustomParams('${toolName}')">▶️ Run Tool</button>
+                    </div>
+                </div>
+            `;
+            
+            // Close on background click
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+            
+            document.body.appendChild(modal);
+            currentModal = modal;
+            
+            // Focus textarea
+            setTimeout(() => {
+                document.getElementById('paramEditor').focus();
+            }, 100);
+        }
+
+        async function runToolWithCustomParams(toolName) {
+            const editor = document.getElementById('paramEditor');
+            let params;
             
             try {
-                const params = paramsText ? JSON.parse(paramsText) : {};
-                await testTool(toolName);
-                
+                params = JSON.parse(editor.value);
             } catch (error) {
-                log(`❌ Invalid JSON parameters: ${error.message}`, 'error');
+                log(`Invalid JSON: ${error.message}`, 'error');
+                return;
+            }
+            
+            closeModal();
+            
+            if (!mcpClient || !mcpClient.isConnected) {
+                log('Not connected to server', 'error');
+                return;
+            }
+            
+            log(`Running ${toolName} with custom parameters...`);
+            
+            try {
+                const result = await mcpClient.callTool(toolName, params);
+                log(`✅ ${toolName} completed successfully`, 'success');
+                log(`Response: ${JSON.stringify(result, null, 2)}`);
+            } catch (error) {
+                log(`❌ ${toolName} failed: ${error.message}`, 'error');
             }
         }
 
-        function getTestParameters(toolName) {
-            const params = {
-                'clarify_research_goals': {
-                    research_area: 'quantum gravity',
-                    initial_goals: 'Develop unified theory',
-                    experience_level: 'graduate',
-                    domain_specialization: 'theoretical_physics',
-                    novel_theory_mode: true
-                },
-                'suggest_methodology': {
-                    research_goals: 'alternative physics theories',
-                    domain: 'theoretical_physics',
-                    novel_theory_flag: true
-                },
-                'simulate_peer_review': {
-                    document_content: {
-                        title: 'Novel Quantum Theory',
-                        abstract: 'Revolutionary approach to quantum mechanics',
-                        methodology: 'Mathematical analysis',
-                        results: 'New theoretical framework'
-                    },
-                    domain: 'theoretical_physics',
-                    review_type: 'comprehensive',
-                    novel_theory_mode: true
-                },
-                'check_quality_gates': {
-                    research_content: {
-                        title: 'Test Research Paper',
-                        abstract: 'Test abstract for validation',
-                        methodology: 'Test methodology'
-                    },
-                    phase: 'publication_readiness'
-                },
-                'semantic_search': {
-                    query: 'quantum mechanics',
-                    collection: 'research_docs',
-                    limit: 5
-                },
-                'generate_latex_document': {
-                    title: 'Frontend Test Document',
-                    author: 'Test Author',
-                    abstract: 'Test document generated from frontend',
-                    introduction: 'Test introduction',
-                    methodology: 'Frontend testing methodology',
-                    results: 'Test results',
-                    conclusion: 'Frontend test completed'
-                },
-                'format_research_content': {
-                    content: 'This is test content for academic formatting',
-                    content_type: 'section',
-                    formatting_style: 'academic'
-                },
-                'generate_bibliography': {
-                    references: [
-                        {
-                            type: 'article',
-                            authors: 'Einstein, A.',
-                            title: 'Special Relativity Theory',
-                            journal: 'Annalen der Physik',
-                            year: '1905'
-                        }
-                    ]
-                },
-                'discover_patterns': {
-                    content: 'quantum mechanics theoretical framework mathematical analysis',
-                    pattern_type: 'research_themes',
-                    min_frequency: 1
-                },
-                'extract_key_concepts': {
-                    text: 'quantum mechanics theoretical physics computational modeling',
-                    max_concepts: 10,
-                    concept_types: ['technical_terms', 'theories', 'methods']
-                },
-                'initialize_project': {
-                    name: 'Frontend Test Project',
-                    description: 'Project created via frontend interface',
-                    domain: 'theoretical_physics'
-                }
-            };
-            return params[toolName] || {};
+        function closeModal() {
+            if (currentModal) {
+                document.body.removeChild(currentModal);
+                currentModal = null;
+            }
         }
 
-        async function runDiagnostics() {
-            log('Running server diagnostics...');
-            
-            if (!isConnected || !mcpClient) {
-                log('❌ Not connected to server', 'error');
+        async function refreshTools() {
+            if (!mcpClient || !mcpClient.isConnected) {
+                log('Not connected to server', 'error');
                 return;
             }
             
             try {
-                // Test basic connectivity
-                log('Testing WebSocket connection...', 'info');
-                const status = mcpClient.getConnectionStatus();
-                log(`✅ Connection status: ${status.connected ? 'Connected' : 'Disconnected'}`, 'success');
+                log('Refreshing tools...');
+                const toolsResult = await mcpClient.listTools();
+                const tools = toolsResult.tools || [];
+                availableTools = tools;
                 
-                // Test tool listing
-                log('Testing tool discovery...', 'info');
-                const tools = await mcpClient.listTools();
-                log(`✅ Tool discovery: Found ${tools.tools ? tools.tools.length : 0} tools`, 'success');
-                
-                // Test a simple tool call
-                log('Testing basic tool call...', 'info');
-                await testTool('semantic_search');
-                
-                log('🎉 All diagnostics completed successfully!', 'success');
-                
+                log(`Found ${tools.length} tools`, 'success');
+                renderTools(tools);
             } catch (error) {
-                log(`❌ Diagnostics failed: ${error.message}`, 'error');
+                log(`Failed to refresh: ${error.message}`, 'error');
             }
-            
-            loadServerStats();
         }
 
-        function loadServerStats() {
-            const stats = document.getElementById('serverStats');
-            const successRate = testResults.length ? 
-                Math.round((testResults.filter(r => r.success).length / testResults.length) * 100) : 0;
-                
-            stats.innerHTML = `
-                <div style="display: grid; gap: 10px;">
-                    <div><strong>Connection Status:</strong> ${isConnected ? 'Connected ✅' : 'Disconnected ❌'}</div>
-                    <div><strong>Server URL:</strong> ws://localhost:8765</div>
-                    <div><strong>Tests Run:</strong> ${testResults.length}</div>
-                    <div><strong>Success Rate:</strong> ${successRate}%</div>
-                    <div><strong>Successful Tests:</strong> ${testResults.filter(r => r.success).length}</div>
-                    <div><strong>Failed Tests:</strong> ${testResults.filter(r => !r.success).length}</div>
+        function clearConsole() {
+            document.getElementById('console').innerHTML = `
+                <div class="console-line">
+                    <span class="console-timestamp">[${new Date().toLocaleTimeString()}]</span>
+                    <span class="console-info">🧹 Console cleared</span>
                 </div>
             `;
         }
 
-        function updateStats() {
-            loadServerStats();
-        }
-
-        function exportResults() {
-            const results = {
-                timestamp: new Date().toISOString(),
-                connectionInfo: mcpClient ? mcpClient.getConnectionStatus() : null,
-                testResults: testResults,
-                summary: {
-                    totalTests: testResults.length,
-                    successfulTests: testResults.filter(r => r.success).length,
-                    failedTests: testResults.filter(r => !r.success).length,
-                    successRate: testResults.length ? 
-                        (testResults.filter(r => r.success).length / testResults.length * 100).toFixed(1) + '%' : '0%'
+        function getDefaultParams(toolName) {
+            const defaults = {
+                'clarify_research_goals': {
+                    research_area: 'theoretical_physics',
+                    initial_goals: 'develop new framework'
+                },
+                'suggest_methodology': {
+                    research_goals: 'theoretical research',
+                    domain: 'physics'
+                },
+                'generate_latex_document': {
+                    title: 'Test Document',
+                    author: 'Researcher'
+                },
+                'semantic_search': {
+                    query: 'quantum mechanics'
                 }
             };
             
-            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `mcp-frontend-test-results-${Date.now()}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            log('Test results exported successfully!', 'success');
+            return defaults[toolName] || { test: 'parameter' };
         }
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            log('🚀 SRRD-Builder MCP Frontend Test Interface Ready');
-            log('');
-            log('To get started:');
-            log('1. Make sure MCP server is running: srrd-server --with-frontend');
-            log('2. Click "Connect to Server"');
-            log('3. Test individual tools or run diagnostics');
-            log('');
-            log('Ready for testing! 🧪');
-        });
     </script>
 </body>
 </html>
