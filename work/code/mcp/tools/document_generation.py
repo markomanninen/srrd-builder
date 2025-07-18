@@ -18,6 +18,10 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 from storage.project_manager import ProjectManager
 
+# Add context-aware decorator
+sys.path.append(str(Path(__file__).parent.parent / 'utils'))
+from context_decorator import context_aware, project_required
+
 # LaTeX template for scientific research documents - FIXED VERSION
 LATEX_TEMPLATE = r"""\documentclass[12pt,a4paper]{{article}}
 \usepackage[utf8]{{inputenc}}
@@ -328,6 +332,7 @@ Additional materials and appendices can be added here.
 # Initialize global template manager
 template_manager = LaTeXTemplateManager()
 
+@context_aware()
 async def generate_latex_document_tool(**kwargs) -> str:
     """Generate LaTeX document from research content"""
     
@@ -373,6 +378,7 @@ async def generate_latex_document_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error generating LaTeX document: {str(e)}"
 
+@context_aware()
 async def compile_latex_tool(**kwargs) -> str:
     """Compile LaTeX document to PDF or other formats"""
     
@@ -437,6 +443,7 @@ async def compile_latex_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error compiling LaTeX: {str(e)}"
 
+@context_aware()
 async def format_research_content_tool(**kwargs) -> str:
     """Format research content according to academic standards"""
     
@@ -482,6 +489,7 @@ async def format_research_content_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error formatting content: {str(e)}"
 
+@context_aware()
 async def generate_bibliography_tool(**kwargs) -> str:
     """Generate LaTeX bibliography from reference list"""
     
@@ -518,6 +526,7 @@ async def generate_bibliography_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error generating bibliography: {str(e)}"
 
+@context_aware()
 async def extract_document_sections_tool(**kwargs) -> str:
     """Extract and identify sections from document content for modular LaTeX management"""
     
@@ -648,6 +657,7 @@ async def extract_document_sections_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error extracting document sections: {str(e)}"
 
+@context_aware()
 async def store_bibliography_reference_tool(**kwargs) -> str:
     """Store a bibliography reference in the vector database for future retrieval"""
     
@@ -657,6 +667,9 @@ async def store_bibliography_reference_tool(**kwargs) -> str:
         
         if not reference:
             return "Error: Missing required parameter 'reference'"
+        
+        if not project_path:
+            return "Error: Project context not available. Please ensure you are in an SRRD project or provide project_path parameter."
         
         # Import vector manager for storage
         from storage.vector_manager import VectorManager
@@ -706,6 +719,7 @@ async def store_bibliography_reference_tool(**kwargs) -> str:
         error_msg = f"Error storing bibliography reference: {str(e)}"
         return error_msg
 
+@context_aware()
 async def retrieve_bibliography_references_tool(**kwargs) -> str:
     """Retrieve relevant bibliography references from the vector database based on search query"""
     
@@ -778,6 +792,7 @@ async def retrieve_bibliography_references_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error retrieving bibliography references: {str(e)}"
 
+@context_aware()
 async def generate_document_with_database_bibliography_tool(**kwargs) -> str:
     """Generate LaTeX document with bibliography retrieved from vector database"""
     
@@ -841,6 +856,7 @@ async def generate_document_with_database_bibliography_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error generating document with database bibliography: {str(e)}"
 
+@context_aware()
 async def list_latex_templates_tool(**kwargs) -> str:
     """List all available LaTeX templates"""
     try:
@@ -855,6 +871,7 @@ async def list_latex_templates_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error listing templates: {str(e)}"
 
+@context_aware()
 async def generate_latex_with_template_tool(**kwargs) -> str:
     """Generate LaTeX document using a specific template"""
     try:

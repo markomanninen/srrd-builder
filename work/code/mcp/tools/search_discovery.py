@@ -18,6 +18,11 @@ from storage.project_manager import ProjectManager
 from storage.vector_manager import VectorManager
 from storage import get_srrd_db_path
 
+# Add context-aware decorator
+sys.path.append(str(Path(__file__).parent.parent / 'utils'))
+from context_decorator import context_aware, project_required
+
+@context_aware()
 async def semantic_search_tool(**kwargs) -> str:
     """Perform semantic search across research documents"""
     
@@ -73,6 +78,7 @@ async def semantic_search_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error performing semantic search: {str(e)}"
 
+@context_aware()
 async def discover_patterns_tool(**kwargs) -> str:
     """Discover patterns and themes in research content"""
     
@@ -132,6 +138,7 @@ async def discover_patterns_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error discovering patterns: {str(e)}"
 
+@context_aware()
 async def build_knowledge_graph_tool(**kwargs) -> str:
     """Build knowledge graph from research documents"""
     
@@ -202,6 +209,7 @@ async def build_knowledge_graph_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error building knowledge graph: {str(e)}"
 
+@context_aware()
 async def find_similar_documents_tool(**kwargs) -> str:
     """Find documents similar to the target document"""
     
@@ -259,6 +267,7 @@ async def find_similar_documents_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error finding similar documents: {str(e)}"
 
+@context_aware()
 async def extract_key_concepts_tool(**kwargs) -> str:
     """Extract key concepts from research text"""
     
@@ -313,6 +322,7 @@ async def extract_key_concepts_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error extracting key concepts: {str(e)}"
 
+@context_aware()
 async def generate_research_summary_tool(**kwargs) -> str:
     """Generate summary of research documents"""
     

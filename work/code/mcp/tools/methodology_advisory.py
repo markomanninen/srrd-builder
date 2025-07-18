@@ -7,6 +7,12 @@ import json
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 
+# Import context-aware decorator
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent / 'utils'))
+from context_decorator import context_aware, project_required
+
 class MethodologyAdvisoryTool:
     """MCP tool for methodology advisory and guidance"""
     
@@ -99,6 +105,7 @@ class MethodologyAdvisoryTool:
             }
         }
 
+@context_aware()
 async def explain_methodology(**kwargs) -> str:
     """Explain methodology for research question"""
     
@@ -184,6 +191,7 @@ def _calculate_suitability(research_question: str, methodology_info: Dict) -> fl
     
     return min(score, 1.0)
 
+@context_aware()
 async def compare_approaches(**kwargs) -> str:
     """Compare different research approaches"""
     
@@ -263,6 +271,7 @@ async def compare_approaches(**kwargs) -> str:
     
     return json.dumps(comparison, indent=2)
 
+@context_aware()
 async def validate_design(**kwargs) -> str:
     """Validate research design and provide improvement suggestions"""
     
@@ -393,6 +402,7 @@ async def validate_design(**kwargs) -> str:
     
     return json.dumps(validation_results, indent=2)
 
+@context_aware()
 async def ensure_ethics(**kwargs) -> str:
     """Provide ethical review and compliance checking"""
     

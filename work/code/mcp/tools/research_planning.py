@@ -7,6 +7,12 @@ import json
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 
+# Import context-aware decorator
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent / 'utils'))
+from context_decorator import context_aware, project_required
+
 class ResearchPlanningTool:
     """MCP tool for research planning with Socratic questioning"""
     
@@ -267,15 +273,21 @@ class ResearchPlanningTool:
         return framework
 
 # MCP tool registration
+@context_aware()
 async def clarify_research_goals(**kwargs) -> Dict[str, Any]:
     """MCP tool wrapper for research goal clarification"""
+    # Filter out context parameters
+    filtered_kwargs = {k: v for k, v in kwargs.items() if k not in ['project_path', 'config_path', 'config']}
     tool = ResearchPlanningTool()
-    return await tool.clarify_research_goals(**kwargs)
+    return await tool.clarify_research_goals(**filtered_kwargs)
 
+@context_aware()
 async def suggest_methodology(**kwargs) -> Dict[str, Any]:
     """MCP tool wrapper for methodology suggestion"""
+    # Filter out context parameters
+    filtered_kwargs = {k: v for k, v in kwargs.items() if k not in ['project_path', 'config_path', 'config']}
     tool = ResearchPlanningTool()
-    return await tool.suggest_methodology(**kwargs)
+    return await tool.suggest_methodology(**filtered_kwargs)
 
 def register_research_tools(server):
     """Register research planning tools with the MCP server"""

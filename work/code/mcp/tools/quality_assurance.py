@@ -7,6 +7,12 @@ import json
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 
+# Import context-aware decorator
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent / 'utils'))
+from context_decorator import context_aware, project_required
+
 class QualityAssuranceTool:
     """MCP tool for quality assurance and peer review simulation"""
     
@@ -320,15 +326,21 @@ class QualityAssuranceTool:
         return recommendations
 
 # MCP tool registration
+@context_aware()
 async def simulate_peer_review(**kwargs) -> Dict[str, Any]:
     """MCP tool wrapper for peer review simulation"""
+    # Filter out context parameters
+    filtered_kwargs = {k: v for k, v in kwargs.items() if k not in ['project_path', 'config_path', 'config']}
     tool = QualityAssuranceTool()
-    return await tool.simulate_peer_review(**kwargs)
+    return await tool.simulate_peer_review(**filtered_kwargs)
 
+@context_aware()
 async def check_quality_gates(**kwargs) -> Dict[str, Any]:
     """MCP tool wrapper for quality gate checking"""
+    # Filter out context parameters
+    filtered_kwargs = {k: v for k, v in kwargs.items() if k not in ['project_path', 'config_path', 'config']}
     tool = QualityAssuranceTool()
-    return await tool.check_quality_gates(**kwargs)
+    return await tool.check_quality_gates(**filtered_kwargs)
 
 def register_quality_tools(server):
     """Register quality assurance tools with the MCP server"""

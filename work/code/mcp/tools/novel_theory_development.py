@@ -11,6 +11,12 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime
 import asyncio
 
+# Import context-aware decorator
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).parent.parent / 'utils'))
+from context_decorator import context_aware, project_required
+
 class NovelTheoryDevelopmentTool:
     """MCP tool for novel theory development and paradigm innovation"""
     
@@ -88,6 +94,7 @@ class NovelTheoryDevelopmentTool:
             ]
         }
 
+@context_aware()
 async def initiate_paradigm_challenge(**kwargs) -> str:
     """Challenge existing paradigms with structured analysis"""
     
@@ -231,6 +238,7 @@ def _determine_challenge_type(challenge_area: str) -> str:
     else:
         return "comprehensive_challenge"
 
+@context_aware()
 async def develop_alternative_framework(**kwargs) -> str:
     """Construct alternative theoretical frameworks"""
     
@@ -369,6 +377,7 @@ def _prioritize_development(framework_dev: Dict) -> List[str]:
     
     return priorities
 
+@context_aware()
 async def compare_paradigms(**kwargs) -> str:
     """Equal-treatment comparison of competing theories"""
     
@@ -459,6 +468,7 @@ async def compare_paradigms(**kwargs) -> str:
     
     return json.dumps(comparison, indent=2)
 
+@context_aware()
 async def validate_novel_theory(**kwargs) -> str:
     """Rigorous validation of alternative theoretical approaches"""
     
@@ -661,6 +671,7 @@ def _validate_paradigm_compatibility(theory: Dict) -> Dict:
         "improvement_suggestions": ["Identify areas of compatibility", "Explain paradigm differences clearly"]
     }
 
+@context_aware()
 async def cultivate_innovation(**kwargs) -> str:
     """Systematic development of novel ideas to publication readiness"""
     
@@ -774,6 +785,7 @@ async def cultivate_innovation(**kwargs) -> str:
     
     return json.dumps(cultivation_plan, indent=2)
 
+@context_aware()
 async def assess_foundational_assumptions(**kwargs) -> str:
     """Challenge basic assumptions underlying theories"""
     
@@ -909,6 +921,7 @@ def _assess_assumption_testability(assumption: str) -> str:
     else:
         return "Potentially testable - requires methodology development"
 
+@context_aware()
 async def generate_critical_questions(**kwargs) -> str:
     """Generate Socratic questioning specific to paradigm innovation"""
     
@@ -996,6 +1009,7 @@ def _get_question_purpose(category: str) -> str:
     }
     return purposes.get(category, "Support systematic inquiry and paradigm examination")
 
+@context_aware()
 async def evaluate_paradigm_shift_potential(**kwargs) -> str:
     """Assess the transformative research potential"""
     

@@ -1,12 +1,56 @@
 # SRRD-Builder MCP Server
 
-This directory contains the Model Context Protocol (MCP) server for SRRD-Builder.
+This directory contains the Model Context Protocol (MCP) server for SRRD-Builder with **context-aware functionality**.
+
+## 🎯 Key Features
+
+- **38 Context-Aware Tools** - All tools automatically detect project context
+- **100% Enhancement Coverage** - Complete context-aware functionality
+- **Backward Compatibility** - Existing tool calls work unchanged
+- **Automatic Context Injection** - No manual project_path parameters needed
+- **Graceful Fallback** - Works with or without project context
 
 ## Production Files
 
 - **`mcp_server.py`** - The main MCP server for Claude Desktop
-- **`tools/`** - Tool modules providing all 21 research assistance tools
+- **`server.py`** - Alternative MCP server implementation
+- **`tools/`** - Tool modules providing all 38 research assistance tools
+- **`utils/`** - Context detection and decorator utilities
 - **`storage/`** - Storage management backend
+
+## Context-Aware Enhancement
+
+All 38 tools are now enhanced with automatic context detection:
+
+### Enhanced Tool Categories:
+- **Storage Management** (5/5) - Project initialization, session management, version control
+- **Document Generation** (6/6) - LaTeX generation, compilation, formatting
+- **Search & Discovery** (3/3) - Semantic search, knowledge base search
+- **Research Planning** (2/2) - Goal clarification, methodology suggestion
+- **Quality Assurance** (2/2) - Peer review simulation, quality gates
+- **Methodology Advisory** (4/4) - Methodology explanation, design validation
+- **Novel Theory Development** (8/8) - Paradigm challenge, framework development
+- **Additional Tools** (8/8) - Bibliography management, pattern discovery
+
+### Usage Examples:
+
+**Traditional (still works):**
+```python
+# Explicit project_path parameter
+result = await save_session_tool(
+    session_data={'experiment': 'test'},
+    project_path='/path/to/project'
+)
+```
+
+**New Context-Aware:**
+```python
+# When running with 'srrd serve' - project_path is auto-injected
+result = await save_session_tool(
+    session_data={'experiment': 'test'}
+    # project_path automatically injected from environment
+)
+```
 
 ## Configuration
 
@@ -20,17 +64,24 @@ The MCP server is configured in Claude Desktop's config file as:
       "args": ["/path/to/srrd-builder/work/code/mcp/mcp_server.py"],
       "cwd": "/path/to/srrd-builder/work/code/mcp",
       "env": {
-        "PYTHONPATH": "/path/to/srrd-builder/work/code/mcp"
+        "PYTHONPATH": "/path/to/srrd-builder/work/code/mcp",
+        "SRRD_PROJECT_PATH": "/current/project/path",
+        "SRRD_CONFIG_PATH": "/current/project/.srrd/config.json"
       }
     }
   }
 }
 ```
 
+**Context-Aware Environment Variables:**
+- `SRRD_PROJECT_PATH` - Path to current SRRD project (set by `srrd serve`)
+- `SRRD_CONFIG_PATH` - Path to project config file (set by `srrd serve`)
+
 ## Development
 
 - Run `../../setup.sh` from the root directory to install dependencies and test the server
 - The server uses stdio-based communication with Claude Desktop
+- All 38 tools are enhanced with context-aware functionality
 
 ## Testing
 
@@ -40,7 +91,23 @@ Test the MCP server directly:
 echo '{"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}' | python3 mcp_server.py
 ```
 
-Should return a list of 21 available tools.
+Should return a list of 38 available tools.
+
+**Run comprehensive context-aware tests:**
+```bash
+# Test all 38 tools for context-aware functionality
+python3 test_enhanced_tools_comprehensive.py
+
+# Basic functionality tests
+python3 test_basic.py
+
+# Client interaction tests
+python3 test_client.py
+```
+
+## Context-Aware Implementation
+
+See [`CONTEXT_AWARE_IMPLEMENTATION.md`](CONTEXT_AWARE_IMPLEMENTATION.md) for detailed technical documentation on the context-aware enhancement system.
 
 ## Legacy Information (Archived)
 
