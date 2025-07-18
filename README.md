@@ -19,7 +19,7 @@ The project provides a **Model Context Protocol (MCP) server** that integrates w
 - **Git-based Project Management** with session restoration
 - **Socratic Questioning Engine** for progressive research refinement
 - **Novel Theory Development Framework** for paradigm innovation in physics
-- **Web Frontend Interface** for testing and demonstration
+- **Modern Web Frontend Interface** for testing and demonstration
 - **Local Storage Integration** (Git, SQLite, Vector DB)
 
 ## Quick Start
@@ -98,8 +98,8 @@ srrd-server --help
 
 1. Start the complete demo system: `srrd-server --with-frontend`
 2. Open web interface: http://localhost:8080
-3. Click "Connect to Server"
-4. Test any of the 38 available tools
+3. Click "Connect to Server" to establish WebSocket connection
+4. Test any of the 38 available tools using the categorized interface
 
 ### Available Tools
 
@@ -107,11 +107,11 @@ The MCP server provides 38+ tools organized by category:
 
 - **🧪 Research Planning & Goal Setting** (2 tools): Clarify goals, suggest methodologies
 - **✅ Quality Assurance & Review** (2 tools): Peer review simulation, quality gates
-- **🗄️ Storage & Project Management** (6 tools): Initialize projects, save/restore sessions
+- **🗄️ Storage & Project Management** (6 tools): Initialize projects, save/restore sessions, version control
 - **📄 Document Generation & LaTeX** (6 tools): LaTeX compilation, bibliography management
 - **🔍 Search & Discovery** (6 tools): Semantic search, concept extraction, pattern discovery
-- **⚗️ Methodology & Validation** (4 tools): Methodology explanation, design validation
-- **🚀 Novel Theory Development** (8 tools): Paradigm innovation, equal treatment validation
+- **⚗️ Methodology & Validation** (4 tools): Methodology explanation, design validation, ethics review
+- **🚀 Novel Theory Development** (8 tools): Paradigm innovation, equal treatment validation, foundational analysis
 
 ### Example Workflow
 
@@ -131,7 +131,7 @@ The MCP server provides 38+ tools organized by category:
 
 ## Server Architecture
 
-SRRD-Builder uses a dual server architecture to support different use cases:
+SRRD-Builder uses a **dual server architecture** to support different use cases:
 
 ### Project-Aware Server (`srrd serve`)
 - **Purpose**: Integration with Claude Desktop/VS Code within research projects
@@ -186,12 +186,13 @@ SRRD-Builder uses a dual server architecture to support different use cases:
 ## Project Status
 
 ✅ **Completed Features:**
-- MCP Server with 30+ research tools
+- MCP Server with 38+ research tools
 - CLI tool for server management
 - Vector database integration
 - LaTeX document generation
 - Git-based project management
 - Claude Desktop integration
+- Web interface for testing and demos
 - Comprehensive test suite
 
 🚧 **In Development:**
