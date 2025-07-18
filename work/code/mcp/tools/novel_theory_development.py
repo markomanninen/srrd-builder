@@ -462,7 +462,7 @@ async def compare_paradigms(**kwargs) -> str:
 async def validate_novel_theory(**kwargs) -> str:
     """Rigorous validation of alternative theoretical approaches"""
     
-    theory_framework = kwargs.get("theory_framework", {})
+    theory_framework_input = kwargs.get("theory_framework", {})
     domain = kwargs.get("domain")
     validation_criteria = kwargs.get("validation_criteria", [
         "logical_consistency", "empirical_testability", "explanatory_power", 
@@ -472,8 +472,18 @@ async def validate_novel_theory(**kwargs) -> str:
     if not domain:
         return "Error: Missing required parameter (domain)"
     
-    if not theory_framework:
+    if not theory_framework_input:
         return "Error: Missing required parameter (theory_framework)"
+    
+    # Handle both string and dictionary inputs
+    if isinstance(theory_framework_input, str):
+        theory_framework = {
+            "description": theory_framework_input,
+            "core_principles": [theory_framework_input],
+            "paradigm_challenge": True
+        }
+    else:
+        theory_framework = theory_framework_input
     
     validation_results = {
         "theory_overview": theory_framework,
@@ -530,8 +540,12 @@ async def validate_novel_theory(**kwargs) -> str:
     
     return json.dumps(validation_results, indent=2)
 
-def _validate_criterion(theory_framework: Dict, criterion: str) -> Dict:
+def _validate_criterion(theory_framework, criterion: str) -> Dict:
     """Validate theory against a specific criterion"""
+    
+    # Ensure we have a dictionary
+    if isinstance(theory_framework, str):
+        theory_framework = {"description": theory_framework}
     
     validation_functions = {
         "logical_consistency": _validate_logical_consistency,
@@ -764,8 +778,15 @@ async def assess_foundational_assumptions(**kwargs) -> str:
     """Challenge basic assumptions underlying theories"""
     
     domain = kwargs.get("domain")
-    theory_framework = kwargs.get("theory_framework", {})
-    current_paradigm = theory_framework.get("name", "Current Theory")
+    theory_framework_input = kwargs.get("theory_framework", {})
+    
+    # Handle both string and dictionary inputs
+    if isinstance(theory_framework_input, str):
+        current_paradigm = "Current Theory"
+        theory_framework = {"description": theory_framework_input}
+    else:
+        theory_framework = theory_framework_input
+        current_paradigm = theory_framework.get("name", "Current Theory")
     
     if not domain:
         return "Error: Missing required parameter (domain)"
@@ -892,8 +913,16 @@ async def generate_critical_questions(**kwargs) -> str:
     """Generate Socratic questioning specific to paradigm innovation"""
     
     research_area = kwargs.get("research_area")
-    theory_framework = kwargs.get("theory_framework", {})
-    paradigm_context = theory_framework.get("name") or kwargs.get("paradigm_context", "Current paradigm")
+    theory_framework_input = kwargs.get("theory_framework", {})
+    
+    # Handle both string and dictionary inputs
+    if isinstance(theory_framework_input, str):
+        paradigm_context = kwargs.get("paradigm_context", "Current paradigm")
+        theory_framework = {"description": theory_framework_input}
+    else:
+        theory_framework = theory_framework_input
+        paradigm_context = theory_framework.get("name") or kwargs.get("paradigm_context", "Current paradigm")
+        
     innovation_level = kwargs.get("innovation_level", "high")
     
     if not research_area:
@@ -970,7 +999,7 @@ def _get_question_purpose(category: str) -> str:
 async def evaluate_paradigm_shift_potential(**kwargs) -> str:
     """Assess the transformative research potential"""
     
-    theory_framework = kwargs.get("theory_framework", {})
+    theory_framework_input = kwargs.get("theory_framework", {})
     domain = kwargs.get("domain")
     paradigm_metrics = kwargs.get("paradigm_metrics", [
         "explanatory_scope", "predictive_power", "mathematical_elegance", 
@@ -980,8 +1009,18 @@ async def evaluate_paradigm_shift_potential(**kwargs) -> str:
     if not domain:
         return "Error: Missing required parameter (domain)"
     
-    if not theory_framework:
+    if not theory_framework_input:
         return "Error: Missing required parameter (theory_framework)"
+    
+    # Handle both string and dictionary inputs for theory_framework
+    if isinstance(theory_framework_input, str):
+        theory_framework = {
+            "description": theory_framework_input,
+            "core_principles": [theory_framework_input],
+            "paradigm_challenge": True
+        }
+    else:
+        theory_framework = theory_framework_input
     
     evaluation = {
         "theory_framework": theory_framework,
@@ -1014,7 +1053,7 @@ async def evaluate_paradigm_shift_potential(**kwargs) -> str:
         "explanatory_breakthroughs": shift_scores.get("explanatory_scope", 0.5) > 0.8,
         "predictive_novelty": shift_scores.get("predictive_power", 0.5) > 0.7,
         "mathematical_innovation": shift_scores.get("mathematical_elegance", 0.5) > 0.8,
-        "empirical_anomalies_resolved": len(theory_framework.get("resolved_anomalies", [])) > 2
+        "empirical_anomalies_resolved": len(theory_framework.get("resolved_anomalies", []) if isinstance(theory_framework, dict) else []) > 2
     }
     
     # Identify adoption barriers
@@ -1064,18 +1103,30 @@ async def evaluate_paradigm_shift_potential(**kwargs) -> str:
     
     return json.dumps(evaluation, indent=2)
 
-def _evaluate_shift_metric(theory_framework: Dict, metric: str) -> float:
+def _evaluate_shift_metric(theory_framework, metric: str) -> float:
     """Evaluate a specific paradigm shift metric"""
     
-    # Simplified evaluation - in practice would be much more sophisticated
-    metric_evaluators = {
-        "explanatory_scope": lambda t: 0.8 if t.get("target_phenomena") and len(t["target_phenomena"]) > 3 else 0.6,
-        "predictive_power": lambda t: 0.7 if t.get("predictions") else 0.5,
-        "mathematical_elegance": lambda t: 0.8 if t.get("mathematical_basis") else 0.4,
-        "empirical_support": lambda t: 0.3,  # Low for novel theories
-        "paradigm_coherence": lambda t: 0.7 if t.get("core_principles") else 0.5,
-        "revolutionary_potential": lambda t: 0.8 if "paradigm" in str(t).lower() else 0.6
-    }
+    # Handle both string and dictionary inputs
+    if isinstance(theory_framework, str):
+        # For string inputs, use simplified evaluation
+        metric_evaluators = {
+            "explanatory_scope": lambda t: 0.6,  # Default moderate score
+            "predictive_power": lambda t: 0.5,   # Default moderate score
+            "mathematical_elegance": lambda t: 0.4,  # Default lower score
+            "empirical_support": lambda t: 0.3,  # Low for novel theories
+            "paradigm_coherence": lambda t: 0.5,  # Default moderate score
+            "revolutionary_potential": lambda t: 0.8 if "paradigm" in t.lower() else 0.6
+        }
+    else:
+        # For dictionary inputs, use more sophisticated evaluation
+        metric_evaluators = {
+            "explanatory_scope": lambda t: 0.8 if t.get("target_phenomena") and len(t["target_phenomena"]) > 3 else 0.6,
+            "predictive_power": lambda t: 0.7 if t.get("predictions") else 0.5,
+            "mathematical_elegance": lambda t: 0.8 if t.get("mathematical_basis") else 0.4,
+            "empirical_support": lambda t: 0.3,  # Low for novel theories
+            "paradigm_coherence": lambda t: 0.7 if t.get("core_principles") else 0.5,
+            "revolutionary_potential": lambda t: 0.8 if "paradigm" in str(t).lower() else 0.6
+        }
     
     evaluator = metric_evaluators.get(metric, lambda t: 0.5)
     return evaluator(theory_framework)
@@ -1091,8 +1142,14 @@ def _classify_shift_potential(score: float) -> str:
     else:
         return "Limited - Minor adjustments to current paradigm"
 
-def _assess_confidence(theory_framework: Dict) -> str:
+def _assess_confidence(theory_framework) -> str:
     """Assess confidence in the evaluation"""
+    
+    # Handle both string and dictionary inputs
+    if isinstance(theory_framework, str):
+        # For string inputs, we have minimal information
+        return "Moderate confidence - based on description only"
+    
     confidence_factors = [
         "mathematical_basis" in theory_framework,
         "empirical_predictions" in theory_framework,
@@ -1175,8 +1232,19 @@ def _predict_scientific_impact(shift_potential: float) -> str:
     else:
         return "Limited - Minor additions to existing framework"
 
-def _predict_technological_impact(theory_framework: Dict, domain: str) -> str:
+def _predict_technological_impact(theory_framework, domain: str) -> str:
     """Predict technological implications"""
+    # Handle both string and dictionary inputs
+    if isinstance(theory_framework, str):
+        # For string inputs, base prediction on domain only
+        if domain in ["physics", "computer_science", "engineering"]:
+            return "High potential for technological applications"
+        elif domain in ["biology", "medicine", "chemistry"]:
+            return "Moderate potential for practical applications"
+        else:
+            return "Limited direct technological impact expected"
+    
+    # For dictionary inputs, could analyze specific aspects
     if domain in ["physics", "computer_science", "engineering"]:
         return "High potential for technological applications"
     elif domain in ["biology", "medicine", "chemistry"]:
@@ -1309,7 +1377,13 @@ def register_novel_theory_tools(server):
         parameters={
             "type": "object",
             "properties": {
-                "theory_framework": {"type": "object", "description": "Theory framework to evaluate"},
+                "theory_framework": {
+                    "description": "Theory framework to evaluate (can be string description or object)",
+                    "anyOf": [
+                        {"type": "string"},
+                        {"type": "object"}
+                    ]
+                },
                 "domain": {"type": "string", "description": "Research domain"},
                 "paradigm_metrics": {"type": "array", "items": {"type": "string"}, "description": "Paradigm evaluation metrics (optional)"}
             },
