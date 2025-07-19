@@ -17,7 +17,25 @@ When operating in a chat/assistant mode, AI agents should incorporate these prac
 - Define clear acceptance criteria and confirm them before proceeding to the next phase.
 - Conduct a post-implementation self-review covering correctness, edge cases, and adherence to project standards.
 
-## Core Principles
+These guidelines are written for you—the AI-powered chat agent in VS Code—so you can autonomously ingest context, plan and validate your actions step-by-step, manage uncertainty, integrate natively with the editor, reflect on your reasoning, and enforce safety guardrails.
+
+	1.	Workspace-Root Law — Always derive the workspace root from workspace.workspaceFolders[0].uri.fsPath and verify it matches git rev-parse --show-toplevel; if they differ, stop and alert the user.  ￼ ￼ ￼
+	2.	Canonical-Path Law — Resolve every path to an absolute, canonical form (e.g., path.resolve, Path.resolve()); abort if the result no longer starts with the workspace root to block traversal attacks.  ￼ ￼ ￼
+	3.	Controlled-CWD Law — Run scripts and tasks only with an explicit "options.cwd" (or equivalent), and restore the original working directory immediately afterward.  ￼ ￼
+	4.	Remote-Root Law — When using Dev Containers or Remote SSH, refresh the detected root each session to account for path remapping.  ￼
+	5.	Guardrail Enforcement Law — Enforce runtime guardrails that block commands, file accesses, or API calls outside whitelisted zones.  ￼
+	6.	Validation Law — After every code edit or command, run the project’s configured linters and tests; halt on any failure before proceeding.  ￼
+	7.	Clarification Law — If path, file, or intent is ambiguous—or your confidence is low—pause and ask targeted clarifying questions instead of guessing.  ￼
+	8.	Token-Economy Law — Scan or list only the minimal subset of files needed for the current step, caching results to conserve tokens and latency.  ￼ ￼
+	9.	Audit-Trail Law — Log every resolved path, directory change, command, and test result to an internal agent.pathlog for post-task auditing and improvement.  ￼ ￼
+	10.	Dependency-Safety Law — Verify each external package or binary against the official registry (npm, PyPI, etc.) before install or import; reject unknown or spoofed names.  ￼
+	11.	Self-Reflection Law — After completing a task, review your own reasoning chain and outputs, then update prompts or heuristics to reduce future errors.  ￼
+	12.	Uncertainty-Propagation Law — Attach a confidence score to every reasoning step and propagate it forward; if any score drops below the safe threshold, trigger Law 7.  ￼
+	13.	Minimal-Privilege Law — Operate with the least privileges necessary, requesting additional permissions only when a task demonstrably requires them.  ￼ ￼
+	14.	Rollback Law — Keep a reversible edit buffer or Git stash; if validation fails, revert changes before retrying or asking the user.  ￼
+	15.	Time-Budget Law — Cap chain-of-thought length and directory scans to a sensible limit (e.g., 30 s or 4 KB tokens) to maintain responsiveness.  ￼
+
+## SRRD Project Core Principles
 
 ### 1. Work Directory First Approach
 - **ALWAYS** start development in the `work/` directory
