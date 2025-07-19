@@ -9,8 +9,8 @@ import os
 from pathlib import Path
 
 # Project context set by 'srrd init' (or last 'srrd switch')
-PROJECT_PATH = '/private/var/folders/1t/xzhjq5g1027f9mtd62jc31xh0000gp/T/cli_test_pdf_fail_test_s0edkgs_'
-CONFIG_PATH = '/private/var/folders/1t/xzhjq5g1027f9mtd62jc31xh0000gp/T/cli_test_pdf_fail_test_s0edkgs_/.srrd/config.json'
+PROJECT_PATH = '/Users/markomanninen/Documents/GitHub/srrd-builder/srrd-builder'
+CONFIG_PATH = '/Users/markomanninen/Documents/GitHub/srrd-builder/srrd-builder/.srrd/config.json'
 
 def main():
     """Main launcher - uses the project set by srrd init"""

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRRD-Builder MCP Server - Enhanced Research Interface</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="enhanced-styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 SRRD-Builder MCP Server</h1>
+            <p>Enhanced Scientific Research Interface</p>
+            <div class="view-switcher">
+                <button class="btn btn-secondary" id="actsViewBtn" onclick="app.switchView('acts')">
+                    🎯 Research Acts
+                </button>
+                <button class="btn btn-secondary" id="categoriesViewBtn" onclick="app.switchView('categories')">
+                    📁 Categories
+                </button>
+                <button class="btn btn-secondary" id="allToolsViewBtn" onclick="app.switchView('tools')">
+                    🔧 All Tools
+                </button>
+            </div>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-info">
+                <span class="status-indicator" id="statusIndicator"></span>
+                <span class="status-text" id="statusText">Disconnected</span>
+                <span class="tool-count" id="toolCount"></span>
+            </div>
+            <div class="controls">
+                <button class="btn btn-primary" id="connectBtn">Connect to Server</button>
+                <button class="btn btn-primary" id="refreshBtn" disabled>Refresh Tools</button>
+                <button class="btn btn-primary" onclick="clearConsole()">Clear Console</button>
+            </div>
+        </div>
+
+        <!-- Navigation Breadcrumb -->
+        <div class="breadcrumb" id="breadcrumb" style="display: none;">
+            <span class="breadcrumb-item" onclick="app.navigateToHome()">🏠 Home</span>
+            <span class="breadcrumb-separator">›</span>
+            <span class="breadcrumb-current" id="breadcrumbCurrent"></span>
+        </div>
+
+        <div class="main-content">
+            <!-- Research Acts View -->
+            <div class="research-acts-view" id="researchActsView" style="display: none;">
+                <div class="view-header">
+                    <h2>🎯 Research Acts</h2>
+                    <p>Select a research act to explore tools organized by scientific workflow phases</p>
+                </div>
+                <div class="acts-grid" id="actsGrid">
+                    <!-- Research acts will be populated here -->
+                </div>
+            </div>
+
+            <!-- Categories View for Selected Act -->
+            <div class="categories-view" id="categoriesView" style="display: none;">
+                <div class="view-header">
+                    <button class="btn btn-back" onclick="app.navigateToHome()">← Back to Research Acts</button>
+                    <h2 id="selectedActTitle"></h2>
+                    <p id="selectedActDescription"></p>
+                </div>
+                <div class="categories-grid" id="categoriesGrid">
+                    <!-- Categories will be populated here -->
+                </div>
+            </div>
+
+            <!-- Tools View for Selected Category -->
+            <div class="tools-view" id="toolsView" style="display: none;">
+                <div class="view-header">
+                    <button class="btn btn-back" onclick="app.navigateBack()">← Back</button>
+                    <h2 id="selectedCategoryTitle"></h2>
+                    <p id="selectedCategoryDescription"></p>
+                </div>
+                <div class="tools-grid" id="toolsGrid">
+                    <!-- Tools will be populated here -->
+                </div>
+            </div>
+
+            <!-- Default Tools Section -->
+            <div class="tools-section" id="toolsSection">
+                <div class="tool-category">
+                    <h3>🔌 Getting Started</h3>
+                    <p>Click "Connect to Server" to discover all available tools!</p>
+                    <br>
+                    <p><strong>Prerequisites:</strong></p>
+                    <ul>
+                        <li>MCP server running: <code>srrd-server</code></li>
+                        <li>Server accessible on localhost:8765</li>
+                    </ul>
+                    <br>
+                    <div class="feature-highlight">
+                        <h4>🚀 Enhanced Features</h4>
+                        <ul>
+                            <li><strong>Research Acts Navigation:</strong> Tools organized by research workflow phases</li>
+                            <li><strong>Tool Information:</strong> Click ℹ️ buttons for detailed tool descriptions</li>
+                            <li><strong>Smart Categorization:</strong> Hierarchical organization of 38+ research tools</li>
+                            <li><strong>Scientific Context:</strong> Each tool explained in research methodology context</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="console-section">
+                <h3>📟 Test Console</h3>
+                <div class="console" id="console">
+                    <div class="console-line">
+                        <span class="console-timestamp">[Ready]</span>
+                        <span class="console-info">SRRD-Builder Enhanced MCP Frontend Ready</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modalContainer"></div>
+
+    <!-- External Scripts -->
+    <script src="data/research-framework.js"></script>
+    <script src="data/tool-info.js"></script>
+    <script src="mcp-client.js"></script>
+    <script src="enhanced-app.js"></script>
+    
+    <script>
+        // Initialize the enhanced application
+        let app;
+        document.addEventListener('DOMContentLoaded', () => {
+            app = new EnhancedSRRDApp();
+        });
+        
+        // Global functions for compatibility
+        function clearConsole() {
+            if (app) app.clearConsole();
+        }
+    </script>
+</body>
+</html>

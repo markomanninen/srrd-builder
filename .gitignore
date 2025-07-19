@@ -275,3 +275,45 @@ yarn-error.log*
 .srrd
 logs
 .code-snippets
+# SRRD-Builder
+
+# SRRD-Builder files
+.srrd/data/sessions.db*
+.srrd/data/knowledge.db*
+.srrd/logs/*.log
+
+# LaTeX temporary files
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/settings.json
+
+# Temporary files
+*.tmp
+*.temp
+.env
