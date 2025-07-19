@@ -329,7 +329,7 @@ If you encounter issues:
 1. Check this installation guide
 2. Run `srrd configure --status` for current system status
 3. Check logs in `work/code/mcp/logs/`
-4. Run the comprehensive test: `python3 work/code/mcp/test_comprehensive_tools_storage.py`
+4. Run the comprehensive test suite: `bash run_tests.sh` (158 tests)
 5. Verify all dependencies are installed
 6. Check Claude Desktop logs: `~/Library/Logs/Claude/` (macOS)
 

@@ -4,6 +4,28 @@ Storage module utilities for SRRD Builder
 
 from pathlib import Path
 
+# Import storage managers
+try:
+    from .git_manager import GitManager
+except ImportError:
+    GitManager = None
+
+try:
+    from .sqlite_manager import SQLiteManager
+except ImportError:
+    SQLiteManager = None
+
+try:
+    from .vector_manager import VectorManager
+except ImportError:
+    VectorManager = None
+
+# Import project manager
+try:
+    from .project_manager import ProjectManager
+except ImportError:
+    ProjectManager = None
+
 def get_project_root():
     """
     Get the absolute path to the project root directory.

@@ -69,7 +69,7 @@ This will:
 1. **Start the MCP Server**:
    ```bash
    cd work/code/mcp
-   python3 run_server.py
+   python3 web_server.py
    ```
 
 2. **Start the Frontend Server**:

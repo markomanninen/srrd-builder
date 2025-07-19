@@ -48,60 +48,17 @@ def create_parser():
         help='Force initialization even if .srrd directory exists'
     )
     
-    # srrd serve command with subcommands
-    serve_parser = subparsers.add_parser(
-        'serve',
-        help='Manage SRRD MCP server'
+    # srrd switch command
+    switch_parser = subparsers.add_parser(
+        'switch',
+        help='Switch MCP context to current project'
     )
     
-    # Add serve subcommands
-    serve_subparsers = serve_parser.add_subparsers(
-        dest='serve_action',
-        help='Server actions'
+    # srrd reset command
+    reset_parser = subparsers.add_parser(
+        'reset',
+        help='Reset/clear global MCP launcher (disable all MCP tools)'
     )
-    
-    # serve start subcommand
-    start_parser = serve_subparsers.add_parser(
-        'start',
-        help='Start MCP server'
-    )
-    start_parser.add_argument(
-        '--port',
-        type=int,
-        default=8080,
-        help='Server port (default: 8080)'
-    )
-    start_parser.add_argument(
-        '--host',
-        default='localhost',
-        help='Server host (default: localhost)'
-    )
-    
-    # serve stop subcommand
-    stop_parser = serve_subparsers.add_parser(
-        'stop',
-        help='Stop MCP server'
-    )
-    
-    # serve restart subcommand
-    restart_parser = serve_subparsers.add_parser(
-        'restart',
-        help='Restart MCP server'
-    )
-    restart_parser.add_argument(
-        '--port',
-        type=int,
-        default=8080,
-        help='Server port (default: 8080)'
-    )
-    restart_parser.add_argument(
-        '--host',
-        default='localhost',
-        help='Server host (default: localhost)'
-    )
-    
-    # Set default values for serve command when no subcommand is given
-    serve_parser.set_defaults(port=8080, host='localhost')
     
     # srrd generate command with subcommands
     generate_parser = subparsers.add_parser(
@@ -220,22 +177,25 @@ def main():
     
     # Import command handlers
     if args.command == 'init':
-        from .commands.init import handle_init
+        from srrd_builder.cli.commands.init import handle_init
         return handle_init(args)
-    elif args.command == 'serve':
-        from .commands.serve import handle_serve
-        return handle_serve(args)
+    elif args.command == 'switch':
+        from srrd_builder.cli.commands.switch import handle_switch
+        return handle_switch(args)
+    elif args.command == 'reset':
+        from srrd_builder.cli.commands.reset import handle_reset
+        return handle_reset(args)
     elif args.command == 'generate':
-        from .commands.generate import handle_generate
+        from srrd_builder.cli.commands.generate import handle_generate
         return handle_generate(args)
     elif args.command == 'status':
-        from .commands.status import handle_status
+        from srrd_builder.cli.commands.status import handle_status
         return handle_status(args)
     elif args.command == 'publish':
-        from .commands.publish import handle_publish
+        from srrd_builder.cli.commands.publish import handle_publish
         return handle_publish(args)
     elif args.command == 'configure':
-        from .commands.configure import handle_configure
+        from srrd_builder.cli.commands.configure import handle_configure
         return handle_configure(args)
     else:
         print(f"Unknown command: {args.command}")

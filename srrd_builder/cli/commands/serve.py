@@ -9,6 +9,7 @@ import json
 import signal
 import time
 import asyncio
+import subprocess
 from pathlib import Path
 
 def check_port_in_use(host, port):
@@ -180,17 +181,57 @@ def handle_serve_start(args):
     """Handle starting the server"""
     current_dir = Path.cwd()
     
-    # Check if SRRD is initialized
+    # Auto-initialize if needed
     srrd_dir = current_dir / '.srrd'
     if not srrd_dir.exists():
-        print("❌ SRRD not initialized in current directory")
-        print("   Run 'srrd init' first")
-        return 1
-    
-    # Check for existing servers
-    if check_existing_server(current_dir, args.host, args.port):
-        print("❌ Cannot start server - address already in use")
-        return 1
+        print("🔧 SRRD not initialized - auto-initializing...")
+        
+        # Check if git repository exists, if not initialize it
+        from ...utils.git_utils import is_git_repository
+        if not is_git_repository(current_dir):
+            print("🔧 Initializing Git repository...")
+            try:
+                subprocess.run(['git', 'init'], 
+                             cwd=current_dir, 
+                             check=True, 
+                             capture_output=True)
+                print("   ✅ Git repository initialized")
+                
+                # Create initial .gitignore for SRRD
+                gitignore_content = """# SRRD-Builder
+.srrd/data/
+.srrd/logs/
+*.log
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+.vscode/
+"""
+                gitignore_file = current_dir / '.gitignore'
+                with open(gitignore_file, 'w') as f:
+                    f.write(gitignore_content)
+                print("   ✅ Initial .gitignore created")
+                
+            except subprocess.CalledProcessError as e:
+                print(f"   ❌ Failed to initialize Git: {e}")
+                return 1
+            except FileNotFoundError:
+                print("   ❌ Git not found. Please install Git first.")
+                return 1
+        
+        # Initialize SRRD project structure
+        print("🔧 Initializing SRRD project structure...")
+        from .init import create_project_structure
+        
+        domain = getattr(args, 'domain', 'general_research')
+        template = getattr(args, 'template', 'basic')
+        
+        if create_project_structure(current_dir, domain, template, force=False):
+            print("   ✅ SRRD project initialized")
+        else:
+            print("   ❌ Failed to initialize SRRD project")
+            return 1
     
     # Add the existing MCP server to Python path
     mcp_server_path = Path(__file__).parent.parent.parent.parent / 'work' / 'code' / 'mcp'
@@ -200,46 +241,83 @@ def handle_serve_start(args):
         print("   This may indicate the package structure needs adjustment")
         return 1
     
-    # Add to Python path
+    try:
+        print(f"🚀 Configuring SRRD MCP Server for THIS project")
+        print(f"   Project: {current_dir}")
+        
+        # Create/update the GLOBAL launcher with THIS project's path
+        global_launcher_dir = Path(__file__).parent.parent.parent.parent / 'srrd_builder'
+        global_launcher_script = global_launcher_dir / 'mcp_global_launcher.py'
+        
+        launcher_content = f'''#!/usr/bin/env python3
+"""
+SRRD MCP Launcher - Context Set by 'srrd serve'
+Project path was set when 'srrd serve start' was run.
+"""
+
+import sys
+import os
+from pathlib import Path
+
+# Project context set by 'srrd serve start'
+PROJECT_PATH = '{current_dir}'
+CONFIG_PATH = '{srrd_dir / "config.json"}'
+
+def main():
+    """Main launcher - uses the project set by srrd serve"""
+    # Set the project context from when 'srrd serve' was run
+    os.environ['SRRD_PROJECT_PATH'] = PROJECT_PATH
+    os.environ['SRRD_CONFIG_PATH'] = CONFIG_PATH
+    
+    # Dynamic MCP server path
+    launcher_path = Path(__file__).resolve()
+    mcp_server_path = launcher_path.parent.parent / 'work' / 'code' / 'mcp'
     sys.path.insert(0, str(mcp_server_path))
     
+    # Import and run the MCP server
     try:
-        # Import and start the MCP server
         from mcp_server import ClaudeMCPServer
-        
-        print(f"🚀 Starting SRRD MCP Server")
-        print(f"   Host: {args.host}")
-        print(f"   Port: {args.port}")
-        print(f"   Project: {current_dir}")
-        print("   Press Ctrl+C to stop")
-        
-        # Create server tracking
-        create_server_tracking(current_dir, args.host, args.port)
-        
-        # Set environment variables for MCP server
-        os.environ['SRRD_PROJECT_PATH'] = str(current_dir)
-        os.environ['SRRD_CONFIG_PATH'] = str(srrd_dir / 'config.json')
-        
-        # Start the MCP server
+        import asyncio
         server = ClaudeMCPServer()
-        result = asyncio.run(server.run())
-        
-        # Clean up on exit
-        cleanup_server_tracking(current_dir)
-        return result or 0
-        
-    except ImportError as e:
-        print(f"❌ Could not import MCP server: {e}")
-        print("   The MCP server components may not be properly installed")
-        cleanup_server_tracking(current_dir)
-        return 1
+        asyncio.run(server.run())
     except KeyboardInterrupt:
-        print("\n🛑 Server stopped by user")
-        cleanup_server_tracking(current_dir)
-        return 0
+        sys.exit(0)
     except Exception as e:
-        print(f"❌ Server error: {e}")
-        cleanup_server_tracking(current_dir)
+        sys.stderr.write(f"Server error: {{e}}\\n")
+        sys.exit(1)
+
+if __name__ == '__main__':
+    main()
+'''
+        
+        with open(global_launcher_script, 'w') as f:
+            f.write(launcher_content)
+        
+        # Make it executable
+        global_launcher_script.chmod(0o755)
+        
+        print(f"✅ MCP Server configured for: {current_dir}")
+        print(f"   Launcher: {global_launcher_script}")
+        print(f"   All MCP tools will now use THIS project's database!")
+        
+        print("\n🎯 Claude Desktop Config (set once):")
+        print(f"   {{")
+        print(f"     \"mcpServers\": {{")
+        print(f"       \"srrd-builder\": {{")
+        print(f"         \"command\": \"python3\",")
+        print(f"         \"args\": [\"{global_launcher_script}\"]")
+        print(f"       }}")
+        print(f"     }}")
+        print(f"   }}")
+        print("\n🚀 To switch projects:")
+        print("1. cd /path/to/other/srrd/project")
+        print("2. srrd serve start")
+        print("3. All MCP tools now use the new project!")
+        
+        return 0
+        
+    except Exception as e:
+        print(f"❌ Server configuration error: {e}")
         return 1
 
 def handle_serve(args):

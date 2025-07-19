@@ -499,3 +499,131 @@
 2025-07-18 15:31:58,442 - srrd_builder - INFO - server.py:346 - Registered tool: evaluate_paradigm_shift_potential
 2025-07-18 15:31:58,442 - srrd_builder - INFO - server.py:46 - MCP Server initialized on port 8083
 2025-07-18 15:31:58,442 - srrd_builder - INFO - server.py:47 - Registered 38 tools
+2025-07-19 10:44:06,633 - srrd_builder - WARNING - server.py:49 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: clarify_research_goals
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: suggest_methodology
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: simulate_peer_review
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: check_quality_gates
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: initialize_project
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: save_session
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: search_knowledge
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: version_control
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: backup_project
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: restore_session
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: generate_latex_document
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: compile_latex
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: format_research_content
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: generate_bibliography
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: extract_document_sections
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: extract_document_sections
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: store_bibliography_reference
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: retrieve_bibliography_references
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: generate_document_with_database_bibliography
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: list_latex_templates
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: generate_latex_with_template
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: semantic_search
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: discover_patterns
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: build_knowledge_graph
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: find_similar_documents
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: extract_key_concepts
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: generate_research_summary
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: explain_methodology
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: compare_approaches
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: validate_design
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: ensure_ethics
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: initiate_paradigm_challenge
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: develop_alternative_framework
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: compare_paradigms
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: validate_novel_theory
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: cultivate_innovation
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: assess_foundational_assumptions
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: generate_critical_questions
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:354 - Registered tool: evaluate_paradigm_shift_potential
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:54 - MCP Server initialized on port 8084
+2025-07-19 10:44:06,634 - srrd_builder - INFO - server.py:55 - Registered 38 tools
+2025-07-19 10:44:06,830 - srrd_builder.vector_manager - INFO - vector_manager.py:65 - Initializing vector database...
+2025-07-19 10:44:06,910 - srrd_builder.vector_manager - INFO - vector_manager.py:100 - Embedding model disabled for faster startup.
+2025-07-19 10:44:06,910 - srrd_builder.vector_manager - INFO - vector_manager.py:103 - Setting up collections...
+2025-07-19 10:44:06,915 - srrd_builder.vector_manager - INFO - vector_manager.py:129 - Vector database initialization completed!
+2025-07-19 10:44:06,929 - srrd_builder.project_manager - INFO - project_manager.py:20 - Initializing project 'Comprehensive Test Project' in domain 'theoretical_physics'...
+2025-07-19 10:44:06,932 - srrd_builder.vector_manager - INFO - vector_manager.py:65 - Initializing vector database...
+2025-07-19 10:44:06,941 - srrd_builder.vector_manager - INFO - vector_manager.py:100 - Embedding model disabled for faster startup.
+2025-07-19 10:44:06,941 - srrd_builder.vector_manager - INFO - vector_manager.py:103 - Setting up collections...
+2025-07-19 10:44:06,945 - srrd_builder.vector_manager - INFO - vector_manager.py:129 - Vector database initialization completed!
+2025-07-19 10:44:06,946 - srrd_builder.project_manager - INFO - project_manager.py:37 - Project 'Comprehensive Test Project' initialized successfully! (ID: 1)
+2025-07-19 10:44:06,962 - srrd_builder.project_manager - INFO - project_manager.py:20 - Initializing project 'Comprehensive Test Project Tool' in domain 'theoretical_physics'...
+2025-07-19 10:44:07,008 - srrd_builder.vector_manager - INFO - vector_manager.py:65 - Initializing vector database...
+2025-07-19 10:44:07,018 - srrd_builder.vector_manager - INFO - vector_manager.py:100 - Embedding model disabled for faster startup.
+2025-07-19 10:44:07,018 - srrd_builder.vector_manager - INFO - vector_manager.py:103 - Setting up collections...
+2025-07-19 10:44:07,021 - srrd_builder.vector_manager - INFO - vector_manager.py:129 - Vector database initialization completed!
+2025-07-19 10:44:07,021 - srrd_builder.project_manager - INFO - project_manager.py:37 - Project 'Comprehensive Test Project Tool' initialized successfully! (ID: 1)
+2025-07-19 10:44:07,022 - srrd_builder.project_manager - INFO - project_manager.py:20 - Initializing project 'Persistence Test' in domain 'theoretical_physics'...
+2025-07-19 10:44:07,022 - srrd_builder.vector_manager - INFO - vector_manager.py:65 - Initializing vector database...
+2025-07-19 10:44:07,024 - srrd_builder.vector_manager - INFO - vector_manager.py:100 - Embedding model disabled for faster startup.
+2025-07-19 10:44:07,024 - srrd_builder.vector_manager - INFO - vector_manager.py:103 - Setting up collections...
+2025-07-19 10:44:07,025 - srrd_builder.vector_manager - INFO - vector_manager.py:129 - Vector database initialization completed!
+2025-07-19 10:44:07,026 - srrd_builder.project_manager - INFO - project_manager.py:37 - Project 'Persistence Test' initialized successfully! (ID: 2)
+2025-07-19 16:10:24,184 - srrd_builder - WARNING - server.py:49 - Configuration issue: OpenAI API key not configured - AI features may not work
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: clarify_research_goals
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: suggest_methodology
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: simulate_peer_review
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: check_quality_gates
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: initialize_project
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: save_session
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: search_knowledge
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: version_control
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: backup_project
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: restore_session
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: generate_latex_document
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: compile_latex
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: format_research_content
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: generate_bibliography
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: extract_document_sections
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: extract_document_sections
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: store_bibliography_reference
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: retrieve_bibliography_references
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: generate_document_with_database_bibliography
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: list_latex_templates
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: generate_latex_with_template
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: semantic_search
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: discover_patterns
+2025-07-19 16:10:24,185 - srrd_builder - INFO - server.py:354 - Registered tool: build_knowledge_graph
+2025-07-19 16:10:24,186 - srrd_builder - INFO - server.py:354 - Registered tool: find_similar_documents
+2025-07-19 16:10:24,186 - srrd_builder - INFO - server.py:354 - Registered tool: extract_key_concepts
+2025-07-19 16:10:24,186 - srrd_builder - INFO - server.py:354 - Registered tool: generate_research_summary
+2025-07-19 16:10:24,186 - srrd_builder - INFO - server.py:354 - Registered tool: explain_methodology
+2025-07-19 16:10:24,186 - srrd_builder - INFO - server.py:354 - Registered tool: compare_approaches
+2025-07-19 16:10:24,186 - srrd_builder - INFO - server.py:354 - Registered tool: validate_design
+2025-07-19 16:10:24,186 - srrd_builder - INFO - server.py:354 - Registered tool: ensure_ethics
+2025-07-19 16:10:24,186 - srrd_builder - INFO - server.py:354 - Registered tool: initiate_paradigm_challenge
+2025-07-19 16:10:24,186 - srrd_builder - INFO - server.py:354 - Registered tool: develop_alternative_framework
+2025-07-19 16:10:24,186 - srrd_builder - INFO - server.py:354 - Registered tool: compare_paradigms
+2025-07-19 16:10:24,186 - srrd_builder - INFO - server.py:354 - Registered tool: validate_novel_theory
+2025-07-19 16:10:24,186 - srrd_builder - INFO - server.py:354 - Registered tool: cultivate_innovation
+2025-07-19 16:10:24,186 - srrd_builder - INFO - server.py:354 - Registered tool: assess_foundational_assumptions
+2025-07-19 16:10:24,186 - srrd_builder - INFO - server.py:354 - Registered tool: generate_critical_questions
+2025-07-19 16:10:24,186 - srrd_builder - INFO - server.py:354 - Registered tool: evaluate_paradigm_shift_potential
+2025-07-19 16:10:24,186 - srrd_builder - INFO - server.py:54 - MCP Server initialized on port 8084
+2025-07-19 16:10:24,186 - srrd_builder - INFO - server.py:55 - Registered 38 tools
+2025-07-19 16:10:24,345 - srrd_builder.vector_manager - INFO - vector_manager.py:65 - Initializing vector database...
+2025-07-19 16:10:24,409 - srrd_builder.vector_manager - INFO - vector_manager.py:100 - Embedding model disabled for faster startup.
+2025-07-19 16:10:24,409 - srrd_builder.vector_manager - INFO - vector_manager.py:103 - Setting up collections...
+2025-07-19 16:10:24,412 - srrd_builder.vector_manager - INFO - vector_manager.py:129 - Vector database initialization completed!
+2025-07-19 16:10:24,424 - srrd_builder.project_manager - INFO - project_manager.py:20 - Initializing project 'Comprehensive Test Project' in domain 'theoretical_physics'...
+2025-07-19 16:10:24,427 - srrd_builder.vector_manager - INFO - vector_manager.py:65 - Initializing vector database...
+2025-07-19 16:10:24,436 - srrd_builder.vector_manager - INFO - vector_manager.py:100 - Embedding model disabled for faster startup.
+2025-07-19 16:10:24,436 - srrd_builder.vector_manager - INFO - vector_manager.py:103 - Setting up collections...
+2025-07-19 16:10:24,439 - srrd_builder.vector_manager - INFO - vector_manager.py:129 - Vector database initialization completed!
+2025-07-19 16:10:24,439 - srrd_builder.project_manager - INFO - project_manager.py:37 - Project 'Comprehensive Test Project' initialized successfully! (ID: 1)
+2025-07-19 16:10:24,453 - srrd_builder.project_manager - INFO - project_manager.py:20 - Initializing project 'Comprehensive Test Project Tool' in domain 'theoretical_physics'...
+2025-07-19 16:10:24,494 - srrd_builder.vector_manager - INFO - vector_manager.py:65 - Initializing vector database...
+2025-07-19 16:10:24,503 - srrd_builder.vector_manager - INFO - vector_manager.py:100 - Embedding model disabled for faster startup.
+2025-07-19 16:10:24,503 - srrd_builder.vector_manager - INFO - vector_manager.py:103 - Setting up collections...
+2025-07-19 16:10:24,506 - srrd_builder.vector_manager - INFO - vector_manager.py:129 - Vector database initialization completed!
+2025-07-19 16:10:24,506 - srrd_builder.project_manager - INFO - project_manager.py:37 - Project 'Comprehensive Test Project Tool' initialized successfully! (ID: 1)
+2025-07-19 16:10:24,507 - srrd_builder.project_manager - INFO - project_manager.py:20 - Initializing project 'Persistence Test' in domain 'theoretical_physics'...
+2025-07-19 16:10:24,507 - srrd_builder.vector_manager - INFO - vector_manager.py:65 - Initializing vector database...
+2025-07-19 16:10:24,509 - srrd_builder.vector_manager - INFO - vector_manager.py:100 - Embedding model disabled for faster startup.
+2025-07-19 16:10:24,509 - srrd_builder.vector_manager - INFO - vector_manager.py:103 - Setting up collections...
+2025-07-19 16:10:24,510 - srrd_builder.vector_manager - INFO - vector_manager.py:129 - Vector database initialization completed!
+2025-07-19 16:10:24,511 - srrd_builder.project_manager - INFO - project_manager.py:37 - Project 'Persistence Test' initialized successfully! (ID: 2)

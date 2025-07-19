@@ -333,3 +333,23 @@ class VectorManager:
             logger.info("Vector search will use fallback text-based similarity.")
             self.embedding_model = None
             return False
+    
+    async def close(self):
+        """Close the vector database client"""
+        if self.client:
+            try:
+                # ChromaDB doesn't have an explicit close method, but we can clean up references
+                self.client = None
+                self.collections = {}
+                self.embedding_model = None
+            except Exception as e:
+                logger.warning(f"Error during VectorManager cleanup: {e}")
+    
+    async def __aenter__(self):
+        """Async context manager entry"""
+        await self.initialize(enable_embedding_model=False)
+        return self
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async context manager exit"""
+        await self.close()

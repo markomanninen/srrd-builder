@@ -665,6 +665,14 @@ async def store_bibliography_reference_tool(**kwargs) -> str:
         reference = kwargs.get('reference', {})
         project_path = kwargs.get('project_path', '')
         
+        # DEBUG: Log what we received
+        import os
+        debug_info = f"DEBUG - store_bibliography_reference_tool called with:\n"
+        debug_info += f"  project_path: {project_path}\n"
+        debug_info += f"  SRRD_PROJECT_PATH env: {os.getenv('SRRD_PROJECT_PATH')}\n"
+        debug_info += f"  Current working directory: {os.getcwd()}\n"
+        print(debug_info)
+        
         if not reference:
             return "Error: Missing required parameter 'reference'"
         
@@ -675,7 +683,9 @@ async def store_bibliography_reference_tool(**kwargs) -> str:
         from storage.vector_manager import VectorManager
         import os
         
-        vector_manager = VectorManager()
+        # Create VectorManager with project-specific path
+        vector_db_path = str(Path(project_path) / '.srrd' / 'knowledge.db')
+        vector_manager = VectorManager(db_path=vector_db_path)
         
         # Initialize the vector manager
         await vector_manager.initialize()
@@ -726,15 +736,21 @@ async def retrieve_bibliography_references_tool(**kwargs) -> str:
     try:
         query = kwargs.get('query', '')
         max_results = kwargs.get('max_results', 5)
+        project_path = kwargs.get('project_path', '')
         
         if not query:
             return "Error: Missing required parameter 'query'"
+        
+        if not project_path:
+            return "Error: Project context not available. Please ensure you are in an SRRD project or provide project_path parameter."
         
         # Import vector manager for retrieval
         from storage.vector_manager import VectorManager
         import os
         
-        vector_manager = VectorManager()
+        # Create VectorManager with project-specific path
+        vector_db_path = str(Path(project_path) / '.srrd' / 'knowledge.db')
+        vector_manager = VectorManager(db_path=vector_db_path)
         
         # Initialize the vector manager
         await vector_manager.initialize()

@@ -140,9 +140,14 @@ class ConfigManager:
         if os.getenv('SRRD_DB_PATH'):
             self.database.sqlite_path = os.getenv('SRRD_DB_PATH')
         
-        # Vector database settings
+        # Vector database settings - FIXED TO USE PROJECT PATH
         if os.getenv('SRRD_VECTOR_DIR'):
             self.vector.persist_directory = os.getenv('SRRD_VECTOR_DIR')
+        elif os.getenv('SRRD_PROJECT_PATH'):
+            # Use project-specific path if available
+            project_path = os.getenv('SRRD_PROJECT_PATH')
+            self.vector.persist_directory = os.path.join(project_path, '.srrd', 'knowledge.db')
+        
         if os.getenv('SRRD_EMBEDDING_MODEL'):
             self.vector.embedding_model = os.getenv('SRRD_EMBEDDING_MODEL')
         

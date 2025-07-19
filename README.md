@@ -1,12 +1,27 @@
 # SRRD-Builder
 
-**S**cientific **R**esearch **R**equirement **D**ocument Builder - A comprehensive AI-powered toolkit for scientific research collaboration and document generation.
+**S**cientific **R**esearch **R**equirement **D**ocument Builder - An AI-powered toolkit for scientific research collaboration and document generation.
+
+## Testing Status
+
+**Note**: Test suite is in active development. Current status:
+- 158 tests implemented and working toward 100% pass rate
+- Test execution integrated with setup: `bash setup.sh --with-tests`
+- See `work/docs/TEST_SUITE.md` for detailed testing documentation
+- Production readiness requires 100% test pass rate with zero warnings
+
+## Testing & Quality
+- [🧪 Test Suite Status](work/docs/TEST_SUITE.md) - Testing documentation and guidelines
+- **Run Tests:** `bash run_tests.sh` - Execute test suite (working toward 100% pass rate)
+- **Development Status:** Test suite in development, working toward comprehensive coverage
 
 ## Overview
 
-SRRD-Builder is designed to support the full scientific research lifecycle, from initial planning to publication-ready documents. It features special capabilities for novel theory development in fundamental physics, ensuring equal treatment and rigorous development of alternative paradigms.
+SRRD-Builder uses a **neurosymbolic approach**, combining traditional symbolic programming (rule-based systems, structured knowledge, logical reasoning) with neural networks/large language models to support the scientific research lifecycle from initial planning to publication-ready documents. 
 
-The project provides a **Model Context Protocol (MCP) server** that integrates with Claude Desktop and VS Code, offering 38+ research tools for document generation, knowledge management, and research quality assurance.
+The system features an **MCP (Model Context Protocol) server** that integrates with Claude Desktop and VS Code, providing 38+ research tools for document generation, knowledge management, and research quality assurance. It specializes in novel theory development for fundamental physics research, ensuring rigorous development of alternative paradigms with equal treatment to mainstream approaches.
+
+**⚠️ Development Status**: This project is in active development. Core functionality is working but the system is not yet production-ready.
 
 ## Key Features
 
@@ -19,7 +34,7 @@ The project provides a **Model Context Protocol (MCP) server** that integrates w
 - **Git-based Project Management** with session restoration
 - **Socratic Questioning Engine** for progressive research refinement
 - **Novel Theory Development Framework** for paradigm innovation in physics
-- **Modern Web Frontend Interface** for testing and demonstration
+- **Web Frontend Interface** for testing and demonstration
 - **Local Storage Integration** (Git, SQLite, Vector DB)
 
 ## Quick Start
@@ -29,6 +44,9 @@ The project provides a **Model Context Protocol (MCP) server** that integrates w
 git clone https://github.com/markomanninen/srrd-builder
 cd srrd-builder
 ./setup.sh
+
+# Optional: Run with comprehensive testing (158 tests)
+./setup.sh --with-tests
 ```
 
 This will:
@@ -37,6 +55,7 @@ This will:
 - Configure LaTeX (if needed)
 - Set up Claude Desktop configuration
 - Test all components
+- **Optionally run test suite (158 tests in development)**
 
 ### 📱 Server Access Methods
 
@@ -96,22 +115,47 @@ srrd-server --help
 
 ### Method 2: Web Interface Demo (Global)
 
-1. Start the complete demo system: `srrd-server --with-frontend`
+1. Start the demo system: `srrd-server --with-frontend`
 2. Open web interface: http://localhost:8080
 3. Click "Connect to Server" to establish WebSocket connection
 4. Test any of the 38 available tools using the categorized interface
 
 ### Available Tools
 
-The MCP server provides 38+ tools organized by category:
+The MCP server provides 38+ tools organized by research workflow categories:
 
-- **🧪 Research Planning & Goal Setting** (2 tools): Clarify goals, suggest methodologies
-- **✅ Quality Assurance & Review** (2 tools): Peer review simulation, quality gates
-- **🗄️ Storage & Project Management** (6 tools): Initialize projects, save/restore sessions, version control
-- **📄 Document Generation & LaTeX** (6 tools): LaTeX compilation, bibliography management
-- **🔍 Search & Discovery** (6 tools): Semantic search, concept extraction, pattern discovery
-- **⚗️ Methodology & Validation** (4 tools): Methodology explanation, design validation, ethics review
-- **🚀 Novel Theory Development** (8 tools): Paradigm innovation, equal treatment validation, foundational analysis
+**🧪 Research Planning & Goal Setting (2 tools)**
+- Socratic questioning to clarify research objectives and requirements
+- Methodology advisory for selecting appropriate research approaches
+
+**✅ Quality Assurance & Review (2 tools)** 
+- AI-powered peer review simulation mimicking expert feedback
+- Quality gates with automated validation at each research phase
+
+**🗄️ Storage & Project Management (6 tools)**
+- Git-based project initialization and version control
+- Session save/restore for research continuity
+- Backup and project archival systems
+
+**📄 Document Generation & LaTeX (6 tools)**
+- LaTeX document generation with automatic formatting
+- Bibliography management and citation integration
+- Template-based research document creation
+
+**🔍 Search & Discovery (6 tools)**
+- Semantic search across research documents and knowledge bases
+- Key concept extraction and pattern discovery
+- Document similarity analysis and knowledge graph building
+
+**⚗️ Methodology & Validation (4 tools)**
+- Research methodology explanation and guidance
+- Experimental design validation and ethics review
+- Statistical analysis framework recommendations
+
+**🚀 Novel Theory Development (8 tools)**
+- Alternative paradigm development for fundamental physics
+- Foundational assumption analysis and paradigm comparison
+- Equal treatment validation for alternative theories
 
 ### Example Workflow
 
@@ -145,14 +189,68 @@ SRRD-Builder uses a **dual server architecture** to support different use cases:
 - **Context**: Global tool access without project dependency
 - **Use Case**: Testing, demonstrations, web application integration
 
+## Technical Architecture
+
+SRRD-Builder implements a **neurosymbolic architecture** that combines:
+
+**Symbolic Components**
+- Rule-based validation and quality control systems
+- Structured templates for different research types  
+- Knowledge graphs for research methodology relationships
+- Git-based project management and version control
+
+**Neural Components**
+- Large language model integration for content generation
+- Semantic search across research documents and knowledge bases
+- AI-powered peer review simulation and quality assessment
+- Natural language processing for research requirement extraction
+
+**Integration Layer**
+- MCP server interface for Claude Desktop and VS Code integration
+- WebSocket server for web interfaces and external tool access
+- Vector database storage for semantic search capabilities
+- LaTeX document generation with automatic bibliography management
+
+## Use Cases
+
+**Academic Researchers**
+- Generate research protocols and methodology frameworks
+- Access interactive Socratic guidance for research planning
+- Create structured literature reviews with semantic search
+
+**Graduate Students & Early Career Researchers**
+- Learn research methodology through interactive questioning
+- Develop thesis proposals with systematic guidance
+- Practice peer review processes with AI simulation
+
+**Fundamental Physics Research**
+- Develop alternative theories with equal treatment frameworks
+- Challenge existing paradigms through rigorous investigation
+- Create publication-ready documents for novel ontologies
+
+**Research Institutions**
+- Standardize research planning processes across departments
+- Implement consistent quality control for research projects
+- Coordinate multi-institutional collaborative efforts
+
+**AI Research Systems**
+- Provide structured requirements for autonomous research
+- Generate comprehensive research requirement documents
+- Integrate systematic research planning into AI workflows
+
 ## Documentation
 
 ### Getting Started
-- [📖 Installation Guide](INSTALLATION.md) - Detailed installation instructions and troubleshooting
+- [📖 Installation Guide](INSTALLATION.md) - Detailed installation instructions and troubleshooting  
 - [📋 Project Status](work/PROJECT_STATUS.md) - Current implementation status and completion tracking
 
+### Testing & Quality
+- [🧪 Test Suite Status](work/docs/TEST_SUITE.md) - Comprehensive testing documentation and guidelines
+- **Run Tests:** `bash run_tests.sh` - Execute 158 tests with timeout protection
+- **Test Coverage:** Working toward 100% pass rate across unit, integration, and validation tests
+
 ### Usage Guides
-- [⚙️ Technical Requirements](work/docs/TECHNICAL_REQUIREMENTS.md) - Complete software library requirements and test specifications
+- [⚙️ Technical Requirements](work/docs/TECHNICAL_REQUIREMENTS.md) - Software library requirements and test specifications
 - [🤖 Guide for AI Agents](work/docs/GUIDE_FOR_AI_AGENTS.md) - Instructions for AI-assisted development
 
 ### Development Documentation
@@ -178,27 +276,39 @@ SRRD-Builder uses a **dual server architecture** to support different use cases:
 
 ### Getting Help
 
-1. Check server status: `srrd configure --status`
-2. View logs in `work/code/mcp/logs/`
-3. Run comprehensive tests: `python3 work/code/mcp/test_comprehensive_tools_storage.py`
-4. Check the [Installation Guide](INSTALLATION.md) for detailed troubleshooting
+1. **Run Test Suite**: `bash run_tests.sh` - Test validation (development in progress)
+2. Check server status: `srrd configure --status`
+3. View logs in `work/code/mcp/logs/`
+4. Check the [Test Suite Documentation](work/docs/TEST_SUITE.md) for testing guidelines
+5. Check the [Installation Guide](INSTALLATION.md) for detailed troubleshooting
 
 ## Project Status
 
-✅ **Completed Features:**
-- MCP Server with 38+ research tools
-- CLI tool for server management
+🚧 **Development Status**: This project is in active development with core functionality working.
+
+✅ **Working Features:**
+- MCP Server with 38+ research tools (basic functionality)
+- CLI tool for server management  
 - Vector database integration
 - LaTeX document generation
 - Git-based project management
-- Claude Desktop integration
+- Claude Desktop integration (basic functionality)
 - Web interface for testing and demos
-- Comprehensive test suite
+- **Test suite in development (158 tests created, working toward 100% pass rate)**
 
-🚧 **In Development:**
+🚧 **In Active Development:**
+- Test suite refinement and 100% pass rate achievement
+- Error handling and edge case coverage
 - Advanced semantic search features
 - Extended research templates
+- Production-ready deployment procedures
+- Comprehensive documentation completion
+
+📋 **Future Plans:**
 - VS Code extension integration
+- Production deployment readiness
+- User acceptance testing
+- Performance optimization
 
 ## Special Focus: Novel Theory Development
 
@@ -209,6 +319,8 @@ This project emphasizes equal treatment and rigorous development of alternative 
 - Equal treatment validation protocols
 - Specialized Socratic questioning for novel theories
 - Publication-ready output for alternative paradigms
+
+~/Library/Application Support/Code/User/mcp.json
 
 ## Contributing
 

@@ -19,7 +19,36 @@ This guide provides specific instructions for AI agents contributing to the SRRD
 - Ensure all suggestions are evidence-based and citable
 - Consider ethical implications in all research planning components
 
-### 3. Neurosymbolic Development
+### 3. Development State Honesty
+- **NEVER claim "production ready" unless ALL criteria are met**
+- Be honest about current development state and limitations
+- Use accurate status descriptions: "Development", "Testing", "Beta", "Production"
+- Avoid overhyping or making premature maturity claims
+
+### 4. Test Quality Standards (MANDATORY)
+- **ALL tests must pass - 100% success rate is MANDATORY**
+- **NO warnings allowed** - fix all warnings before claiming completion
+- **NO skipped tests** - every test must be executed and pass
+- **NO failures tolerated** - agent must continue solving until 100% pass rate
+- Test suite must run to completion without hanging or timeouts
+- Only claim test completion when these standards are met
+
+### 5. Production Readiness Criteria
+**Production Ready means ALL of the following are true:**
+- ✅ **100% test pass rate** with comprehensive test coverage
+- ✅ **Zero warnings** in all test runs and builds
+- ✅ **Complete documentation** including installation, usage, and troubleshooting
+- ✅ **Error handling** for all failure scenarios with graceful degradation
+- ✅ **Security validation** with input sanitization and secure defaults
+- ✅ **Performance validation** with acceptable response times under load
+- ✅ **User acceptance testing** completed by actual users
+- ✅ **Deployment procedures** tested and documented
+- ✅ **Monitoring and logging** implemented for production issues
+- ✅ **Backup and recovery** procedures tested and documented
+
+**If ANY of these criteria are not met, the system is in DEVELOPMENT state**
+
+### 6. Neurosymbolic Development
 - Create reusable components that can be combined for different research types
 - Maintain clear separation between symbolic programming (rules, logic, structured knowledge) and neural/LLM components
 - Design for extensibility across different scientific domains
@@ -53,25 +82,35 @@ This guide provides specific instructions for AI agents contributing to the SRRD
    - Create modular, testable code
    - Follow established coding standards and patterns
 
-3. **Testing in `work/tests/`**
+3. **Testing in `work/tests/` - RIGOROUS STANDARDS**
+   - **MANDATORY**: ALL tests must pass (100% success rate)
+   - **NO warnings allowed** - fix all warnings before proceeding
+   - **NO skipped tests** - every test must execute and pass
+   - **NO failures tolerated** - continue problem solving until 100% pass
    - Create unit tests for individual components
    - Develop integration tests for neurosymbolic interaction (symbolic-neural integration)
    - Test with various research scenarios
    - Validate output quality and consistency
+   - **Test suite must complete without hanging or timeouts**
 
 ### Phase 3: Review and Refinement
-1. **Self-Review Checklist**
+1. **Self-Review Checklist - DEVELOPMENT STATE ASSESSMENT**
+   - **HONEST status assessment** - avoid overhyping maturity
    - Code follows project conventions
    - Documentation is comprehensive and clear
-   - Tests provide adequate coverage
+   - **Tests achieve 100% pass rate with zero warnings**
    - Components integrate properly with existing system
    - Output meets scientific research standards
+   - **System limitations and known issues documented**
 
-2. **Validation Process**
+2. **Validation Process - RIGOROUS STANDARDS**
    - Test with example research scenarios
    - Verify compliance with academic standards
    - Check for bias or methodological flaws
    - Ensure reproducibility of results
+   - **Complete error handling validation**
+   - **Performance under load testing**
+   - **Security vulnerability assessment**
 
 ### Phase 4: Integration and Deployment
 1. **Move to Production Directories**
@@ -121,25 +160,36 @@ This guide provides specific instructions for AI agents contributing to the SRRD
 
 ## Quality Standards
 
-### Code Quality
+### Code Quality - MANDATORY STANDARDS
 - **Documentation**: Every function and class must have comprehensive docstrings
 - **Type Hints**: Use type hints throughout Python code
-- **Testing**: Minimum 80% test coverage for all new code
+- **Testing**: **100% test pass rate required** - no failures, warnings, or skips allowed
 - **Performance**: Profile and optimize critical paths
 - **Security**: Validate all inputs and handle sensitive data appropriately
+- **Error Handling**: Comprehensive error handling with graceful degradation
 
-### Content Quality
+### Content Quality - RIGOROUS STANDARDS
 - **Accuracy**: All scientific claims must be verifiable and properly cited
 - **Completeness**: Generated documents must cover all essential research planning components
 - **Clarity**: Use clear, precise language appropriate for scientific communication
 - **Consistency**: Maintain consistent terminology and formatting throughout
 - **Bias Awareness**: Actively identify and mitigate potential biases in generated content
 
-### Integration Quality
+### Integration Quality - PRODUCTION STANDARDS
 - **Interfaces**: Design clean, well-documented interfaces between components
 - **Error Handling**: Graceful degradation when components fail
 - **Monitoring**: Implement logging and monitoring for system health
 - **Scalability**: Design for handling increased load and complexity
+- **Reliability**: System must handle edge cases and unexpected inputs
+
+### Development State Communication - HONESTY REQUIRED
+- **Accurate Status**: Use precise development state descriptions
+  - **"Development"**: Core functionality incomplete, tests failing
+  - **"Testing"**: Core functionality complete, achieving test pass rates
+  - **"Beta"**: All tests pass, user testing in progress
+  - **"Production Ready"**: ALL production criteria met (see criteria above)
+- **Known Limitations**: Document all current limitations and issues
+- **Avoid Overhyping**: Never claim higher maturity than actually achieved
 
 ## Collaboration Guidelines
 
@@ -189,11 +239,15 @@ This guide provides specific instructions for AI agents contributing to the SRRD
 - **Incremental Generation**: Build documents incrementally with user feedback using neurosymbolic approaches
 - **Domain Adaptation**: Customize approaches for specific scientific domains using both symbolic knowledge and neural adaptation
 
-### Anti-Patterns to Avoid
+### Anti-Patterns to Avoid - CRITICAL
 - **Direct Production**: Never develop directly in production directories
 - **Monolithic Design**: Avoid large, non-modular components that mix symbolic and neural logic
 - **Hallucination Tolerance**: Never accept unverified neural/AI-generated facts without symbolic validation
 - **Single Point of Failure**: Avoid dependencies on single LLM providers or single symbolic rule sets
+- **Premature Status Claims**: Never claim "production ready" without meeting ALL criteria
+- **Test Tolerance**: Never accept test failures, warnings, or skipped tests
+- **Overhyping Maturity**: Avoid inflating current development state or capabilities
+- **Incomplete Error Handling**: Never ignore edge cases or error conditions
 
 ## Troubleshooting and Support
 
@@ -211,17 +265,29 @@ This guide provides specific instructions for AI agents contributing to the SRRD
 
 ## Success Metrics
 
-### Technical Metrics
-- **Code Coverage**: Maintain >80% test coverage
+### Technical Metrics - MANDATORY STANDARDS
+- **Test Success Rate**: 100% pass rate - no failures, warnings, or skips allowed
+- **Code Coverage**: Maintain >95% test coverage (not just 80%)
 - **Performance**: Response time <5 seconds for standard documents
-- **Reliability**: >99% uptime for production systems
-- **Quality**: <5% error rate in generated documents
+- **Reliability**: >99.9% uptime for production systems (when actually production)
+- **Quality**: <1% error rate in generated documents
+- **Zero Warnings**: All builds and tests must complete without warnings
 
-### Research Quality Metrics
+### Research Quality Metrics - RIGOROUS STANDARDS
 - **Scientific Validity**: 100% compliance with scientific method principles
 - **Completeness**: All required research planning components present
 - **Clarity**: Readable by target research community
 - **Actionability**: Generated requirements can be directly implemented
+- **Reproducibility**: All results must be reproducible
+- **Ethical Compliance**: All ethical standards met
+
+### Development State Metrics - HONEST ASSESSMENT
+- **Feature Completeness**: Percentage of planned features implemented
+- **Test Coverage**: Actual test coverage with pass rate breakdown
+- **Known Issues**: Number and severity of outstanding bugs
+- **Documentation Coverage**: Percentage of code/features documented
+- **User Validation**: Results of actual user testing (if any)
+- **Security Assessment**: Results of security testing and validation
 
 ### User Experience Metrics
 - **Usability**: Users can generate documents with minimal training

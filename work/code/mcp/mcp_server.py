@@ -25,6 +25,11 @@ class ClaudeMCPServer:
         
     def _setup_signal_handlers(self):
         """Setup signal handlers for graceful shutdown"""
+        # Skip signal handlers during test execution to prevent hanging
+        import sys
+        if 'pytest' in sys.modules:
+            return
+            
         def signal_handler(signum, frame):
             self.running = False
             sys.exit(0)

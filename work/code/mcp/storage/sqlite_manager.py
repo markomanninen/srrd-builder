@@ -148,3 +148,19 @@ class SQLiteManager:
         ) as cursor:
             interactions = await cursor.fetchall()
         return {"project": project, "sessions": sessions, "interactions": interactions}
+    
+    async def close(self):
+        """Close the database connection"""
+        if self.connection:
+            await self.connection.close()
+            self.connection = None
+    
+    async def __aenter__(self):
+        """Async context manager entry"""
+        if not self.connection:
+            await self.initialize_database()
+        return self
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Async context manager exit"""
+        await self.close()

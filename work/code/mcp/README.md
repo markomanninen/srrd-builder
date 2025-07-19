@@ -93,16 +93,16 @@ echo '{"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}' | pytho
 
 Should return a list of 38 available tools.
 
-**Run comprehensive context-aware tests:**
+**Run comprehensive tests:**
 ```bash
-# Test all 38 tools for context-aware functionality
-python3 test_enhanced_tools_comprehensive.py
+# Run the complete organized test suite (158 tests)
+cd ../../../ && bash run_tests.sh
 
-# Basic functionality tests
-python3 test_basic.py
-
-# Client interaction tests
-python3 test_client.py
+# The organized test suite covers all functionality:
+# • 19 test files in work/tests/
+# • Unit tests for all tools and components
+# • Integration tests for workflows
+# • Context-aware functionality validation
 ```
 
 ## Context-Aware Implementation
@@ -122,20 +122,16 @@ pip install -r requirements.txt
 
 ### Run the Server
 ```bash
-python3 run_server.py
+python3 web_server.py
 ```
 The server will start on `localhost:8083` with WebSocket endpoint `ws://localhost:8083`
 
 ### Test the Implementation
 ```bash
-# Run comprehensive test suite (24 tests)
-python3 test_comprehensive_tools_storage.py
+# All testing is now handled by the organized test suite
+cd ../../../ && bash run_tests.sh
 
-# Run basic functionality tests
-python3 test_basic.py
-
-# Test with interactive client
-python3 test_client.py
+# 158 comprehensive tests covering all functionality
 ```
 
 ## 🧠 Neurosymbolic Architecture
@@ -220,7 +216,7 @@ The system passes **24/24 comprehensive tests** (100% success rate):
 ```
 mcp/
 ├── server.py              # Main MCP server implementation
-├── run_server.py          # Server startup script
+├── web_server.py          # Web GUI server startup script
 ├── requirements.txt       # Python dependencies
 ├── config/               # Configuration management
 ├── models/               # Data models (Project, Session, Interaction)
@@ -269,4 +265,4 @@ Fully implements Model Context Protocol specification:
 
 ---
 
-**Ready for production use** ✅ All systems tested and validated.
+**Development Status**: ✅ Core functionality working, test suite comprehensive (158 tests).

@@ -10,11 +10,19 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent))
 
 from tools import register_all_tools
-from config.config_manager import config
 from utils.logging_setup import setup_logging, MCPLoggerAdapter
+
+# ConfigManager will be initialized later in __init__ to allow environment variables to be set first
+config = None
 
 class MCPServer:
     def __init__(self, port=None, use_stdio=False):
+        # Initialize ConfigManager here to allow environment variables to be set first
+        global config
+        if config is None:
+            from config.config_manager import ConfigManager
+            config = ConfigManager()
+        
         self.port = port or config.server.port
         self.use_stdio = use_stdio
         self.tools = {}

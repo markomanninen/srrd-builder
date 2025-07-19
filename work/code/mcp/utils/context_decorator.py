@@ -43,50 +43,105 @@ def context_aware(
     """
     
     def decorator(func: Callable) -> Callable:
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            # Get context detector
-            detector = get_context_detector()
-            
-            # Check if project_path is already provided
-            if kwargs.get('project_path'):
-                # Use provided project_path
-                logger.debug(f"Using provided project_path for {func.__name__}")
-                return func(*args, **kwargs)
-            
-            # Try to detect context
-            context = detector.detect_context()
-            
-            if context:
-                # Inject project context
-                kwargs['project_path'] = context['project_path']
-                if context.get('config_path'):
-                    kwargs['config_path'] = context['config_path']
-                if context.get('config'):
-                    kwargs['config'] = context['config']
+        import asyncio
+        import inspect
+        
+        # Check if function is async
+        is_async = inspect.iscoroutinefunction(func)
+        
+        if is_async:
+            @functools.wraps(func)
+            async def async_wrapper(*args, **kwargs):
+                # Get context detector
+                detector = get_context_detector()
                 
-                logger.debug(f"Auto-injected context for {func.__name__}: {context['project_path']}")
+                # Check if project_path is already provided
+                if kwargs.get('project_path'):
+                    # Use provided project_path
+                    logger.debug(f"Using provided project_path for {func.__name__}")
+                    return await func(*args, **kwargs)
+                
+                # Try to detect context
+                context = detector.detect_context()
+                
+                if context:
+                    # Inject project context
+                    kwargs['project_path'] = context['project_path']
+                    if context.get('config_path'):
+                        kwargs['config_path'] = context['config_path']
+                    if context.get('config'):
+                        kwargs['config'] = context['config']
+                    
+                    logger.debug(f"Auto-injected context for {func.__name__}: {context['project_path']}")
+                    return await func(*args, **kwargs)
+                
+                # No context available
+                if require_context:
+                    error_msg = (
+                        f"Tool '{func.__name__}' requires SRRD project context but none was found.\n"
+                        f"Please ensure you are either:\n"
+                        f"1. Running 'srrd serve' from within an SRRD project directory, or\n"
+                        f"2. Providing the 'project_path' parameter explicitly"
+                    )
+                    raise ContextAwareError(error_msg)
+                
+                # Proceed without context (stateless mode)
+                if fallback_message:
+                    logger.info(fallback_message)
+                else:
+                    logger.debug(f"Running {func.__name__} in stateless mode (no project context)")
+                
+                return await func(*args, **kwargs)
+            
+            return async_wrapper
+        else:
+            @functools.wraps(func)
+            def sync_wrapper(*args, **kwargs):
+                # Get context detector
+                detector = get_context_detector()
+                
+                # Check if project_path is already provided
+                if kwargs.get('project_path'):
+                    # Use provided project_path
+                    logger.debug(f"Using provided project_path for {func.__name__}")
+                    return func(*args, **kwargs)
+                
+                # Try to detect context
+                context = detector.detect_context()
+                
+                if context:
+                    # Inject project context
+                    kwargs['project_path'] = context['project_path']
+                    if context.get('config_path'):
+                        kwargs['config_path'] = context['config_path']
+                    if context.get('config'):
+                        kwargs['config'] = context['config']
+                    
+                    logger.debug(f"Auto-injected context for {func.__name__}: {context['project_path']}")
+                    return func(*args, **kwargs)
+                
+                # No context available
+                if require_context:
+                    error_msg = (
+                        f"Tool '{func.__name__}' requires SRRD project context but none was found.\n"
+                        f"Please ensure you are either:\n"
+                        f"1. Running 'srrd serve' from within an SRRD project directory, or\n"
+                        f"2. Providing the 'project_path' parameter explicitly"
+                    )
+                    raise ContextAwareError(error_msg)
+                
+                # Proceed without context (stateless mode)
+                if fallback_message:
+                    logger.info(fallback_message)
+                else:
+                    logger.debug(f"Running {func.__name__} in stateless mode (no project context)")
+                
                 return func(*args, **kwargs)
             
-            # No context available
-            if require_context:
-                error_msg = (
-                    f"Tool '{func.__name__}' requires SRRD project context but none was found.\n"
-                    f"Please ensure you are either:\n"
-                    f"1. Running 'srrd serve' from within an SRRD project directory, or\n"
-                    f"2. Providing the 'project_path' parameter explicitly"
-                )
-                raise ContextAwareError(error_msg)
-            
-            # Proceed without context (stateless mode)
-            if fallback_message:
-                logger.info(fallback_message)
-            else:
-                logger.debug(f"Running {func.__name__} in stateless mode (no project context)")
-            
-            return func(*args, **kwargs)
+            return sync_wrapper
         
         # Add metadata to indicate this is a context-aware function
+        wrapper = async_wrapper if is_async else sync_wrapper
         wrapper._context_aware = True
         wrapper._require_context = require_context
         wrapper._fallback_message = fallback_message
