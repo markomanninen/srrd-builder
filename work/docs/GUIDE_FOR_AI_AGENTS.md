@@ -3,6 +3,19 @@
 ## Introduction
 
 This guide provides specific instructions for AI agents contributing to the SRRD-Builder project. The project uses a neurosymbolic approach, combining traditional symbolic programming (rule-based systems, structured knowledge, logic) with neural networks/large language models to create scientific research requirement documents. All AI agents must follow these guidelines to ensure consistency, quality, and effective collaboration.
+  
+## Practical Chat-Agent Guidelines
+When operating in a chat/assistant mode, AI agents should incorporate these practices to enhance code quality and design:
+- Ask clarifying questions before implementation if requirements are unclear or incomplete.
+- Explicitly state and confirm assumptions or uncertainties with the user.
+- Decompose larger tasks into smaller, verifiable subtasks and seek approval at each step.
+- Present design rationale and obtain user validation on architectures or API choices prior to coding.
+- Summarize progress, outstanding tasks, and avoid prematurely claiming completion.
+- Surface known AI limitations (hallucinations, overconfidence) and invite reality checks.
+- Provide illustrative code examples paired with unit tests to verify functionality.
+- Offer alternative solutions when relevant, highlighting trade-offs.
+- Define clear acceptance criteria and confirm them before proceeding to the next phase.
+- Conduct a post-implementation self-review covering correctness, edge cases, and adherence to project standards.
 
 ## Core Principles
 
@@ -298,3 +311,32 @@ This guide provides specific instructions for AI agents contributing to the SRRD
 ---
 
 **Remember**: The goal is to enhance scientific research quality and accessibility while maintaining the highest standards of academic rigor and ethical responsibility. Every contribution should advance this mission.
+
+## VSCode Environment for AI Agents
+
+To ensure a consistent, productive setup in VSCode, install and configure the following:
+
+1. Recommended Extensions
+   - GitHub Copilot (GitHub.copilot)
+   - VS Code AI Tools (ms-vscode.vscode-ai)
+   - Markdown Linting (DavidAnson.vscode-markdownlint)
+   - Prettier (esbenp.prettier-vscode)
+   - GitLens (eamodio.gitlens)
+2. Workspace Settings
+   - Enable format on save for code and markdown.
+   - Enable inline AI suggestions:
+     ```json
+     "editor.inlineSuggest.enabled": true,
+     "github.copilot.inlineSuggest.enable": true
+     ```
+   - Lint Markdown on save:
+     ```json
+     "markdownlint.config": { "default": true }
+     ```
+3. Tasks and Snippets
+   - Define tasks in `.vscode/tasks.json` for running tests (`npm test`/`pytest`) with zero warnings enforcement.
+   - Provide AI-focused snippets (`.code-snippets/ai-agent.code-snippets`) for common templates (research outline, prompt skeleton).
+4. Usage Tips
+   - Use Copilot Chat for Socratic questioning and iterative draft refinement.
+   - Leverage “AI: Explain Code” commands to document symbolic and neural interfaces.
+   - Keep the central GUIDE open (`work/docs/GUIDE_FOR_AI_AGENTS.md`) as your single source of truth.

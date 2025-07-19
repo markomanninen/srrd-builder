@@ -56,6 +56,9 @@ This will:
 - Set up Claude Desktop configuration
 - Test all components
 - **Optionally run test suite (158 tests in development)**
+  
+## AI Agents Guide
+We maintain a central guide for configuring and using AI agents in VS Code. See [AI Agent Quick Start](AI_AGENT_GUIDE.md) for details, including recommended extensions, settings, tasks, and snippets.
 
 ### 📱 Server Access Methods
 
