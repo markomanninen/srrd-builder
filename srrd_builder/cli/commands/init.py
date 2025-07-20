@@ -235,8 +235,8 @@ A scientific research project in **{domain}** using SRRD-Builder.
 ## Commands
 
 ```bash
-# Start MCP server for Claude Desktop
-srrd serve start
+# Configure Claude Desktop for MCP tools
+srrd configure --claude
 
 # Check project status  
 srrd status

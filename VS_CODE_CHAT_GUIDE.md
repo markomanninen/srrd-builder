@@ -13,14 +13,16 @@ This guide demonstrates how to use all 38 context-aware SRRD-Builder MCP tools t
 
 ## 📋 How to Use This Guide
 
-### Step 1: Start the MCP Server
+### Step 1: Configure Claude Desktop
 
-First, start the MCP server for this project:
+Configure Claude Desktop to use the MCP server:
 
 ```bash
 # In terminal (from this directory):
-srrd serve start
+srrd configure --claude
 ```
+
+Then restart Claude Desktop.
 
 ### Step 2: Open VS Code Chat
 
@@ -327,13 +329,13 @@ Introduction: "This paper presents novel approaches to..."
 
 ## 🎯 Try It Now!
 
-1. **Start the MCP server** (if not already running):
+1. **Configure Claude Desktop** (if not already done):
 
    ```bash
-   srrd serve start
+   srrd configure --claude
    ```
 
-2. **Open VS Code Chat** and try this:
+2. **Restart Claude Desktop** and try this:
 
    ```
    @mcp_srrd-builder_clarify_research_goals

@@ -246,7 +246,8 @@ def show_config_status():
     
     if not server_running:
         print("🔴 Local Server: Not running")
-        print("   Use 'srrd serve start' to start the server")
+        print("   Use 'srrd configure --claude' to configure Claude Desktop")
+        print("   Then restart Claude Desktop to use MCP tools")
     
     print()  # Separator
     
@@ -305,15 +306,15 @@ def show_config_status():
     if server_running:
         print()
         print("💡 Server Management:")
-        print("   Stop:    srrd serve stop")
-        print("   Restart: srrd serve restart")
-        print("   Status:  srrd status")
+        print("   Demo:    srrd-server --with-frontend")
+        print("   Status:  srrd-server status")
+        print("   Stop:    srrd-server stop")
     else:
         print()
         print("💡 Quick Start:")
-        print("   1. srrd serve start    # Start the server")
-        print("   2. Configure clients with 'srrd configure --claude' or '--vscode'")
-        print("   3. Restart Claude Desktop or reload VS Code window")
+        print("   1. srrd configure --claude  # Configure Claude Desktop")
+        print("   2. Restart Claude Desktop") 
+        print("   3. Use SRRD-Builder tools in Claude!")
 
 def check_port_in_use(host, port):
     """Check if a port is already in use"""

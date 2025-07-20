@@ -7,9 +7,10 @@
 This specification documents the current implementation of the SRRD-Builder MCP server with dual architecture support.
 
 ### Current Implementation ✅ COMPLETE
+
 - ✅ **Dual Server Architecture**: Both stdio (project-aware) and WebSocket (global) protocols
 - ✅ **38+ Research Tools**: Complete toolkit for scientific research lifecycle
-- ✅ **Research Planning**: Socratic questioning and methodology suggestions  
+- ✅ **Research Planning**: Socratic questioning and methodology suggestions
 - ✅ **Quality Assurance**: Peer review simulation and quality gates
 - ✅ **Document Generation**: LaTeX generation and compilation with advanced bibliography
 - ✅ **Storage Management**: Git, SQLite, and vector database integration
@@ -20,17 +21,20 @@ This specification documents the current implementation of the SRRD-Builder MCP 
 
 ### System Architecture
 
-#### 1. Project-Aware Server (`srrd serve`)
-- **Protocol**: stdio (standard input/output)
-- **Integration**: Claude Desktop, VS Code MCP extensions
+#### 1. Claude Desktop Integration (MCP stdio)
+
+- **Protocol**: stdio (standard input/output) - Claude Desktop manages automatically
+- **Integration**: Claude Desktop automatic MCP management
 - **Context**: Project-specific databases, configuration, and session state
 - **Use Case**: Daily research workflow within SRRD projects
 
 #### 2. Global WebSocket Server (`srrd-server`)
+
 - **Protocol**: WebSocket on localhost:8765
-- **Integration**: Web interfaces, external applications, testing/demos
+- **Integration**: Web interfaces, external applications, testing/demos only
 - **Context**: Global tool access without project dependencies
 - **Use Case**: Demonstrations, web applications, external tool integration
+- **Note**: NOT used by Claude Desktop - Claude uses stdio mode directly
 
 ## Overview
 
@@ -39,30 +43,35 @@ The Model Context Protocol (MCP) server is a critical component of the SRRD-Buil
 ## Core Capabilities
 
 ### 1. Interactive Research Guidance
+
 - **Socratic Questioning**: Intelligent questioning system to clarify research goals, assumptions, and requirements
 - **Requirement Clarification**: Deep dive into user intentions to ensure comprehensive understanding
 - **Methodology Advisory**: Expert-level guidance on selecting and applying appropriate research methodologies
 - **Collaborative Ideation**: Interactive brainstorming sessions with AI-powered concept development
 
 ### 2. Research Methodology Implementation
+
 - **High-End Methodologies**: Implementation of advanced research methodologies across disciplines
 - **Best Practices Enforcement**: Ensure adherence to established scientific standards and institutional requirements
 - **Ethical Guidance**: Integrated ethical review and compliance checking
 - **Validation Framework**: Comprehensive validation for both standard and novel theories
 
 ### 3. Research Lifecycle Management
+
 - **Planning Phase**: Complete research proposal development with interactive refinement
 - **Execution Phase**: Real-time guidance during research implementation
 - **Analysis Phase**: Statistical and analytical methodology guidance
 - **Publication Phase**: Manuscript preparation with rigorous quality control
 
 ### 4. Quality Assurance and Validation
+
 - **Peer Review Simulation**: AI-powered review process mimicking expert peer review
 - **Verification Workflows**: Systematic verification of research methods and results
 - **Validation Frameworks**: Multi-layer validation using both symbolic rules and neural networks
 - **Quality Gates**: Automated quality checks at each research phase
 
 ### 5. Novel Theory Development and Paradigm Innovation
+
 - **Alternative Theory Incubation**: Specialized framework for developing theories that challenge existing paradigms
 - **Foundational Questioning**: Deep exploration of ontological assumptions and fundamental principles
 - **Paradigm Comparison**: Equal-treatment analysis of mainstream and alternative theoretical frameworks
@@ -72,6 +81,7 @@ The Model Context Protocol (MCP) server is a critical component of the SRRD-Buil
 ## MCP Server Architecture
 
 ### Protocol Implementation
+
 ```
 MCP Server (Port 8080)
 ├── Connection Management
@@ -97,25 +107,30 @@ MCP Server (Port 8080)
 ### Core MCP Tools
 
 #### 1. Research Planning Tools
+
 - `clarify_research_goals`: Socratic questioning to clarify research objectives
 - `suggest_methodology`: Recommend appropriate research methodologies
 
-*Note: assess_feasibility and identify_risks are planned but not yet implemented*
+_Note: assess_feasibility and identify_risks are planned but not yet implemented_
 
 #### 2. Methodology Advisory Tools
-*Note: These tools are planned but not yet implemented*
+
+_Note: These tools are planned but not yet implemented_
+
 - `explain_methodology`: Detailed explanation of research methodologies
 - `compare_approaches`: Comparative analysis of different research approaches
 - `validate_design`: Research design validation and improvement suggestions
 - `ensure_ethics`: Ethical review and compliance checking
 
 #### 3. Quality Assurance Tools
+
 - `simulate_peer_review`: AI-powered peer review simulation
 - `check_quality_gates`: Quality gate assessments
 
-*Note: review_proposal and verify_methods are planned but not yet implemented*
+_Note: review_proposal and verify_methods are planned but not yet implemented_
 
 #### 4. Document Generation Tools
+
 - `generate_latex_document`: Generate LaTeX research document
 - `compile_latex`: Compile LaTeX documents to PDF with error handling
 - `format_research_content`: Apply proper formatting and academic standards
@@ -124,9 +139,10 @@ MCP Server (Port 8080)
 - `extract_document_sections`: Extract and identify sections from document content for modular LaTeX management
 - `generate_research_summary`: Generate summary of research documents
 
-*Note: generate_section, refine_content, prepare_submission, validate_latex, and export_formats are planned but not yet implemented*
+_Note: generate_section, refine_content, prepare_submission, validate_latex, and export_formats are planned but not yet implemented_
 
 #### 5. Storage Management Tools
+
 - `initialize_project`: Initialize Git-based project storage structure
 - `save_session`: Save research session data to SQLite database
 - `restore_session`: Restore previous research sessions from storage
@@ -135,6 +151,7 @@ MCP Server (Port 8080)
 - `backup_project`: Create project backups and snapshots
 
 #### 6. Search and Discovery Tools
+
 - `semantic_search`: Perform semantic search across research documents
 - `discover_patterns`: Discover patterns and themes in research content
 - `extract_key_concepts`: Extract key concepts from research text
@@ -142,18 +159,23 @@ MCP Server (Port 8080)
 - `build_knowledge_graph`: Build knowledge graph from research documents
 
 #### 7. Bibliography Management Tools
+
 - `retrieve_bibliography_references`: Retrieve relevant bibliography references from vector database
 - `store_bibliography_reference`: Store a bibliography reference in the vector database
 
 #### 8. Global Package Tools
-*Note: These tools are planned but not yet implemented*
+
+_Note: These tools are planned but not yet implemented_
+
 - `detect_project`: Auto-detect existing Git repository and research context
 - `setup_srrd`: Set up SRRD-Builder in any existing Git project
 - `migrate_project`: Migrate existing research projects to SRRD format
 - `sync_global_templates`: Sync with global template repository
 
 #### 9. Novel Theory Development Tools
-*Note: These tools are planned but not yet implemented*
+
+_Note: These tools are planned but not yet implemented_
+
 - `initiate_paradigm_challenge`: Begin systematic challenge of existing paradigms
 - `develop_alternative_framework`: Construct alternative theoretical frameworks
 - `compare_paradigms`: Equal-treatment comparison of competing theories
@@ -166,6 +188,7 @@ MCP Server (Port 8080)
 ### Socratic Questioning Framework
 
 #### Question Categories
+
 1. **Clarification Questions**
    - "What do you mean when you say...?"
    - "Could you give me an example of...?"
@@ -206,6 +229,7 @@ MCP Server (Port 8080)
 ### Git-Based Project Storage
 
 #### Project Structure
+
 ```
 research_project/                  # Any existing Git repository
 ├── .git/                         # Existing Git repository
@@ -245,6 +269,7 @@ research_project/                  # Any existing Git repository
 ```
 
 #### Git Integration Features
+
 - **Version Control**: Automatic versioning of all research documents and data
 - **Branch Management**: Separate branches for different research phases or approaches
 - **Collaboration**: Multi-user collaboration with merge conflict resolution
@@ -256,6 +281,7 @@ research_project/                  # Any existing Git repository
 ### SQLite Database Schema
 
 #### Core Tables
+
 ```sql
 -- Project metadata and configuration
 CREATE TABLE projects (
@@ -372,6 +398,7 @@ CREATE TABLE quality_checks (
 ### Vector Database Integration
 
 #### Knowledge Storage
+
 - **Research Literature**: Embeddings of relevant scientific papers and methodologies
 - **Best Practices**: Vectorized research best practices and guidelines
 - **Domain Knowledge**: Domain-specific knowledge and terminology
@@ -379,6 +406,7 @@ CREATE TABLE quality_checks (
 - **Interaction History**: Vectorized previous interactions for context retrieval
 
 #### Vector Database Schema
+
 ```python
 # Using a vector database like ChromaDB or FAISS
 collections = {
@@ -388,7 +416,7 @@ collections = {
         "documents": "full_text_chunks"
     },
     "methodologies": {
-        "embeddings": "text-embedding-ada-002", 
+        "embeddings": "text-embedding-ada-002",
         "metadata": ["methodology_type", "domain", "complexity"],
         "documents": "methodology_descriptions"
     },
@@ -406,6 +434,7 @@ collections = {
 ```
 
 #### Search and Retrieval
+
 - **Semantic Search**: Find relevant knowledge based on research context
 - **Similarity Matching**: Identify similar research approaches and methodologies
 - **Context Retrieval**: Retrieve relevant previous interactions and guidance
@@ -414,6 +443,7 @@ collections = {
 ### Storage Management Operations
 
 #### Project Initialization
+
 1. **Git Repository**: Initialize Git repository in project directory
 2. **Directory Structure**: Create standard research project directory structure
 3. **Database Setup**: Create SQLite database with schema
@@ -421,18 +451,21 @@ collections = {
 5. **Configuration**: Set up project-specific configuration
 
 #### Session Management
+
 1. **Session Creation**: Create new session record in SQLite
 2. **Interaction Logging**: Log all Socratic questioning and guidance interactions
 3. **State Persistence**: Maintain conversation state across sessions
 4. **Progress Tracking**: Track research progress and milestone achievement
 
 #### Document Management
+
 1. **Version Control**: Automatic Git commits for document changes
 2. **Metadata Storage**: Store document metadata in SQLite
 3. **Content Indexing**: Index document content in vector database
 4. **Backup Creation**: Create regular backups of project data
 
 #### Knowledge Management
+
 1. **Literature Integration**: Import and index relevant research literature
 2. **Methodology Storage**: Store and index research methodologies
 3. **Template Management**: Manage and version document templates
@@ -443,6 +476,7 @@ collections = {
 ### LaTeX Template Library
 
 #### Academic Document Templates
+
 ```latex
 % Research Proposal Template (proposal.tex)
 \documentclass[11pt,a4paper]{article}
@@ -519,24 +553,28 @@ collections = {
 ### LaTeX Processing Pipeline
 
 #### 1. Template Selection and Customization
-*Note: Currently supports basic LaTeX generation. Journal-specific templates are planned*
+
+_Note: Currently supports basic LaTeX generation. Journal-specific templates are planned_
+
 - **Basic Templates**: Standard article, proposal, and manuscript formats
 - **Custom Content**: Generated LaTeX content from research data
 - **Bibliography Integration**: Advanced bibliography management with vector database
 
 #### 2. Content Generation and Integration
+
 - **Structured Content**: Generate LaTeX content from research requirements
 - **Bibliography Management**: BibTeX integration with vector database lookup
 - **Modular Documents**: Section extraction and modular document management
 - **Research Summaries**: Automated research content summarization
 
-*Note: Figure integration, table generation, and advanced formatting are planned*
+_Note: Figure integration, table generation, and advanced formatting are planned_
 
 #### 3. Compilation and Quality Assurance
+
 - **LaTeX Compilation**: Automated pdflatex compilation with error handling
 - **Multi-pass Compilation**: Supports bibliography and cross-reference resolution
 
-*Note: Syntax validation, reference checking, and figure verification are planned*
+_Note: Syntax validation, reference checking, and figure verification are planned_
 
 ### LaTeX-Specific MCP Tools
 
@@ -563,10 +601,10 @@ async def extract_document_sections(document_content: str) -> dict:
 # Planned LaTeX Tools (not yet implemented)
 # async def validate_latex_syntax(tex_content: str) -> dict:
 #     """Validate LaTeX syntax and report errors"""
-# 
+#
 # async def format_for_journal(manuscript_path: str, journal_name: str) -> str:
 #     """Reformat manuscript for specific journal requirements"""
-# 
+#
 # async def extract_figures_tables(content: str) -> dict:
 #     """Extract and organize figures and tables for LaTeX integration"""
 ```
@@ -574,13 +612,15 @@ async def extract_document_sections(document_content: str) -> dict:
 ## Installation and Setup
 
 ### Current Implementation Status
+
 - ✅ **Local Installation**: Works within individual Git repositories via `./setup.sh`
 - ✅ **Global CLI Access**: `pip install -e .` makes `srrd` and `srrd-server` commands globally available
-- ✅ **MCP Server**: Functional MCP server with WebSocket and stdio support  
+- ✅ **MCP Server**: Functional MCP server with WebSocket and stdio support
 - ✅ **Project Structure**: Standardized `.srrd/` project structure
 - ✅ **Template System**: In-memory LaTeX templates (5 types: basic, nature, ieee, proposal, thesis)
 
 ### Simple Installation
+
 ```bash
 # Clone and setup (makes CLI globally available)
 git clone <repository>
@@ -589,11 +629,12 @@ cd srrd-builder
 
 # Use from any directory
 srrd init my-project --domain physics    # Create project anywhere
-srrd serve start                         # Start MCP server
-srrd-server --stdio                     # Direct server access for Claude Desktop
+srrd configure --claude                  # Configure Claude Desktop (automatic MCP)
+srrd-server --with-frontend             # WebSocket demo server (for web interfaces only)
 ```
 
 ### Project Configuration
+
 - **Local Config**: Each project uses `work/code/mcp/config/default_config.json`
 - **Environment Variables**: Override config with `SRRD_*` environment variables
 - **No Global Config**: System works with sensible defaults, no global configuration needed
@@ -601,6 +642,7 @@ srrd-server --stdio                     # Direct server access for Claude Deskto
 ### Command-Line Interface
 
 #### Core Commands
+
 ```bash
 # Project Management
 srrd init [--template=template_name] [--domain=research_domain]
@@ -614,7 +656,8 @@ srrd compile --document=manuscript --format=pdf
 srrd validate --document=proposal.tex
 
 # MCP Server Management
-srrd serve --port=8080 --host=localhost
+srrd configure --claude              # Configure Claude Desktop
+srrd-server --port=8080              # Start WebSocket demo server
 srrd connect --server=remote_host:8080
 srrd session --list --restore=session_id
 
@@ -630,6 +673,7 @@ srrd update --knowledge-base --templates --all
 ### Interactive Workflows
 
 #### Research Planning Workflow
+
 1. **Initial Assessment**
    - Understand research domain and goals
    - Assess user's experience level
@@ -656,6 +700,7 @@ srrd update --knowledge-base --templates --all
    - Plan contingency approaches
 
 #### Research Execution Workflow
+
 1. **Progress Monitoring**
    - Track milestone achievement
    - Identify deviations from plan
@@ -672,6 +717,7 @@ srrd update --knowledge-base --templates --all
    - Ensure statistical rigor
 
 #### Publication Workflow
+
 1. **Manuscript Structure**
    - Guide document organization
    - Ensure completeness
@@ -690,6 +736,7 @@ srrd update --knowledge-base --templates --all
 ## Implementation Requirements
 
 ### Technical Requirements
+
 - Python 3.8+ with asyncio support
 - MCP protocol compliance
 - WebSocket server implementation
@@ -697,6 +744,7 @@ srrd update --knowledge-base --templates --all
 - Integration with neurosymbolic components
 
 ### Storage Requirements
+
 - **Git Integration**: GitPython for repository management and version control
 - **SQLite Database**: sqlite3 with JSON support for structured data storage
 - **Vector Database**: ChromaDB, FAISS, or Weaviate for semantic search capabilities
@@ -706,6 +754,7 @@ srrd update --knowledge-base --templates --all
 - **Global Package**: Pip-installable package with global command-line interface
 
 ### Storage Dependencies
+
 ```python
 # Core storage dependencies
 gitpython>=3.1.0          # Git repository management
@@ -722,6 +771,7 @@ bibtex                   # Bibliography processing
 ```
 
 ### Global Installation Requirements
+
 ```python
 # setup.py for global installation
 setup(
@@ -802,7 +852,7 @@ setup(
 
 ### Functional Success
 - [x] Implements complete MCP protocol correctly
-- [x] Provides Socratic questioning for research clarification  
+- [x] Provides Socratic questioning for research clarification
 - [x] Generates LaTeX documents with bibliography integration
 - [ ] Provides expert-level methodology guidance (planned)
 - [ ] Comprehensive quality assurance workflows (partial)
@@ -817,7 +867,7 @@ setup(
 ### Technical Success
 - [x] Maintains high availability and responsiveness
 - [x] Implements robust Git-based project storage
-- [x] Maintains reliable SQLite database operations  
+- [x] Maintains reliable SQLite database operations
 - [x] Provides fast vector database search capabilities
 - [x] Ensures data persistence and backup reliability
 - [x] Successfully compiles LaTeX documents to publication-ready PDFs
@@ -829,3 +879,4 @@ setup(
 ---
 
 **Note**: This MCP server represents the primary interface through which users interact with the SRRD-Builder system, making it critical for overall system success and user adoption.
+```

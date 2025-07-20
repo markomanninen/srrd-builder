@@ -258,7 +258,7 @@ Examples:
     srrd-server stop               # Stop the running server
     srrd-server restart            # Restart the server
     
-Note: For Claude Desktop/VS Code integration, use 'srrd serve' instead.
+Note: For Claude Desktop/VS Code integration, configure Claude with 'srrd configure --claude' instead.
 For more information, visit: https://github.com/markomanninen/srrd-builder
         """
     )

@@ -23,17 +23,18 @@ This script will:
 After installation, use the CLI:
 
 ```bash
-# Check configuration and status
-srrd configure --status
+# Initialize and configure project
+srrd init                       # Initialize a new research project in current directory
+srrd switch                     # Switch MCP context to this project
+srrd configure --status         # Check configuration and status
 
-# Start the MCP server
-srrd serve start
+# Claude Desktop Integration (automatic - no manual server management)
+srrd configure --claude         # Configure Claude Desktop to use MCP server
 
-# Stop the MCP server
-srrd serve stop
-
-# Restart the MCP server
-srrd serve restart
+# WebSocket Demo Server (for testing and web interfaces only)
+srrd-server --with-frontend     # Start demo server with web interface
+srrd-server status              # Check demo server status
+srrd-server stop                # Stop demo server
 ```
 
 ## Manual Installation
@@ -170,23 +171,36 @@ srrd configure --status
 
 ## Server Management
 
-Use the `srrd` CLI tool to manage the MCP server:
+### Claude Desktop (Automatic)
+
+Claude Desktop automatically manages the MCP server. No manual start/stop needed:
 
 ```bash
-# Start the server
-srrd serve start
+# Configure once
+srrd configure --claude
 
-# Check server status
+# Check configuration status
 srrd configure --status
 
-# Stop the server
-srrd serve stop
+# Claude Desktop automatically runs: python3 mcp_server.py
+```
 
-# Restart the server
-srrd serve restart
+### WebSocket Demo Server (Manual)
+
+Use the WebSocket server launcher for demos and web interfaces only:
+
+```bash
+# Start demo server with web frontend
+srrd-server --with-frontend
+
+# Check server status
+srrd-server status
+
+# Stop the server
+srrd-server stop
 
 # Get help
-srrd serve --help
+srrd-server --help
 ```
 
 ## Feature-Specific Requirements
@@ -239,7 +253,7 @@ echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "compile_lat
 
 ### Testing with Claude Desktop
 
-1. Start the server: `srrd serve start`
+1. Configure Claude: `srrd configure --claude`
 2. Restart Claude Desktop
 3. In Claude, try: "List the available SRRD-Builder tools"
 4. Check status anytime with: `srrd configure --status`
@@ -255,7 +269,7 @@ echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "compile_lat
 2. **"MCP server not starting"**
    - Check status: `srrd configure --status`
    - View logs: Check files in `work/code/mcp/logs/`
-   - Restart: `srrd serve restart`
+   - Restart: `srrd-server restart`
 
 3. **"pdflatex not found"**
    - Install LaTeX distribution (see above)
@@ -266,9 +280,9 @@ echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "compile_lat
    - Check virtual environment activation
 
 5. **"Claude Desktop not finding tools"**
-   - Ensure server is running: `srrd serve start`
    - Check configuration: `srrd configure --status`
-   - Restart Claude Desktop after starting the server
+   - Ensure Claude Desktop config is properly set
+   - Restart Claude Desktop after configuration changes
 
 6. **"Config file not found"**
    - Run setup script again: `./setup.sh`

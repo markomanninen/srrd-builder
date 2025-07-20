@@ -80,7 +80,7 @@ def context_aware(
                     error_msg = (
                         f"Tool '{func.__name__}' requires SRRD project context but none was found.\n"
                         f"Please ensure you are either:\n"
-                        f"1. Running 'srrd serve' from within an SRRD project directory, or\n"
+                        f"1. Using Claude Desktop with proper MCP configuration, or\n"
                         f"2. Providing the 'project_path' parameter explicitly"
                     )
                     raise ContextAwareError(error_msg)
@@ -125,7 +125,7 @@ def context_aware(
                     error_msg = (
                         f"Tool '{func.__name__}' requires SRRD project context but none was found.\n"
                         f"Please ensure you are either:\n"
-                        f"1. Running 'srrd serve' from within an SRRD project directory, or\n"
+                        f"1. Using Claude Desktop with proper MCP configuration, or\n"
                         f"2. Providing the 'project_path' parameter explicitly"
                     )
                     raise ContextAwareError(error_msg)
@@ -173,7 +173,7 @@ def get_enhanced_error_message(tool_name: str, original_error: Exception) -> str
             f"Tool '{tool_name}' failed due to missing project context.\n"
             f"Original error: {original_error}\n\n"
             f"To fix this, either:\n"
-            f"1. Run 'srrd serve start' from within an SRRD project directory\n"
+            f"1. Configure Claude Desktop with 'srrd configure --claude'\n"
             f"2. Provide the 'project_path' parameter when calling this tool\n"
             f"3. Initialize an SRRD project with 'srrd init' if you haven't already"
         )

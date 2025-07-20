@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class ContextDetector:
     """
     Detects SRRD project context using multiple methods:
-    1. Environment variables set by 'srrd serve'
+    1. Environment variables set by Claude Desktop configuration
     2. Directory traversal to find .srrd directories
     3. Project configuration validation
     """
@@ -36,7 +36,7 @@ class ContextDetector:
         if self._cache_valid and not refresh_cache:
             return self._cached_context
         
-        # Method 1: Check environment variables (set by 'srrd serve')
+        # Method 1: Check environment variables (set by Claude Desktop configuration)
         context = self._detect_from_environment()
         if context:
             self._cached_context = context
@@ -59,7 +59,7 @@ class ContextDetector:
         return None
     
     def _detect_from_environment(self) -> Optional[Dict[str, Any]]:
-        """Detect context from environment variables set by 'srrd serve'"""
+        """Detect context from environment variables set by Claude Desktop configuration"""
         project_path = os.environ.get('SRRD_PROJECT_PATH')
         config_path = os.environ.get('SRRD_CONFIG_PATH')
         

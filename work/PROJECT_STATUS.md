@@ -12,7 +12,7 @@ Scientific Research Requirement Document Builder - AI-driven tool with dual MCP 
 
 ### ✅ Dual MCP Server Architecture - CORE FUNCTIONALITY WORKING
 
-- **Project-Aware Server** (`srrd serve`): stdio protocol for Claude Desktop/VS Code integration
+- **Claude Desktop Integration**: stdio protocol for automatic MCP integration (no manual server management)
 - **Global WebSocket Server** (`srrd-server`): WebSocket protocol for demos and external access
 - **38+ registered tools** across all research categories with basic functionality
 - **Dynamic web frontend** with tool discovery and basic UI

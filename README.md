@@ -29,9 +29,9 @@ The system features an **MCP (Model Context Protocol) server** that integrates w
 
 ## Key Features
 
-- **Dual MCP Server Architecture** for both project-aware and global access
-- **CLI Tool (`srrd`)** for project-aware server management and configuration
-- **Global WebSocket Server (`srrd-server`)** for demos and web interfaces
+- **MCP Server Integration** with Claude Desktop (automatic stdio mode)
+- **CLI Tool (`srrd`)** for project initialization and configuration
+- **WebSocket Demo Server (`srrd-server`)** for testing and web interfaces
 - **44 Research Tools** including document generation, semantic search, and quality gates
 - **Research Lifecycle Persistence** with automatic tool logging and progress tracking
 - **Workflow Intelligence** providing AI-powered progress analysis and recommendations
@@ -71,69 +71,61 @@ We maintain a central guide for configuring and using AI agents in VS Code. See 
 
 ### 📱 Server Access Methods
 
-SRRD-Builder provides two ways to access the MCP server:
+### Server Access
 
-#### 1. Project-Aware Server (`srrd serve`)
+SRRD-Builder provides two different server modes:
 
-For use within SRRD projects with Claude Desktop/VS Code integration:
+#### 1. Claude Desktop Integration (MCP stdio)
+
+For Claude Desktop, no manual server management needed - it's configured in Claude's settings:
 
 ```bash
-# Initialize a new research project
-cd /path/to/your/git/repo
-srrd init
+# Setup once
+srrd init                    # Initialize project  
+srrd configure --claude      # Configure Claude Desktop
 
-# Start project-aware MCP server
-srrd serve start
-
-# Check configuration and server status
-srrd configure --status
-
-# Stop the MCP server
-srrd serve stop
+# Claude Desktop automatically runs: python3 mcp_server.py
+# No manual server start/stop needed
 ```
 
-#### 2. Global WebSocket Server (`srrd-server`)
+#### 2. WebSocket Demo Server (`srrd-server`)
 
-For demos, web interfaces, and external access:
+For web interfaces and testing only:
 
 ```bash
-# Start global WebSocket server only
-srrd-server
-
-# Start with web frontend interface
+# Start WebSocket demo server
 srrd-server --with-frontend
 
-# Use custom ports
-srrd-server --port 9000 --frontend-port 8080
+# Check server status
+srrd-server status
 
-# Get help
-srrd-server --help
+# Stop the server
+srrd-server stop
 ```
 
 ### 🔧 Requirements
 
 - Python 3.8+
 - LaTeX distribution (MacTeX on macOS, TeXLive on Linux)
-- Claude Desktop or VS Code with MCP support (for project-aware mode)
+- Claude Desktop (uses MCP stdio automatically)
 - Git (for project initialization)
 
 ## Usage
 
-### Method 1: With Claude Desktop (Project-Aware)
+### With Claude Desktop
 
 1. Install using `./setup.sh`
 2. Initialize project: `cd /path/to/git/repo && srrd init`
-3. Check status: `srrd configure --status`
-4. Start server: `srrd serve start`
-5. Restart Claude Desktop
-6. Use SRRD-Builder tools in your conversations
+3. Configure Claude: `srrd configure --claude`
+4. Restart Claude Desktop
+5. Use SRRD-Builder tools in your conversations (no manual server start needed)
 
-### Method 2: Web Interface Demo (Global)
+### Web Interface Demo
 
 1. Start the demo system: `srrd-server --with-frontend`
 2. Open web interface: <http://localhost:8080>
 3. Click "Connect to Server" to establish WebSocket connection
-4. Test any of the 38 available tools using the categorized interface
+4. Test any of the 44 available tools using the categorized interface
 
 ### Available Tools
 
@@ -188,36 +180,39 @@ The MCP server provides **44 tools** organized by research workflow categories:
 ### Example Workflow
 
 ```text
-# Method 1: In Claude Desktop (project-aware):
+# With Claude Desktop:
 "Initialize a new research project on quantum computing"
 "Generate a LaTeX document with bibliography from my vector database"
 "Perform semantic search for related documents"
 "Simulate peer review of my methodology section"
 
-# Method 2: In Web Interface (global demo):
-1. Open http://localhost:8080 in browser
-2. Click "Connect to Server"
-3. Test tools by clicking category buttons
-4. View real-time results in console
+# With Web Interface Demo:
+1. Run: srrd-server --with-frontend
+2. Open http://localhost:8080 in browser
+3. Click "Connect to Server"
+4. Test tools by clicking category buttons
+5. View real-time results in console
 ```
 
 ## Server Architecture
 
-SRRD-Builder uses a **dual server architecture** to support different use cases:
+SRRD-Builder uses two different server modes:
 
-### Project-Aware Server (`srrd serve`)
+### Claude Desktop Integration (MCP stdio)
 
-- **Purpose**: Integration with Claude Desktop/VS Code within research projects
-- **Protocol**: stdio (standard input/output)
-- **Context**: Project-specific data and configuration
+- **Purpose**: Integration with Claude Desktop within research projects
+- **Protocol**: stdio (standard input/output) - Claude manages the process
+- **Context**: Project-specific data and configuration loaded automatically
 - **Use Case**: Daily research work, manuscript writing, project management
+- **Management**: No manual start/stop - Claude Desktop handles it automatically
 
-### Global WebSocket Server (`srrd-server`)
+### WebSocket Demo Server (`srrd-server`)
 
-- **Purpose**: Demos, web interfaces, and external tool integration
+- **Purpose**: Demos, web interfaces, and external tool integration only
 - **Protocol**: WebSocket on localhost:8765
 - **Context**: Global tool access without project dependency
 - **Use Case**: Testing, demonstrations, web application integration
+- **Management**: Manual start/stop with `srrd-server` command
 
 ## Technical Architecture
 
@@ -310,10 +305,10 @@ SRRD-Builder implements a **neurosymbolic architecture** that combines:
 
 ### Common Issues
 
-1. **Project-aware server not responding**: Check status with `srrd configure --status` and restart with `srrd serve restart`
-2. **Global server connection failed**: Ensure `srrd-server` is running and check port 8765 availability
-3. **Web interface can't connect**: Make sure WebSocket server is running with `srrd-server`
-4. **Claude Desktop not finding tools**: Ensure server is running (`srrd serve start`) and restart Claude Desktop
+1. **Claude Desktop not finding tools**: Check configuration with `srrd configure --status` and ensure `claude_desktop_config.json` is properly set
+2. **WebSocket demo server connection failed**: Ensure `srrd-server` is running and check port 8765 availability
+3. **Web interface can't connect**: Make sure WebSocket server is running with `srrd-server --with-frontend`
+4. **MCP server errors in Claude**: Check Python environment and dependencies, view logs in `work/code/mcp/logs/`
 5. **LaTeX compilation errors**: Verify LaTeX installation with `pdflatex --version`
 6. **Import errors**: Ensure virtual environment is activated: `source venv/bin/activate`
 

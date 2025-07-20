@@ -48,7 +48,7 @@ result = await save_session_tool(
 **New Context-Aware:**
 
 ```python
-# When running with 'srrd serve' - project_path is auto-injected
+# When configured with Claude Desktop - project_path is auto-detected
 result = await save_session_tool(
     session_data={'experiment': 'test'}
     # project_path automatically injected from environment
@@ -78,8 +78,8 @@ The MCP server is configured in Claude Desktop's config file as:
 
 **Context-Aware Environment Variables:**
 
-- `SRRD_PROJECT_PATH` - Path to current SRRD project (set by `srrd serve`)
-- `SRRD_CONFIG_PATH` - Path to project config file (set by `srrd serve`)
+- `SRRD_PROJECT_PATH` - Path to current SRRD project (set by Claude Desktop when configured)
+- `SRRD_CONFIG_PATH` - Path to project config file (set by Claude Desktop when configured)
 
 ## Development
 
