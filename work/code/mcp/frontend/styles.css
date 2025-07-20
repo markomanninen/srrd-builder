@@ -306,14 +306,23 @@ body {
     100% { transform: rotate(360deg); }
 }
 
-/* Main Content Layout */
+/* Main Content Layout - Enhanced for better console panel positioning */
 .main-content {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
+    display: flex;
     gap: 30px;
     padding: 30px;
     height: calc(100vh - 200px); /* Adjust based on header + status bar height */
-    align-items: stretch;
+    overflow: hidden; /* Prevent main container from scrolling */
+}
+
+/* Content Area - Scrollable content section */
+.content-area {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0; /* Allow shrinking */
+    height: 100%;
 }
 
 /* Tools Section */
@@ -322,8 +331,54 @@ body {
     flex-direction: column;
     gap: 25px;
     overflow-y: auto;
+    overflow-x: hidden;
     height: 100%;
     min-height: 0; /* Allow shrinking below content size */
+    padding-right: 15px; /* Space for scrollbar */
+}
+
+/* When tools section is set to display: block by JavaScript, maintain flex */
+.tools-section[style*="display: block"] {
+    display: flex !important;
+    flex-direction: column;
+}
+
+/* Enhanced Views - Make them scrollable */
+.research-acts-view,
+.categories-view,
+.tools-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    min-height: 0; /* Allow shrinking */
+}
+
+/* When views are visible via JavaScript (display: block), force flex layout */
+.research-acts-view[style*="display: block"],
+.categories-view[style*="display: block"],
+.tools-view[style*="display: block"] {
+    display: flex !important;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.acts-grid,
+.categories-grid,
+.tools-grid {
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 0 1 auto; /* Don't force expansion, allow natural content size */
+    padding-right: 15px; /* Space for scrollbar */
+    min-height: 0; /* Allow shrinking */
+    width: 100%;
+}
+
+/* View headers should not scroll */
+.view-header {
+    flex-shrink: 0; /* Prevent header from shrinking */
+    margin-bottom: 2rem;
 }
 
 /* Stats Panel */
@@ -402,6 +457,8 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 15px;
+    align-content: start; /* Align items to top instead of stretching */
+    max-width: 100%;
 }
 
 /* Tool Cards */
@@ -487,7 +544,7 @@ body {
     background: var(--gray-700);
 }
 
-/* Console Section */
+/* Console Section - Fixed panel on the right */
 .console-section {
     background: var(--bg-elevated);
     border: 1px solid var(--border-color);
@@ -496,12 +553,10 @@ body {
     box-shadow: var(--shadow);
     display: flex;
     flex-direction: column;
+    flex: 1;
+    min-width: 350px;
+    max-width: 500px;
     height: 100%;
-    min-height: 0; /* Allow shrinking below content size */
-    position: sticky;
-    top: 30px;
-    max-height: calc(100vh - 260px); /* Ensure it doesn't exceed viewport */
-    max-width: 100%;
     overflow: hidden;
 }
 
@@ -698,22 +753,36 @@ body {
 /* Responsive Design */
 @media (max-width: 1200px) {
     .main-content {
-        grid-template-columns: 1fr 350px;
-        gap: 32px;
-        padding: 32px;
+        flex-direction: row;
+        gap: 20px;
+        padding: 20px;
+    }
+    
+    .console-section {
+        min-width: 300px;
+        max-width: 350px;
     }
 }
 
 @media (max-width: 968px) {
     .main-content {
-        grid-template-columns: 1fr;
-        gap: 32px;
-        padding: 24px;
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px;
+        height: auto;
+        min-height: calc(100vh - 200px);
+    }
+    
+    .content-area {
+        order: 2;
     }
     
     .console-section {
-        order: -1;
-        max-height: 400px;
+        order: 1;
+        min-width: auto;
+        max-width: none;
+        height: 300px;
+        min-height: 300px;
     }
     
     .tool-grid {
@@ -738,16 +807,23 @@ body {
     }
     
     .main-content {
-        padding: 20px;
-        gap: 24px;
+        padding: 15px;
+        gap: 15px;
     }
     
-    .tool-category {
-        padding: 24px;
+    .content-area {
+        order: 2;
     }
     
     .console-section {
-        padding: 24px;
+        order: 1;
+        height: 250px;
+        min-height: 250px;
+        padding: 15px;
+    }
+    
+    .tool-category {
+        padding: 20px;
     }
     
     .modal {

@@ -114,6 +114,12 @@
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 1.5rem;
     margin-top: 2rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 100%;
+    padding-right: 15px; /* Space for scrollbar */
+    align-content: start; /* Align items to top instead of stretching */
+    max-width: 100%;
 }
 
 .research-act-card {
@@ -191,6 +197,12 @@
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1.25rem;
     margin-top: 2rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 100%;
+    padding-right: 15px; /* Space for scrollbar */
+    align-content: start; /* Align items to top instead of stretching */
+    max-width: 100%;
 }
 
 .category-card {
@@ -248,6 +260,12 @@
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 1.25rem;
     margin-top: 2rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 100%;
+    padding-right: 15px; /* Space for scrollbar */
+    align-content: start; /* Align items to top instead of stretching */
+    max-width: 100%;
 }
 
 .enhanced-tool-card {

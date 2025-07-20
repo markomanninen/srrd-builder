@@ -46,65 +46,69 @@
         </div>
 
         <div class="main-content">
-            <!-- Research Acts View -->
-            <div class="research-acts-view" id="researchActsView" style="display: none;">
-                <div class="view-header">
-                    <h2>🎯 Research Acts</h2>
-                    <p>Select a research act to explore tools organized by scientific workflow phases</p>
+            <!-- Content Area - All views and tools -->
+            <div class="content-area">
+                <!-- Research Acts View -->
+                <div class="research-acts-view" id="researchActsView" style="display: none;">
+                    <div class="view-header">
+                        <h2>🎯 Research Acts</h2>
+                        <p>Select a research act to explore tools organized by scientific workflow phases</p>
+                    </div>
+                    <div class="acts-grid" id="actsGrid">
+                        <!-- Research acts will be populated here -->
+                    </div>
                 </div>
-                <div class="acts-grid" id="actsGrid">
-                    <!-- Research acts will be populated here -->
-                </div>
-            </div>
 
-            <!-- Categories View for Selected Act -->
-            <div class="categories-view" id="categoriesView" style="display: none;">
-                <div class="view-header">
-                    <button class="btn btn-back" onclick="app.navigateToHome()">← Back to Research Acts</button>
-                    <h2 id="selectedActTitle"></h2>
-                    <p id="selectedActDescription"></p>
+                <!-- Categories View for Selected Act -->
+                <div class="categories-view" id="categoriesView" style="display: none;">
+                    <div class="view-header">
+                        <button class="btn btn-back" onclick="app.navigateToHome()">← Back to Research Acts</button>
+                        <h2 id="selectedActTitle"></h2>
+                        <p id="selectedActDescription"></p>
+                    </div>
+                    <div class="categories-grid" id="categoriesGrid">
+                        <!-- Categories will be populated here -->
+                    </div>
                 </div>
-                <div class="categories-grid" id="categoriesGrid">
-                    <!-- Categories will be populated here -->
-                </div>
-            </div>
 
-            <!-- Tools View for Selected Category -->
-            <div class="tools-view" id="toolsView" style="display: none;">
-                <div class="view-header">
-                    <button class="btn btn-back" onclick="app.navigateBack()">← Back</button>
-                    <h2 id="selectedCategoryTitle"></h2>
-                    <p id="selectedCategoryDescription"></p>
+                <!-- Tools View for Selected Category -->
+                <div class="tools-view" id="toolsView" style="display: none;">
+                    <div class="view-header">
+                        <button class="btn btn-back" onclick="app.navigateBack()">← Back</button>
+                        <h2 id="selectedCategoryTitle"></h2>
+                        <p id="selectedCategoryDescription"></p>
+                    </div>
+                    <div class="tools-grid" id="toolsGrid">
+                        <!-- Tools will be populated here -->
+                    </div>
                 </div>
-                <div class="tools-grid" id="toolsGrid">
-                    <!-- Tools will be populated here -->
-                </div>
-            </div>
 
-            <!-- Default Tools Section -->
-            <div class="tools-section" id="toolsSection">
-                <div class="tool-category">
-                    <h3>🔌 Getting Started</h3>
-                    <p>Click "Connect to Server" to discover all available tools!</p>
-                    <br>
-                    <p><strong>Prerequisites:</strong></p>
-                    <ul>
-                        <li>MCP server running: <code>srrd-server</code></li>
-                        <li>Server accessible on localhost:8765</li>
-                    </ul>
-                    <br>
-                    <div class="feature-highlight">
-                        <h4>🚀 Enhanced Features</h4>
+                <!-- Default Tools Section -->
+                <div class="tools-section" id="toolsSection">
+                    <div class="tool-category">
+                        <h3>🔌 Getting Started</h3>
+                        <p>Click "Connect to Server" to discover all available tools!</p>
+                        <br>
+                        <p><strong>Prerequisites:</strong></p>
                         <ul>
-                            <li><strong>Research Acts Navigation:</strong> Tools organized by research workflow phases</li>
-                            <li><strong>Tool Information:</strong> Click ℹ️ buttons for detailed tool descriptions</li>
-                            <li><strong>Smart Categorization:</strong> Hierarchical organization of 38+ research tools</li>
-                            <li><strong>Scientific Context:</strong> Each tool explained in research methodology context</li>
+                            <li>MCP server running: <code>srrd-server</code></li>
+                            <li>Server accessible on localhost:8765</li>
                         </ul>
+                        <br>
+                        <div class="feature-highlight">
+                            <h4>🚀 Enhanced Features</h4>
+                            <ul>
+                                <li><strong>Research Acts Navigation:</strong> Tools organized by research workflow phases</li>
+                                <li><strong>Tool Information:</strong> Click ℹ️ buttons for detailed tool descriptions</li>
+                                <li><strong>Smart Categorization:</strong> Hierarchical organization of 38+ research tools</li>
+                                <li><strong>Scientific Context:</strong> Each tool explained in research methodology context</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Console Panel - Fixed on the right -->
             <div class="console-section">
                 <h3>📟 Test Console</h3>
                 <div class="console" id="console">
