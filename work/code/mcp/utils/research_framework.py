@@ -52,7 +52,7 @@ class ResearchFrameworkService:
                 'description': 'Writing, formatting, and publishing',
                 'icon': '📄',
                 'color': '#06b6d4',
-                'categories': ['document_generation', 'formatting', 'project_management']
+                'categories': ['document_generation', 'formatting', 'project_management', 'workflow_tracking']
             }
         }
         
@@ -200,6 +200,13 @@ class ResearchFrameworkService:
                 'icon': '📁',
                 'act': 'communication',
                 'tools': ['initialize_project', 'save_session', 'restore_session', 'search_knowledge', 'version_control', 'backup_project']
+            },
+            'workflow_tracking': {
+                'name': 'Workflow Tracking',
+                'description': 'Track research progress and workflow guidance',
+                'icon': '🔄',
+                'act': 'communication',
+                'tools': ['get_research_progress', 'get_tool_usage_history', 'get_workflow_recommendations', 'get_research_milestones', 'start_research_session', 'get_session_summary']
             }
         }
         
