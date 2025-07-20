@@ -317,3 +317,6 @@ Thumbs.db
 *.tmp
 *.temp
 .env
+
+# Dynamically generated files
+srrd_builder/mcp_global_launcher.py
