@@ -11,16 +11,41 @@ from typing import Dict, Any, List, Optional
 # Add parent directory to path to access storage modules
 sys.path.append(str(Path(__file__).parent.parent))
 
-from storage.sqlite_manager import SQLiteManager
-from utils.research_framework import ResearchFrameworkService
-from utils.workflow_intelligence import WorkflowIntelligence
+try:
+    from storage.sqlite_manager import SQLiteManager
+except ImportError as e:
+    print(f"Warning: Could not import SQLiteManager: {e}")
+    SQLiteManager = None
+
+try:
+    from utils.research_framework import ResearchFrameworkService
+except ImportError as e:
+    print(f"Warning: Could not import ResearchFrameworkService: {e}")
+    ResearchFrameworkService = None
+
+try:
+    from utils.workflow_intelligence import WorkflowIntelligence
+except ImportError as e:
+    print(f"Warning: Could not import WorkflowIntelligence: {e}")
+    WorkflowIntelligence = None
 
 # Add context-aware decorator
 sys.path.append(str(Path(__file__).parent.parent / 'utils'))
-from context_decorator import context_aware, project_required
+try:
+    from context_decorator import context_aware, project_required
+except ImportError as e:
+    print(f"Warning: Could not import context decorators: {e}")
+    # Fallback decorators
+    def context_aware():
+        def decorator(func):
+            return func
+        return decorator
+    
+    def project_required(func):
+        return func
 
-# Initialize services
-research_framework = ResearchFrameworkService()
+# Initialize services if available
+research_framework = ResearchFrameworkService() if ResearchFrameworkService else None
 
 @context_aware()
 async def get_research_progress_tool(**kwargs) -> str:

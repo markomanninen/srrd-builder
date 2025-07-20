@@ -127,14 +127,14 @@ async def test_research_continuity_tools_import():
 
 
 @pytest.mark.asyncio
-async def test_enhanced_mcp_server_basic():
-    """Test basic functionality of enhanced MCP server"""
+async def test_main_mcp_server_basic():
+    """Test basic functionality of MAIN MCP server with research continuity tools"""
     
     try:
-        from enhanced_mcp_server import EnhancedClaudeMCPServer
+        from mcp_server import ClaudeMCPServer
         
         # Create server instance
-        server = EnhancedClaudeMCPServer()
+        server = ClaudeMCPServer()
         
         # Check that tools are registered
         assert len(server.tools) > 0
@@ -172,7 +172,7 @@ if __name__ == "__main__":
         try:
             await test_research_continuity_basic_functionality()
             await test_research_continuity_tools_import()
-            await test_enhanced_mcp_server_basic()
+            await test_main_mcp_server_basic()
             print("🎯 All tests passed successfully!")
         except Exception as e:
             print(f"❌ Test failed: {e}")

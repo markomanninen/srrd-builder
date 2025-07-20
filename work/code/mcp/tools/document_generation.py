@@ -1088,7 +1088,11 @@ def register_document_tools(server):
     server.register_tool(
         name="list_latex_templates",
         description="List all available LaTeX templates",
-        parameters={},
+        parameters={
+            "type": "object",
+            "properties": {},
+            "required": []
+        },
         handler=list_latex_templates_tool
     )
     

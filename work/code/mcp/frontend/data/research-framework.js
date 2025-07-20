@@ -46,7 +46,7 @@ const RESEARCH_FRAMEWORK = {
             description: 'Writing, formatting, and publishing',
             icon: '📄',
             color: '#06b6d4',
-            categories: ['document_generation', 'formatting', 'project_management']
+            categories: ['document_generation', 'formatting', 'project_management', 'workflow_tracking']
         }
     },
 
@@ -194,11 +194,18 @@ const RESEARCH_FRAMEWORK = {
             icon: '📁',
             act: 'communication',
             tools: ['initialize_project', 'save_session', 'restore_session', 'search_knowledge', 'version_control', 'backup_project']
+        },
+        workflow_tracking: {
+            name: 'Workflow Tracking',
+            description: 'Track research progress and workflow guidance',
+            icon: '🔄',
+            act: 'communication',
+            tools: ['get_research_progress', 'get_tool_usage_history', 'get_workflow_recommendations', 'get_research_milestones', 'start_research_session', 'get_session_summary']
         }
     }
 };
 
-// Validation: Count all tools to ensure we have all 38
+// Validation: Count all tools to ensure we have all 44
 const allTools = Object.values(RESEARCH_FRAMEWORK.categories)
     .flatMap(category => category.tools);
 
@@ -206,7 +213,7 @@ const uniqueTools = [...new Set(allTools)];
 
 console.log(`Framework includes ${uniqueTools.length} tools:`, uniqueTools.sort());
 
-// Expected 38 tools (as identified from codebase):
+// Expected 44 tools (as identified from codebase):
 const expectedTools = [
     'assess_foundational_assumptions',
     'backup_project', 
@@ -232,6 +239,11 @@ const expectedTools = [
     'generate_latex_document',
     'generate_latex_with_template',
     'generate_research_summary',
+    'get_research_milestones',
+    'get_research_progress', 
+    'get_session_summary',
+    'get_tool_usage_history',
+    'get_workflow_recommendations',
     'initialize_project',
     'initiate_paradigm_challenge',
     'list_latex_templates',
@@ -241,6 +253,7 @@ const expectedTools = [
     'search_knowledge',
     'semantic_search',
     'simulate_peer_review',
+    'start_research_session',
     'store_bibliography_reference',
     'suggest_methodology',
     'validate_design',
@@ -259,7 +272,7 @@ if (extraTools.length > 0) {
     console.error('Extra tools:', extraTools);
 }
 if (missingTools.length === 0 && extraTools.length === 0) {
-    console.log('✅ All 38 tools successfully mapped to framework!');
+    console.log('✅ All 44 tools successfully mapped to framework!');
 }
 
 // Make available for import
