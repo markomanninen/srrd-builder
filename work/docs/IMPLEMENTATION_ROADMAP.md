@@ -374,3 +374,125 @@ srrd_builder/
 5. Performance optimization and scalability
 
 This roadmap ensures that the fundamental physics novel theory development requirements are prioritized while building a robust, scalable system that supports the full research lifecycle with neurosymbolic AI assistance.
+
+## Future Database Enhancements
+
+### Advanced Domain-Specific Tables
+
+Based on comprehensive analysis of the 44 research tools and current database coverage, the following domain-specific tables would enhance analytical capabilities:
+
+#### High Priority Enhancements
+
+##### 1. Methodology Assessment Table
+
+```sql
+CREATE TABLE methodology_assessments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER REFERENCES projects(id),
+    methodology_type TEXT NOT NULL,
+    assessment_criteria JSON,
+    strengths JSON,
+    limitations JSON,
+    recommendations TEXT,
+    suitability_score INTEGER,
+    validation_status TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+**Benefits:**
+
+- Enable systematic methodology selection across projects
+- Track methodology effectiveness and success rates
+- Provide evidence-based methodology recommendations
+- Support cross-project methodology comparison
+
+##### 2. Knowledge Graph Tables
+
+```sql
+CREATE TABLE knowledge_entities (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER REFERENCES projects(id),
+    entity_name TEXT NOT NULL,
+    entity_type TEXT,
+    definition TEXT,
+    frequency INTEGER DEFAULT 1,
+    importance_score REAL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE knowledge_relationships (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER REFERENCES projects(id),
+    source_entity_id INTEGER REFERENCES knowledge_entities(id),
+    target_entity_id INTEGER REFERENCES knowledge_entities(id),
+    relationship_type TEXT,
+    strength REAL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+**Benefits:**
+
+- Enable structured knowledge graph querying and analysis
+- Track concept evolution across research projects
+- Identify knowledge gaps and connections between projects
+- Support semantic relationship analysis
+
+#### Medium-High Priority Enhancement
+
+##### 3. Hypothesis Management Table
+
+```sql
+CREATE TABLE hypotheses (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id INTEGER REFERENCES projects(id),
+    hypothesis_text TEXT NOT NULL,
+    hypothesis_type TEXT,
+    formulation_method TEXT,
+    testing_status TEXT DEFAULT 'formulated',
+    validation_results JSON,
+    confidence_level REAL,
+    evidence_support JSON,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+**Benefits:**
+
+- Dedicated hypothesis lifecycle tracking
+- Validation success rate analysis
+- Hypothesis refinement pattern identification
+- Evidence-based hypothesis development
+
+### Implementation Strategy
+
+#### Phase 1: Methodology Assessments (Week 9-10)
+
+- Implement methodology_assessments table
+- Update methodology advisory tools to use structured storage
+- Create methodology comparison and recommendation features
+
+#### Phase 2: Knowledge Graph Enhancement (Week 11-12)
+
+- Implement knowledge_entities and knowledge_relationships tables
+- Update search and discovery tools for structured graph storage
+- Develop knowledge graph visualization and analysis features
+
+#### Phase 3: Hypothesis Management (Week 13-14)
+
+- Implement hypotheses table
+- Update novel theory development tools for structured hypothesis tracking
+- Create hypothesis validation and pattern analysis features
+
+### Expected Outcomes
+
+These enhancements will transform the system from basic persistence to advanced research analytics:
+
+- **Methodology Optimization**: Data-driven methodology selection based on historical success patterns
+- **Knowledge Networks**: Cross-project knowledge discovery and reuse
+- **Hypothesis Intelligence**: Systematic hypothesis development and validation tracking
+- **Research Quality**: Enhanced reproducibility and evidence-based decision making
+
