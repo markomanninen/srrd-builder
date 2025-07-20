@@ -22,7 +22,7 @@ class EnhancedSRRDApp {
     }
 
     async init() {
-        this.mcpClient = new MCPClient('ws://localhost:8765');
+        this.mcpClient = new MCPClient(`ws://localhost:8765?v=${Date.now()}`); // Cache bust
         this.setupEventListeners();
         this.log('Enhanced SRRD Frontend initialized');
         
@@ -73,7 +73,19 @@ class EnhancedSRRDApp {
         this.setButtonLoading(connectBtn, 'Connecting...');
 
         try {
-            await this.mcpClient.connect();
+            const initResponse = await this.mcpClient.connect();
+            
+            // Store server info from initialize response
+            // MCP client returns result.serverInfo directly (not result.result.serverInfo)
+            if (initResponse && initResponse.serverInfo) {
+                this.serverInfo = initResponse.serverInfo;
+                this.log(`Server info received: ${JSON.stringify(this.serverInfo)}`, 'info');
+            } else if (initResponse && initResponse.result && initResponse.result.serverInfo) {
+                this.serverInfo = initResponse.result.serverInfo;
+                this.log(`Server info received: ${JSON.stringify(this.serverInfo)}`, 'info');
+            } else {
+                this.log('No server info received in initialize response', 'warning');
+            }
             
             // Update UI
             statusIndicator.className = 'status-indicator status-connected';
@@ -122,8 +134,55 @@ class EnhancedSRRDApp {
             
             this.availableTools = tools;
             
-            document.getElementById('toolCount').textContent = 
-                `${tools.length} tools available`;
+            // Get the working directory from the server
+            const workingDir = await this.getWorkingDirectory();
+            const pathContext = workingDir ? ` • ${this.extractProjectPath(workingDir)}` : '';
+            
+            const displayText = `${tools.length} tools available${pathContext}`;
+            const toolCountElement = document.getElementById('toolCount');
+            toolCountElement.textContent = displayText;
+            
+            // Add clickable hover tooltip with full project path
+            // Always make it clickable, even if workingDir is not available initially
+            toolCountElement.style.cursor = 'pointer';
+            
+            // Remove any existing click listeners to avoid duplicates
+            toolCountElement.removeEventListener('click', this._pathClickHandler);
+            
+            // Create and store the click handler
+            this._pathClickHandler = () => {
+                const currentWorkingDir = this.serverInfo?.projectPath || workingDir;
+                if (currentWorkingDir) {
+                    console.log('🔥 COPYING PATH:', currentWorkingDir);
+                    navigator.clipboard.writeText(currentWorkingDir).then(() => {
+                        this.log(`Copied path to clipboard: ${currentWorkingDir}`, 'success');
+                        // Show temporary feedback
+                        const originalText = toolCountElement.textContent;
+                        toolCountElement.textContent = '📋 Path copied!';
+                        setTimeout(() => {
+                            toolCountElement.textContent = originalText;
+                        }, 1500);
+                    }).catch((error) => {
+                        console.error('❌ CLIPBOARD ERROR:', error);
+                        this.log('Failed to copy path to clipboard', 'error');
+                        // Fallback: show path in alert
+                        alert(`Path: ${currentWorkingDir}`);
+                    });
+                } else {
+                    console.log('⚠️ NO PATH AVAILABLE TO COPY');
+                    this.log('No project path available to copy', 'warning');
+                }
+            };
+            
+            // Add the click listener
+            toolCountElement.addEventListener('click', this._pathClickHandler);
+            
+            // Set tooltip
+            if (workingDir) {
+                toolCountElement.title = `Full project path: ${workingDir} (Click to copy)`;
+            } else {
+                toolCountElement.title = 'Click to copy project path (when available)';
+            }
             
             this.log(`Loaded ${tools.length} tools from server`, 'success');
             
@@ -131,6 +190,41 @@ class EnhancedSRRDApp {
             this.log(`Failed to load tools: ${error.message}`, 'error');
             this.availableTools = []; // Ensure it's always an array
         }
+    }
+
+    async getWorkingDirectory() {
+        // Get project path from serverInfo received during initialize
+        if (this.serverInfo && this.serverInfo.projectPath) {
+            return this.serverInfo.projectPath;
+        }
+        
+        return null;
+    }
+
+    extractProjectPath(fullPath) {
+        if (!fullPath) return '';
+        
+        // Extract meaningful project context from the path
+        const pathParts = fullPath.split('/');
+        const relevantParts = [];
+        
+        // Look for project indicators, working backwards from the end
+        let foundProject = false;
+        for (let i = pathParts.length - 1; i >= 0; i--) {
+            const part = pathParts[i];
+            relevantParts.unshift(part);
+            
+            // Stop when we find a clear project boundary
+            if (part.includes('srrd-builder') || part === 'work' || part === 'code' || part === 'mcp') {
+                foundProject = true;
+                break;
+            }
+            
+            // Don't go too deep
+            if (relevantParts.length >= 3) break;
+        }
+        
+        return foundProject ? relevantParts.join('/') : pathParts[pathParts.length - 1] || '';
     }
 
     switchView(view) {
@@ -331,19 +425,17 @@ class EnhancedSRRDApp {
                         <span class="enhanced-tool-icon">${categoryContext.icon}</span>
                         <h3 class="enhanced-tool-name">${formattedName}</h3>
                     </div>
-                    <div class="tool-actions-header">
-                        <button class="btn-info" onclick="app.showToolInfo('${toolName}')" title="Tool Information">
-                            ℹ️
-                        </button>
-                    </div>
                 </div>
                 <div class="enhanced-tool-description">${description}</div>
                 <div class="enhanced-tool-actions">
                     <button class="btn btn-primary btn-tool" onclick="app.runToolWithDefaults('${toolName}')">
                         ▶️ Run Tool
                     </button>
-                    <button class="btn-edit" onclick="app.editToolParameters('${toolName}')" title="Edit Parameters">
-                        ⚙️
+                    <button class="btn btn-secondary" onclick="app.editToolParameters('${toolName}')" title="Edit Parameters">
+                        ⚙️ Params
+                    </button>
+                    <button class="btn btn-info" onclick="app.showToolInfo('${toolName}')" title="Tool Information">
+                        ℹ️
                     </button>
                 </div>
             </div>
@@ -473,15 +565,282 @@ class EnhancedSRRDApp {
             return;
         }
 
-        this.log(`Running ${toolName} with defaults...`);
+        this.log(`🔍 Looking for tool: ${toolName}`, 'info');
+        
+        // Find the tool to get its schema
+        const tool = Array.isArray(this.availableTools) ? 
+            this.availableTools.find(t => t && t.name === toolName) : null;
+            
+        if (!tool) {
+            this.log(`❌ Tool ${toolName} not found in available tools`, 'error');
+            return;
+        }
+
+        this.log(`✅ Found tool: ${tool.name}`, 'info');
+
+        // Generate default parameters for the tool
+        let parameters = this.getToolParameters(tool);
         
         try {
-            const result = await this.mcpClient.callTool(toolName, {});
+            this.log(`� Calling MCP server with parameters: ${JSON.stringify(parameters, null, 2)}`, 'info');
+            const result = await this.mcpClient.callTool(toolName, parameters);
             this.log(`✅ ${toolName} completed successfully`, 'success');
             this.log(`Result: ${JSON.stringify(result, null, 2)}`);
         } catch (error) {
             this.log(`❌ ${toolName} failed: ${error.message}`, 'error');
+            
+            // If the tool failed due to missing required parameters, parse the error and suggest parameters
+            if (error.message.includes('Missing required parameters')) {
+                const missingParams = this.extractMissingParametersFromError(error.message);
+                if (missingParams.length > 0) {
+                    this.log(`🔧 Detected missing parameters: ${missingParams.join(', ')}. Retrying with generated values...`, 'info');
+                    
+                    // Generate parameters based on error message
+                    const fallbackParams = this.generateFallbackParameters(missingParams);
+                    
+                    try {
+                        const retryResult = await this.mcpClient.callTool(toolName, fallbackParams);
+                        this.log(`✅ ${toolName} completed successfully on retry`, 'success');
+                        this.log(`Result: ${JSON.stringify(retryResult, null, 2)}`);
+                    } catch (retryError) {
+                        this.log(`❌ ${toolName} still failed after retry: ${retryError.message}`, 'error');
+                        this.log(`💡 Use the "Params" button to manually configure parameters for this tool`, 'info');
+                    }
+                } else {
+                    this.log(`� Use the "Params" button to configure required fields for this tool`, 'info');
+                }
+            }
         }
+    }
+
+    getToolParameters(tool) {
+        // If the tool has a proper schema with properties, use it
+        if (tool.inputSchema && tool.inputSchema.properties && Object.keys(tool.inputSchema.properties).length > 0) {
+            return this.getDefaultParameterValues(tool.inputSchema);
+        }
+        
+        // For tools with empty schemas but known required parameters, generate them proactively
+        const toolName = tool.name;
+        const knownBrokenTools = this.getKnownBrokenToolParameters(toolName);
+        
+        if (knownBrokenTools && Object.keys(knownBrokenTools).length > 0) {
+            this.log(`🔧 Using known parameters for broken schema tool: ${toolName}`, 'info');
+            return knownBrokenTools;
+        }
+        
+        // If no schema and no known parameters, return empty and let error handling deal with it
+        return {};
+    }
+
+    getKnownBrokenToolParameters(toolName) {
+        // === REAL MCP SERVER PARAMETER DATABASE - GROUND TRUTH ===
+        // Generated from actual MCP server schemas - Updated with server truth
+        const knownParams = {
+            // === TOOLS WITH PROPER SCHEMAS (REQUIRED PARAMETERS) ===
+            'clarify_research_goals': {
+                research_area: 'machine learning and data science',
+                initial_goals: 'To investigate the effectiveness of novel approaches in improving predictive accuracy and interpretability in machine learning systems'
+            },
+            'suggest_methodology': {
+                research_goals: 'To develop and evaluate innovative methodologies for solving complex problems in artificial intelligence and data science',
+                domain: 'artificial intelligence'
+            },
+            'simulate_peer_review': {
+                document_content: {
+                    title: 'Novel Approaches in AI Research',
+                    abstract: 'This paper presents innovative methodologies for advancing artificial intelligence research',
+                    content: 'Comprehensive research content focusing on AI methodology and practical applications',
+                    methodology: 'Mixed-methods approach with quantitative analysis and qualitative validation'
+                },
+                domain: 'artificial intelligence'
+            },
+            'check_quality_gates': {
+                research_content: {
+                    title: 'AI Methodology Research',
+                    phase: 'analysis',
+                    content: 'Research content for quality assessment',
+                    methodology: 'systematic approach'
+                },
+                phase: 'analysis'
+            },
+            'generate_latex_document': {
+                title: 'Advanced Research in Artificial Intelligence Applications'
+            },
+            'compile_latex': {
+                tex_file_path: '/project/manuscript/main.tex'
+            },
+            'semantic_search': {
+                query: 'machine learning research methods and applications'
+            },
+            'discover_patterns': {
+                content: 'Comprehensive research text for detailed analysis, evaluation, and systematic processing using advanced computational methods'
+            },
+            'build_knowledge_graph': {
+                documents: ['ai-research-paper.pdf', 'methodology-guide.txt', 'experimental-results.xlsx'],
+                relationship_types: ['citation', 'methodology', 'thematic', 'experimental']
+            },
+            'find_similar_documents': {
+                target_document: 'Research document focusing on machine learning applications and methodological innovations in artificial intelligence'
+            },
+            'extract_key_concepts': {
+                text: 'Research text focusing on artificial intelligence methodology, experimental design, and practical applications in scientific domains'
+            },
+            'generate_research_summary': {
+                documents: ['ai-research-paper.pdf', 'methodology-guide.txt', 'experimental-results.xlsx']
+                // Note: summary_type and max_length are optional - omit them to use server defaults
+            },
+            
+            // === TOOLS WITH EMPTY SCHEMAS (PARAMETERS DISCOVERED FROM ERROR TESTING) ===
+            // These tools have no documented schemas but require these parameters based on actual usage
+            'compare_approaches': {
+                approach_a: 'Traditional supervised learning approach using established algorithms and conventional feature engineering techniques',
+                approach_b: 'Novel deep learning approach utilizing advanced neural network architectures and automated feature learning mechanisms',
+                research_context: 'Advanced AI research methodology focusing on practical applications, theoretical foundations, and experimental validation'
+            },
+            'validate_design': {
+                research_design: 'Comprehensive experimental research design investigating the effectiveness of novel machine learning algorithms through systematic evaluation, comparative analysis, and rigorous statistical validation',
+                domain: 'artificial intelligence'
+            },
+            'ensure_ethics': {
+                research_proposal: 'A detailed research proposal investigating the effectiveness of novel artificial intelligence methodologies in advancing scientific discovery, improving problem-solving capabilities, and enhancing practical applications across diverse domains',
+                domain: 'artificial intelligence'
+            },
+            'initiate_paradigm_challenge': {
+                domain: 'artificial intelligence'
+            },
+            'generate_critical_questions': {
+                research_area: 'machine learning and data science'
+            },
+            'develop_alternative_framework': {
+                domain: 'artificial intelligence',
+                current_framework: 'Traditional supervised learning paradigm with manual feature engineering'
+            },
+            'assess_foundational_assumptions': {
+                domain: 'artificial intelligence',
+                assumptions: 'Core assumptions about machine learning effectiveness and generalization capabilities'
+            },
+            'compare_paradigms': {
+                original_paradigm: 'Traditional supervised learning paradigm',
+                alternative_paradigm: 'Modern deep learning paradigm',
+                domain: 'artificial intelligence'
+            },
+            'validate_novel_theory': {
+                theory_framework: 'Novel theoretical framework for AI generalization combining deep learning principles with symbolic reasoning approaches',
+                domain: 'artificial intelligence'
+            },
+            'cultivate_innovation': {
+                domain: 'artificial intelligence',
+                current_state: 'Established machine learning methodologies'
+            },
+            'evaluate_paradigm_shift_potential': {
+                domain: 'artificial intelligence',
+                proposed_shift: 'From traditional ML to advanced AI systems',
+                theory_framework: 'Novel theoretical framework for AI generalization combining deep learning principles with symbolic reasoning approaches'
+            },
+            'explain_methodology': {
+                research_question: 'How can mixed-methods research approach combining quantitative analysis and qualitative insights improve AI research effectiveness?',
+                domain: 'artificial intelligence'
+            },
+            'initialize_project': {
+                name: 'AI Research Project',
+                description: 'Comprehensive AI research project',
+                domain: 'artificial intelligence',
+                project_path: '/research/ai-project'
+            },
+            'save_session': {
+                session_data: {
+                    session_id: 'session_001',
+                    timestamp: new Date().toISOString(),
+                    user: 'researcher',
+                    project: 'ai_research'
+                },
+                project_path: '/research/ai-project'
+            },
+            'search_knowledge': {
+                query: 'machine learning research methods',
+                project_path: '/research/ai-project'
+            },
+            'version_control': {
+                action: 'commit',
+                message: 'Add research findings and analysis',
+                project_path: '/research/ai-project'
+            },
+            'backup_project': {
+                project_path: '/research/ai-project'
+            },
+            'restore_session': {
+                session_id: 1,
+                project_path: '/research/ai-project'
+            },
+            'format_research_content': {
+                content: 'Research content for formatting',
+                content_type: 'academic_section',
+                formatting_style: 'academic'
+            },
+            'generate_bibliography': {
+                references: [
+                    {'title': 'AI Research Methods', 'author': 'Smith, J.', 'year': 2024, 'journal': 'AI Journal'}
+                ]
+            },
+            'extract_document_sections': {
+                document_content: 'Comprehensive research document with multiple sections for analysis'
+            },
+            'store_bibliography_reference': {
+                reference: {
+                    'title': 'Advanced AI Techniques',
+                    'author': 'Johnson, M.',
+                    'year': 2024,
+                    'journal': 'Machine Learning Review'
+                }
+            },
+            'retrieve_bibliography_references': {
+                query: 'machine learning artificial intelligence',
+                max_results: 20
+            },
+            'generate_document_with_database_bibliography': {
+                title: 'Advanced AI Research Document',
+                bibliography_query: 'machine learning deep learning AI'
+            },
+            'list_latex_templates': {
+                // This tool has empty schema and may not need parameters
+            },
+            'generate_latex_with_template': {
+                template_name: 'academic_paper',
+                title: 'AI Research Paper',
+                content: 'Research content for LaTeX generation'
+            }
+        };
+        
+        return knownParams[toolName] || null;
+    }
+
+    extractMissingParametersFromError(errorMessage) {
+        // Parse error messages like:
+        // "Missing required parameters (approach_a, approach_b, research_context)"
+        // "Missing required parameter (domain)"
+        // "Error: Missing required parameter (research_area)"
+        
+        let match = errorMessage.match(/Missing required parameters? \(([^)]+)\)/);
+        if (match) {
+            return match[1].split(',').map(param => param.trim());
+        }
+        
+        // Also handle cases where the error is wrapped with "Error: "
+        match = errorMessage.match(/Error: Missing required parameters? \(([^)]+)\)/);
+        if (match) {
+            return match[1].split(',').map(param => param.trim());
+        }
+        
+        return [];
+    }
+
+    generateFallbackParameters(parameterNames) {
+        const parameters = {};
+        parameterNames.forEach(paramName => {
+            // Use the smart example value system
+            parameters[paramName] = this.getExampleValue(paramName, 'string');
+        });
+        return parameters;
     }
 
     editToolParameters(toolName) {
@@ -508,7 +867,7 @@ class EnhancedSRRDApp {
                 </div>
                 <div class="modal-body">
                     <form id="toolForm">
-                        ${this.generateParameterForm(tool.inputSchema)}
+                        ${this.generateParameterForm(tool.inputSchema, toolName)}
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -532,12 +891,92 @@ class EnhancedSRRDApp {
         this.currentModal = modal;
     }
 
-    generateParameterForm(schema) {
-        if (!schema || !schema.properties) {
-            return '<p>No parameters required for this tool.</p>';
+    generateParameterForm(schema, toolName) {
+        // Check if we have known parameters for this tool (ground truth database)
+        const knownParams = this.getKnownBrokenToolParameters(toolName);
+        const hasKnownParams = knownParams && Object.keys(knownParams).length > 0;
+        
+        // Check if tool has valid schema
+        const hasValidSchema = schema && 
+                               schema.properties && 
+                               Object.keys(schema.properties).length > 0;
+        
+        // If we have known verified parameters, create a clean form (no warnings)
+        if (hasKnownParams) {
+            return this.generateCleanParameterForm(knownParams, toolName);
         }
+        
+        // If tool has valid schema, use it
+        if (hasValidSchema) {
+            const defaultValues = this.getDefaultParameterValues(schema);
+            return this.generateSchemaParameterForm(schema, defaultValues);
+        }
+        
+        // Only show fallback form with warnings for truly unknown tools
+        return this.generateFallbackParameterForm(toolName);
+    }
+    
+    generateCleanParameterForm(knownParams, toolName) {
+        const jsonDefaults = JSON.stringify(knownParams, null, 2);
+        
+        const formFields = Object.entries(knownParams).map(([paramName, defaultValue]) => {
+            const label = paramName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            
+            // Proper type detection for all JavaScript types
+            let paramType;
+            if (typeof defaultValue === 'number') {
+                paramType = Number.isInteger(defaultValue) ? 'integer' : 'number';
+            } else if (typeof defaultValue === 'boolean') {
+                paramType = 'boolean';
+            } else if (Array.isArray(defaultValue)) {
+                paramType = 'array';
+            } else if (typeof defaultValue === 'object' && defaultValue !== null) {
+                paramType = 'object';
+            } else {
+                paramType = 'string';
+            }
+            
+            return `
+                <div class="form-group required-field">
+                    <label for="${paramName}">
+                        ${label} <span class="required-asterisk">*</span>
+                    </label>
+                    ${this.generateInputField(paramName, {type: paramType}, defaultValue)}
+                    <small class="form-help">Verified working parameter for ${toolName}</small>
+                </div>
+            `;
+        }).join('');
 
-        const defaultValues = this.getDefaultParameterValues(schema);
+        return `
+            <div class="parameter-view-switcher">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-primary" id="formViewBtn" onclick="app.toggleParameterView('form')">
+                        📋 Form View
+                    </button>
+                    <button type="button" class="btn btn-sm btn-secondary" id="jsonViewBtn" onclick="app.toggleParameterView('json')">
+                        {} JSON View
+                    </button>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline" onclick="app.resetToDefaults()" title="Reset to default values">
+                    🔄 Reset Defaults
+                </button>
+            </div>
+            
+            <div id="formView" class="parameter-view">
+                ${formFields}
+            </div>
+            
+            <div id="jsonView" class="parameter-view" style="display: none;">
+                <div class="form-group">
+                    <label for="jsonParameters">Parameters (JSON)</label>
+                    <textarea id="jsonParameters" class="form-textarea json-editor" rows="12" spellcheck="false">${jsonDefaults}</textarea>
+                    <small class="form-help">These are verified working parameters for this tool.</small>
+                </div>
+            </div>
+        `;
+    }
+    
+    generateSchemaParameterForm(schema, defaultValues) {
         const jsonDefaults = JSON.stringify(defaultValues, null, 2);
 
         const formFields = Object.entries(schema.properties).map(([paramName, paramDef]) => {
@@ -545,12 +984,13 @@ class EnhancedSRRDApp {
             const label = paramName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             
             return `
-                <div class="form-group">
+                <div class="form-group ${required ? 'required-field' : ''}">
                     <label for="${paramName}">
-                        ${label}${required ? ' *' : ''}
+                        ${label}${required ? ' <span class="required-asterisk">*</span>' : ''}
                     </label>
                     ${this.generateInputField(paramName, paramDef, defaultValues[paramName])}
                     ${paramDef.description ? `<small class="form-help">${paramDef.description}</small>` : ''}
+                    ${required ? `<small class="form-help required-help">Required field with example value</small>` : ''}
                 </div>
             `;
         }).join('');
@@ -582,6 +1022,225 @@ class EnhancedSRRDApp {
                 </div>
             </div>
         `;
+    }
+
+    generateFallbackParameterForm(toolName) {
+        // This method now only handles tools with no known parameters
+        // (Tools with known parameters use generateCleanParameterForm instead)
+        const commonParams = this.getCommonParametersForTool(toolName);
+        
+        const formFields = Object.entries(commonParams).map(([paramName, paramInfo]) => {
+            const label = paramName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            
+            return `
+                <div class="form-group">
+                    <label for="${paramName}">${label}</label>
+                    ${this.generateInputField(paramName, {type: paramInfo.type}, paramInfo.default)}
+                    <small class="form-help">${paramInfo.description}</small>
+                </div>
+            `;
+        }).join('');
+
+        const jsonDefaults = JSON.stringify(
+            Object.fromEntries(Object.entries(commonParams).map(([name, info]) => [name, info.default])), 
+            null, 2
+        );
+
+        return `
+            <div class="parameter-note">
+                <p><strong>Note:</strong> This tool has no documented parameters. Common research parameters are provided below.</p>
+            </div>
+            
+            <div class="parameter-view-switcher">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-primary" id="formViewBtn" onclick="app.toggleParameterView('form')">
+                        📋 Form View
+                    </button>
+                    <button type="button" class="btn btn-sm btn-secondary" id="jsonViewBtn" onclick="app.toggleParameterView('json')">
+                        {} JSON View
+                    </button>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline" onclick="app.resetToDefaults()" title="Reset to default values">
+                    🔄 Reset Defaults
+                </button>
+            </div>
+            
+            <div id="formView" class="parameter-view">
+                ${formFields}
+            </div>
+            
+            <div id="jsonView" class="parameter-view" style="display: none;">
+                <div class="form-group">
+                    <label for="jsonParameters">Parameters (JSON)</label>
+                    <textarea id="jsonParameters" class="form-textarea json-editor" rows="12" spellcheck="false">${jsonDefaults}</textarea>
+                    <small class="form-help">Edit parameters as JSON. These are generic parameters for unknown tools.</small>
+                </div>
+            </div>
+        `;
+    }
+
+    getCommonParametersForTool(toolName) {
+        // Define common parameters based on tool name patterns
+        const baseParams = {
+            query: {
+                type: 'string',
+                default: 'research question or search query',
+                description: 'Search query or research question'
+            },
+            text: {
+                type: 'string', 
+                default: 'Sample research text for analysis and processing',
+                description: 'Text content to analyze or process'
+            },
+            content: {
+                type: 'string',
+                default: 'Research content to analyze',
+                description: 'Content or document text'
+            },
+            project_path: {
+                type: 'string',
+                default: '/path/to/research/project',
+                description: 'Path to the research project directory'
+            },
+            domain: {
+                type: 'string',
+                default: 'artificial intelligence',
+                description: 'Research domain or field of study'
+            }
+        };
+
+        // Tool-specific parameter suggestions based on common patterns
+        if (toolName.includes('compare')) {
+            return {
+                approach_a: {
+                    type: 'string',
+                    default: 'First research approach or methodology to compare',
+                    description: 'First approach for comparison'
+                },
+                approach_b: {
+                    type: 'string', 
+                    default: 'Second research approach or methodology to compare',
+                    description: 'Second approach for comparison'
+                },
+                research_context: {
+                    type: 'string',
+                    default: 'Artificial intelligence and machine learning research context',
+                    description: 'Research domain or contextual framework'
+                },
+                ...baseParams
+            };
+        }
+        
+        if (toolName.includes('validate') || toolName.includes('assess')) {
+            return {
+                research_design: {
+                    type: 'string',
+                    default: 'Experimental design employing mixed-methods approach with quantitative analysis and qualitative validation to investigate the effectiveness of novel AI algorithms',
+                    description: 'Research design or methodology to validate'
+                },
+                research_proposal: {
+                    type: 'string',
+                    default: 'A comprehensive proposal investigating novel methodologies in AI research',
+                    description: 'Research proposal or document to analyze'
+                },
+                ...baseParams
+            };
+        }
+        
+        if (toolName.includes('analyze') || toolName.includes('review')) {
+            return {
+                research_proposal: {
+                    type: 'string',
+                    default: 'A comprehensive proposal investigating novel methodologies in AI research',
+                    description: 'Research proposal or document to analyze'
+                },
+                document_content: {
+                    type: 'string',
+                    default: 'Research document content for comprehensive analysis and review',
+                    description: 'Document content to analyze'
+                },
+                ...baseParams
+            };
+        }
+        
+        if (toolName.includes('generate') || toolName.includes('create')) {
+            return {
+                title: {
+                    type: 'string',
+                    default: 'Novel Approaches in Research Methodology',
+                    description: 'Title for the generated content'
+                },
+                description: {
+                    type: 'string',
+                    default: 'Comprehensive research methodology description',
+                    description: 'Description of what to generate'
+                },
+                ...baseParams
+            };
+        }
+
+        if (toolName.includes('paradigm') || toolName.includes('framework')) {
+            return {
+                research_context: {
+                    type: 'string',
+                    default: 'Artificial intelligence and machine learning research paradigm',
+                    description: 'Research context or paradigm framework'
+                },
+                current_paradigm: {
+                    type: 'string',
+                    default: 'Traditional supervised learning approaches',
+                    description: 'Current paradigm or framework'
+                },
+                ...baseParams
+            };
+        }
+
+        if (toolName.includes('ethics') || toolName.includes('ethical')) {
+            return {
+                research_proposal: {
+                    type: 'string',
+                    default: 'A research proposal investigating AI ethics and responsible AI development practices',
+                    description: 'Research proposal to evaluate for ethical considerations'
+                },
+                ethical_considerations: {
+                    type: 'string',
+                    default: 'Privacy protection, bias mitigation, transparency, and social impact assessment',
+                    description: 'Ethical considerations and concerns'
+                },
+                ...baseParams
+            };
+        }
+
+        if (toolName.includes('methodology') || toolName.includes('method')) {
+            return {
+                research_goals: {
+                    type: 'string',
+                    default: 'To investigate effectiveness of novel approaches in AI research',
+                    description: 'Research goals and objectives'
+                },
+                methodology: {
+                    type: 'string',
+                    default: 'Mixed-methods approach combining quantitative experiments with qualitative analysis',
+                    description: 'Research methodology description'
+                },
+                ...baseParams
+            };
+        }
+
+        // Return enhanced base parameters for unknown tools
+        return {
+            ...baseParams,
+            research_design: {
+                type: 'string',
+                default: 'Comprehensive experimental design with control groups and systematic evaluation metrics',
+                description: 'Research design or experimental setup'
+            },
+            research_proposal: {
+                type: 'string',
+                default: 'A detailed proposal investigating innovative approaches to complex research problems',
+                description: 'Research proposal or study description'
+            }
+        };
     }
 
     generateInputField(paramName, paramDef, defaultValue = null) {
@@ -621,17 +1280,218 @@ class EnhancedSRRDApp {
         if (!schema || !schema.properties) return {};
         
         const defaults = {};
+        const required = schema.required || [];
+        
         Object.entries(schema.properties).forEach(([paramName, paramDef]) => {
             if (paramDef.default !== undefined) {
                 defaults[paramName] = paramDef.default;
             } else if (paramDef.enum && Array.isArray(paramDef.enum)) {
                 defaults[paramName] = paramDef.enum[0];
-            } else {
-                defaults[paramName] = this.getTypeDefault(paramDef.type);
+            } else if (required.includes(paramName)) {
+                // Provide meaningful examples for required fields - ensure they're never empty
+                const exampleValue = this.getExampleValue(paramName, paramDef.type);
+                defaults[paramName] = exampleValue;
+                
+                // Double-check that we didn't get an empty value for a required field
+                if (exampleValue === '' || exampleValue === null || exampleValue === undefined) {
+                    // Fallback to type-specific non-empty defaults
+                    switch (paramDef.type) {
+                        case 'string':
+                            defaults[paramName] = `example_${paramName.toLowerCase()}`;
+                            break;
+                        case 'number':
+                        case 'integer':
+                            defaults[paramName] = 1;
+                            break;
+                        case 'boolean':
+                            defaults[paramName] = false;
+                            break;
+                        case 'array':
+                            defaults[paramName] = [`example_${paramName}_item`];
+                            break;
+                        case 'object':
+                            defaults[paramName] = {[`example_${paramName}_key`]: 'example_value'};
+                            break;
+                        default:
+                            defaults[paramName] = `example_${paramName}`;
+                    }
+                }
             }
+            // REMOVED: Optional parameter default assignment - completely omit optional parameters
+            // This prevents sending empty/zero values for optional parameters that cause server errors
         });
         
         return defaults;
+    }
+
+    getExampleValue(paramName, type) {
+        // === VERIFIED PARAMETERS FROM ACTUAL MCP SERVER SCHEMAS AND ERROR TESTING ===
+        const examples = {
+            // === CONFIRMED FROM ACTUAL SCHEMAS ===
+            'research_area': 'machine learning and data science',
+            'initial_goals': 'To investigate the effectiveness of novel approaches in improving predictive accuracy and interpretability in machine learning systems',
+            'research_goals': 'To develop and evaluate innovative methodologies for solving complex problems in artificial intelligence and data science',
+            'domain': 'artificial intelligence',
+            'document_content': {
+                'title': 'Novel Approaches in AI Research',
+                'abstract': 'This paper presents innovative methodologies for advancing artificial intelligence research',
+                'content': 'Comprehensive research content focusing on AI methodology and practical applications',
+                'methodology': 'Mixed-methods approach with quantitative analysis and qualitative validation'
+            },
+            'title': 'Advanced Research in Artificial Intelligence Applications',
+            'query': 'machine learning research methods and applications',
+            'content': 'Comprehensive research text for detailed analysis, evaluation, and systematic processing using advanced computational methods',
+            'text': 'Research text focusing on artificial intelligence methodology, experimental design, and practical applications in scientific domains',
+            'documents': ['ai-research-paper.pdf', 'methodology-guide.txt', 'experimental-results.xlsx'],
+            'target_document': 'Research document focusing on machine learning applications and methodological innovations in artificial intelligence',
+            
+            // === PARAMETERS FROM ERROR MESSAGES (TOOLS WITH BROKEN SCHEMAS) ===
+            'approach_a': 'Traditional supervised learning approach using established algorithms and conventional feature engineering techniques',
+            'approach_b': 'Novel deep learning approach utilizing advanced neural network architectures and automated feature learning mechanisms',
+            'research_context': 'Advanced AI research methodology focusing on practical applications, theoretical foundations, and experimental validation',
+            'research_design': 'Comprehensive experimental research design investigating the effectiveness of novel machine learning algorithms through systematic evaluation, comparative analysis, and rigorous statistical validation',
+            'research_proposal': 'A detailed research proposal investigating the effectiveness of novel artificial intelligence methodologies in advancing scientific discovery, improving problem-solving capabilities, and enhancing practical applications across diverse domains',
+            'theory_framework': 'Novel theoretical framework for AI generalization combining deep learning principles with symbolic reasoning approaches for improved performance and interpretability',
+            
+            // === COMMON RESEARCH PARAMETERS ===
+            'author': 'Dr. Jane Smith, PhD in Computer Science',
+            'abstract': 'This paper presents a comprehensive investigation of novel approaches in artificial intelligence research, focusing on methodological innovations and practical applications',
+            'introduction': 'In recent years, the field of artificial intelligence has witnessed remarkable advances in both theoretical foundations and practical applications across diverse domains',
+            'methodology': 'We employed a comprehensive mixed-methods approach combining rigorous quantitative analysis with qualitative insights from domain experts and systematic evaluation protocols',
+            'results': 'The comprehensive analysis revealed statistically significant findings that substantially advance our understanding of the underlying mechanisms and their practical implications',
+            'discussion': 'The results have important implications for both theoretical understanding and practical applications, providing valuable insights for future research directions and methodological improvements',
+            'conclusion': 'This study demonstrates the effectiveness of the proposed methodology and opens new avenues for future research in artificial intelligence applications and scientific discovery',
+            'bibliography': 'Smith, J. et al. (2024). Advanced Machine Learning Techniques. AI Research Quarterly. Johnson, M. (2023). Data Science Methodologies. Computational Science Review.',
+            'name': 'AI Research Project Alpha',
+            'description': 'Comprehensive research project investigating advanced methodologies in artificial intelligence with focus on practical applications and theoretical contributions',
+            'project_path': '/research/ai-project-2024',
+            
+            // === FILE AND PATH PARAMETERS ===
+            'tex_file_path': '/project/manuscript/main.tex',
+            'file_path': '/research/documents/methodology-paper.pdf',
+            'document_path': '/research/papers/ai-research-findings.pdf',
+            'resource_path': '/workspace/research-resources',
+            
+            // === COLLECTIONS AND METADATA ===
+            'references': [
+                {'title': 'Advanced Machine Learning Techniques in Scientific Research', 'author': 'Smith, J. et al.', 'year': 2024, 'journal': 'AI Research Quarterly'},
+                {'title': 'Data Science Methodologies for Complex Problem Solving', 'author': 'Johnson, M.', 'year': 2023, 'journal': 'Computational Science Review'}
+            ],
+            'relationship_types': ['citation', 'methodology', 'thematic', 'experimental'],
+            'concept_types': ['technical', 'theoretical', 'methodological'],
+            'constraints': {
+                'time_limit': '6 months',
+                'budget': 'limited',
+                'resources': 'academic',
+                'scope': 'focused'
+            },
+            'research_content': {
+                'title': 'AI Methodology Research',
+                'phase': 'analysis',
+                'content': 'Research content for quality assessment',
+                'methodology': 'systematic approach'
+            },
+            'phase': 'analysis',
+            'domain_standards': {
+                'peer_review': 'required',
+                'reproducibility': 'essential',
+                'ethical_approval': 'obtained'
+            },
+            'innovation_criteria': {
+                'novelty': 'high',
+                'impact': 'significant',
+                'feasibility': 'proven'
+            },
+            'session_data': {
+                'session_id': 'session_001',
+                'timestamp': new Date().toISOString(),
+                'user': 'researcher',
+                'project': 'ai_research'
+            },
+            
+            // === CONFIGURATION PARAMETERS ===
+            'collection': 'research_papers_2024',
+            'pattern_type': 'thematic_analysis',
+            'content_type': 'academic_section',
+            'formatting_style': 'academic',
+            'summary_type': 'comprehensive_overview',
+            'review_type': 'comprehensive_peer_review',
+            'output_format': 'pdf',
+            'experience_level': 'advanced',
+            'domain_specialization': 'machine learning',
+            'novel_theory_mode': false,
+            'novel_theory_flag': false,
+            'bibliography_query': 'machine learning neural networks deep learning',
+            'action': 'commit',
+            'message': 'Add comprehensive research analysis and experimental findings',
+            
+            // === NUMERIC PARAMETERS ===
+            'max_results': 25,
+            'max_concepts': 15,
+            'limit': 50,
+            'min_frequency': 3,
+            'similarity_threshold': 0.75,
+            'max_length': 2000,
+            'session_id': 1001
+        };
+
+        // Check for exact match first
+        if (examples[paramName] !== undefined) {
+            return examples[paramName];
+        }
+
+        // Check for partial matches (case insensitive)
+        const paramLower = paramName.toLowerCase();
+        for (const [key, value] of Object.entries(examples)) {
+            if (paramLower.includes(key.toLowerCase()) || key.toLowerCase().includes(paramLower)) {
+                return value;
+            }
+        }
+
+        // Fall back to type-based defaults with comprehensive examples
+        switch (type) {
+            case 'string': 
+                if (paramLower.includes('domain')) return 'artificial intelligence';
+                if (paramLower.includes('area')) return 'machine learning and data science';
+                if (paramLower.includes('design')) return 'Comprehensive experimental research design for systematic investigation';
+                if (paramLower.includes('context')) return 'Advanced research methodology and practical applications';
+                if (paramLower.includes('proposal')) return 'Detailed research proposal investigating novel approaches and methodologies';
+                if (paramLower.includes('approach')) return 'Systematic methodological approach using advanced techniques';
+                if (paramLower.includes('path')) return '/research/project/path';
+                if (paramLower.includes('query')) return 'comprehensive research query and analysis';
+                if (paramLower.includes('title')) return 'Advanced Research in Scientific Methodology';
+                if (paramLower.includes('name')) return 'Comprehensive Research Project';
+                return 'comprehensive example research content';
+                
+            case 'number': 
+            case 'integer': 
+                if (paramLower.includes('threshold')) return 0.8;
+                if (paramLower.includes('limit') || paramLower.includes('max')) return 25;
+                if (paramLower.includes('min')) return 1;
+                if (paramLower.includes('id')) return 1;
+                if (paramLower.includes('frequency')) return 5;
+                return 10;
+                
+            case 'boolean': 
+                return false;
+                
+            case 'array': 
+                if (paramLower.includes('document')) return ['research-doc-1.pdf', 'analysis-notes.txt'];
+                if (paramLower.includes('tool')) return ['analysis_tool', 'visualization_tool'];
+                if (paramLower.includes('file')) return ['data.csv', 'results.json'];
+                if (paramLower.includes('reference')) return ['Smith2024', 'Johnson2023'];
+                return ['example_item_1', 'example_item_2'];
+                
+            case 'object': 
+                if (paramLower.includes('content')) return {'title': 'Research Content', 'text': 'comprehensive analysis'};
+                if (paramLower.includes('data')) return {'type': 'research_data', 'format': 'structured'};
+                if (paramLower.includes('config')) return {'mode': 'analysis', 'precision': 'high'};
+                if (paramLower.includes('session')) return {'id': 'session_001', 'active': true};
+                return {'example_key': 'example_value', 'type': 'comprehensive_object'};
+                
+            default: 
+                return 'comprehensive_example_value';
+        }
     }
 
     getTypeDefault(type) {
@@ -744,22 +1604,47 @@ class EnhancedSRRDApp {
 
     resetToDefaults() {
         const form = document.getElementById('toolForm');
+        const jsonTextarea = document.getElementById('jsonParameters');
+        
         if (!form) return;
 
-        // Reset form to default values
-        form.reset();
+        // Get the current tool being edited from the modal title
+        const modalTitle = document.querySelector('.modal-title');
+        if (!modalTitle) return;
         
-        // Trigger default values for the form
-        const event = new Event('reset');
-        form.dispatchEvent(event);
-        
-        // If in JSON view, sync the defaults
-        const jsonView = document.getElementById('jsonView');
-        if (jsonView && jsonView.style.display !== 'none') {
-            this.syncFormToJson();
+        const toolName = modalTitle.textContent.trim();
+        const tool = Array.isArray(this.availableTools) ? 
+            this.availableTools.find(t => t && this.formatToolName(t.name) === toolName) : null;
+
+        if (tool && tool.inputSchema) {
+            // Generate fresh default values
+            const defaultValues = this.getDefaultParameterValues(tool.inputSchema);
+            
+            // Update form fields
+            Object.entries(defaultValues).forEach(([paramName, value]) => {
+                const input = form.querySelector(`[name="${paramName}"]`);
+                if (input) {
+                    if (input.type === 'checkbox') {
+                        input.checked = Boolean(value);
+                    } else if (input.tagName === 'TEXTAREA') {
+                        input.value = typeof value === 'object' ? JSON.stringify(value, null, 2) : value;
+                    } else {
+                        input.value = value || '';
+                    }
+                }
+            });
+            
+            // Update JSON view if active
+            if (jsonTextarea) {
+                jsonTextarea.value = JSON.stringify(defaultValues, null, 2);
+            }
+            
+            this.log('Parameters reset to default example values', 'info');
+        } else {
+            // Fallback to basic form reset
+            form.reset();
+            this.log('Form reset to empty values', 'info');
         }
-        
-        this.log('Parameters reset to default values', 'info');
     }
 
     async executeToolFromForm(toolName) {

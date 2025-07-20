@@ -3,353 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SRRD-Builder MCP Server - Scientific Research Interface</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-            min-height: 100vh;
-            color: #333;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            min-height: 100vh;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-
-        .header {
-            background: linear-gradient(135deg, #1f2937, #374151);
-            color: white;
-            padding: 40px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 40px;
-            background: #f9fafb;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .status-indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #dc2626;
-            margin-right: 8px;
-        }
-
-        .status-indicator.connected {
-            background: #059669;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .btn-primary {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #2563eb;
-        }
-
-        .btn:disabled {
-            background: #9ca3af;
-            cursor: not-allowed;
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 30px;
-            padding: 30px;
-            height: calc(100vh - 200px); /* Adjust based on header + status bar height */
-        }
-
-        .tools-section {
-            display: grid;
-            gap: 25px;
-            overflow-y: auto;
-            height: 100%;
-        }
-
-        .tool-category {
-            background: #f9fafb;
-            border-radius: 10px;
-            padding: 25px;
-            border: 1px solid #e5e7eb;
-        }
-
-        .tool-category h3 {
-            color: #1f2937;
-            margin-bottom: 20px;
-            font-size: 1.3rem;
-        }
-
-        .tool-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-        }
-
-        .tool-card {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 20px;
-            transition: all 0.2s;
-        }
-
-        .tool-card:hover {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .tool-name {
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #1f2937;
-        }
-
-        .tool-description {
-            font-size: 0.9rem;
-            color: #6b7280;
-            margin-bottom: 15px;
-        }
-
-        .tool-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn-tool {
-            flex: 1;
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-
-        .btn-tool:hover {
-            background: #2563eb;
-        }
-
-        .btn-edit {
-            background: #6b7280;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        .btn-edit:hover {
-            background: #4b5563;
-        }
-
-        .console-section {
-            background: #f9fafb;
-            border-radius: 10px;
-            padding: 25px;
-            border: 1px solid #e5e7eb;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            position: sticky;
-            top: 30px;
-        }
-
-        .console {
-            background: #1f2937;
-            color: #f3f4f6;
-            padding: 20px;
-            border-radius: 8px;
-            flex: 1;
-            overflow-y: auto;
-            font-family: 'Monaco', 'Consolas', monospace;
-            font-size: 0.85rem;
-        }
-
-        .console-line {
-            margin-bottom: 8px;
-        }
-
-        .console-timestamp {
-            color: #9ca3af;
-            font-size: 0.8rem;
-        }
-
-        .console-info { color: #60a5fa; }
-        .console-success { color: #34d399; }
-        .console-error { color: #f87171; }
-
-        /* Modal Styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-
-        .modal {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
-            width: 100%;
-            max-height: 80vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .modal-header {
-            padding: 24px 32px;
-            border-bottom: 1px solid #e5e7eb;
-            background: #f9fafb;
-        }
-
-        .modal-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #1f2937;
-            margin: 0;
-        }
-
-        .modal-subtitle {
-            font-size: 0.9rem;
-            color: #6b7280;
-            margin-top: 4px;
-        }
-
-        .modal-body {
-            padding: 32px;
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .modal-footer {
-            padding: 24px 32px;
-            border-top: 1px solid #e5e7eb;
-            background: #f9fafb;
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-        }
-
-        .form-group {
-            margin-bottom: 24px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #374151;
-            font-size: 0.9rem;
-        }
-
-        .form-textarea {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-family: 'Monaco', 'Consolas', monospace;
-            font-size: 0.9rem;
-            resize: vertical;
-        }
-
-        .form-help {
-            font-size: 0.85rem;
-            color: #6b7280;
-            margin-top: 6px;
-        }
-
-        .btn-secondary {
-            background: #6b7280;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #4b5563;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #3b82f6;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 8px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+    <title>SRRD-Builder MCP Server - Enhanced Research Interface</title>
+    <link rel="stylesheet" href="styles.css?v=8">
+    <link rel="stylesheet" href="enhanced-styles.css?v=8">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🧠 SRRD-Builder MCP Server</h1>
-            <p>Scientific Research Interface</p>
+            <h1>Scientific Research Interface</h1>
+            <div class="view-switcher">
+                <button class="btn btn-secondary" id="actsViewBtn" onclick="app.switchView('acts')">
+                    🎯 Research Acts
+                </button>
+                <button class="btn btn-secondary" id="categoriesViewBtn" onclick="app.switchView('categories')">
+                    📁 Categories
+                </button>
+                <button class="btn btn-secondary" id="allToolsViewBtn" onclick="app.switchView('tools')">
+                    🔧 All Tools
+                </button>
+            </div>
         </div>
 
         <div class="status-bar">
-            <div style="display: flex; align-items: center;">
+            <div class="status-info">
                 <span class="status-indicator" id="statusIndicator"></span>
-                <span id="statusText">Disconnected</span>
-                <span id="toolCount"></span>
+                <span class="status-text" id="statusText">Disconnected</span>
+                <span class="tool-count" id="toolCount"></span>
             </div>
-            <div style="display: flex; gap: 15px;">
+            <div class="controls">
                 <button class="btn btn-primary" id="connectBtn">Connect to Server</button>
                 <button class="btn btn-primary" id="refreshBtn" disabled>Refresh Tools</button>
                 <button class="btn btn-primary" onclick="clearConsole()">Clear Console</button>
             </div>
         </div>
 
+        <!-- Navigation Breadcrumb -->
+        <div class="breadcrumb" id="breadcrumb" style="display: none;">
+            <span class="breadcrumb-item" onclick="app.navigateToHome()">🏠 Home</span>
+            <span class="breadcrumb-separator">›</span>
+            <span class="breadcrumb-current" id="breadcrumbCurrent"></span>
+        </div>
+
         <div class="main-content">
+            <!-- Research Acts View -->
+            <div class="research-acts-view" id="researchActsView" style="display: none;">
+                <div class="view-header">
+                    <h2>🎯 Research Acts</h2>
+                    <p>Select a research act to explore tools organized by scientific workflow phases</p>
+                </div>
+                <div class="acts-grid" id="actsGrid">
+                    <!-- Research acts will be populated here -->
+                </div>
+            </div>
+
+            <!-- Categories View for Selected Act -->
+            <div class="categories-view" id="categoriesView" style="display: none;">
+                <div class="view-header">
+                    <button class="btn btn-back" onclick="app.navigateToHome()">← Back to Research Acts</button>
+                    <h2 id="selectedActTitle"></h2>
+                    <p id="selectedActDescription"></p>
+                </div>
+                <div class="categories-grid" id="categoriesGrid">
+                    <!-- Categories will be populated here -->
+                </div>
+            </div>
+
+            <!-- Tools View for Selected Category -->
+            <div class="tools-view" id="toolsView" style="display: none;">
+                <div class="view-header">
+                    <button class="btn btn-back" onclick="app.navigateBack()">← Back</button>
+                    <h2 id="selectedCategoryTitle"></h2>
+                    <p id="selectedCategoryDescription"></p>
+                </div>
+                <div class="tools-grid" id="toolsGrid">
+                    <!-- Tools will be populated here -->
+                </div>
+            </div>
+
+            <!-- Default Tools Section -->
             <div class="tools-section" id="toolsSection">
                 <div class="tool-category">
                     <h3>🔌 Getting Started</h3>
@@ -360,6 +92,16 @@
                         <li>MCP server running: <code>srrd-server</code></li>
                         <li>Server accessible on localhost:8765</li>
                     </ul>
+                    <br>
+                    <div class="feature-highlight">
+                        <h4>🚀 Enhanced Features</h4>
+                        <ul>
+                            <li><strong>Research Acts Navigation:</strong> Tools organized by research workflow phases</li>
+                            <li><strong>Tool Information:</strong> Click ℹ️ buttons for detailed tool descriptions</li>
+                            <li><strong>Smart Categorization:</strong> Hierarchical organization of 38+ research tools</li>
+                            <li><strong>Scientific Context:</strong> Each tool explained in research methodology context</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
 
@@ -368,343 +110,32 @@
                 <div class="console" id="console">
                     <div class="console-line">
                         <span class="console-timestamp">[Ready]</span>
-                        <span class="console-info">🚀 SRRD-Builder MCP Frontend Ready</span>
+                        <span class="console-info">SRRD-Builder Enhanced MCP Frontend Ready</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="mcp-client.js"></script>
+    <!-- Modal Container -->
+    <div id="modalContainer"></div>
+
+    <!-- External Scripts -->
+    <script src="data/research-framework.js?v=6"></script>
+    <script src="data/tool-info.js?v=6"></script>
+    <script src="mcp-client.js?v=6"></script>
+    <script src="enhanced-app.js?v=6"></script>
+    
     <script>
-        // Simple, clean JavaScript
-        let mcpClient = null;
-        let availableTools = [];
-        let currentModal = null;
-
-        // Tool categories
-        const toolCategories = {
-            'clarify_research_goals': 'research',
-            'suggest_methodology': 'research', 
-            'simulate_peer_review': 'quality',
-            'check_quality_gates': 'quality',
-            'initialize_project': 'storage',
-            'save_session': 'storage',
-            'restore_session': 'storage',
-            'search_knowledge': 'search',
-            'version_control': 'storage',
-            'backup_project': 'storage',
-            'generate_latex_document': 'document',
-            'compile_latex': 'document',
-            'format_research_content': 'document',
-            'generate_bibliography': 'document',
-            'extract_document_sections': 'document',
-            'store_bibliography_reference': 'storage',
-            'retrieve_bibliography_references': 'storage',
-            'generate_document_with_database_bibliography': 'document',
-            'semantic_search': 'search',
-            'discover_patterns': 'search',
-            'build_knowledge_graph': 'search',
-            'find_similar_documents': 'search',
-            'extract_key_concepts': 'search',
-            'generate_research_summary': 'search'
-        };
-
-        const categoryInfo = {
-            'research': { title: '🧪 Research Planning', icon: '🎯' },
-            'quality': { title: '✅ Quality Assurance', icon: '🔍' },
-            'storage': { title: '🗄️ Storage & Management', icon: '💾' },
-            'document': { title: '📄 Document Generation', icon: '📝' },
-            'search': { title: '🔍 Search & Discovery', icon: '🔎' }
-        };
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            log('🚀 Frontend loaded successfully');
-            setupEventListeners();
+        // Initialize the enhanced application
+        let app;
+        document.addEventListener('DOMContentLoaded', () => {
+            app = new EnhancedSRRDApp();
         });
-
-        function setupEventListeners() {
-            document.getElementById('connectBtn').addEventListener('click', connectToServer);
-            document.getElementById('refreshBtn').addEventListener('click', refreshTools);
-            
-            // Close modal on escape key
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && currentModal) {
-                    closeModal();
-                }
-            });
-        }
-
-        function log(message, type = 'info') {
-            const console = document.getElementById('console');
-            const timestamp = new Date().toLocaleTimeString();
-            const line = document.createElement('div');
-            line.className = 'console-line';
-            
-            let icon = '';
-            switch(type) {
-                case 'success': icon = '✅'; break;
-                case 'error': icon = '❌'; break;
-                case 'warning': icon = '⚠️'; break;
-                default: icon = 'ℹ️'; break;
-            }
-            
-            line.innerHTML = `
-                <span class="console-timestamp">[${timestamp}]</span>
-                <span class="console-${type}">${icon} ${message}</span>
-            `;
-            
-            console.appendChild(line);
-            console.scrollTop = console.scrollHeight;
-        }
-
-        async function connectToServer() {
-            const connectBtn = document.getElementById('connectBtn');
-            const statusIndicator = document.getElementById('statusIndicator');
-            const statusText = document.getElementById('statusText');
-            
-            try {
-                connectBtn.disabled = true;
-                connectBtn.innerHTML = '<span class="loading"></span>Connecting...';
-                statusIndicator.className = 'status-indicator';
-                
-                log('Connecting to MCP server on localhost:8765...');
-                
-                mcpClient = new MCPClient('ws://localhost:8765');
-                
-                mcpClient.onStatusChange = (connected, message) => {
-                    if (connected) {
-                        statusIndicator.className = 'status-indicator connected';
-                        statusText.textContent = 'Connected';
-                        document.getElementById('refreshBtn').disabled = false;
-                    } else {
-                        statusIndicator.className = 'status-indicator';
-                        statusText.textContent = 'Disconnected';
-                        document.getElementById('refreshBtn').disabled = true;
-                    }
-                };
-                
-                await mcpClient.connect();
-                
-                // Get available tools
-                const toolsResult = await mcpClient.listTools();
-                const tools = toolsResult.tools || [];
-                availableTools = tools;
-                
-                log(`Successfully connected! Found ${tools.length} tools`, 'success');
-                document.getElementById('toolCount').textContent = ` (${tools.length} tools)`;
-                
-                renderTools(tools);
-                connectBtn.innerHTML = '🔄 Reconnect';
-                
-            } catch (error) {
-                log(`Connection failed: ${error.message}`, 'error');
-                statusIndicator.className = 'status-indicator';
-                statusText.textContent = 'Connection Failed';
-                connectBtn.innerHTML = 'Connect to Server';
-            } finally {
-                connectBtn.disabled = false;
-            }
-        }
-
-        function renderTools(tools) {
-            const toolsSection = document.getElementById('toolsSection');
-            
-            // Group tools by category
-            const categorizedTools = {};
-            
-            tools.forEach(tool => {
-                const category = toolCategories[tool.name] || 'other';
-                if (!categorizedTools[category]) {
-                    categorizedTools[category] = [];
-                }
-                categorizedTools[category].push(tool);
-            });
-            
-            // Clear existing tools
-            const existingCategories = toolsSection.querySelectorAll('.tool-category');
-            existingCategories.forEach(cat => cat.remove());
-            
-            // Render each category
-            Object.keys(categorizedTools).forEach(categoryKey => {
-                const categoryTools = categorizedTools[categoryKey];
-                const categoryData = categoryInfo[categoryKey] || { title: '🔧 Other Tools', icon: '⚙️' };
-                
-                const categoryDiv = document.createElement('div');
-                categoryDiv.className = 'tool-category';
-                categoryDiv.innerHTML = `
-                    <h3>${categoryData.title}</h3>
-                    <div class="tool-grid">
-                        ${categoryTools.map(tool => `
-                            <div class="tool-card">
-                                <div class="tool-name">${formatToolName(tool.name)}</div>
-                                <div class="tool-description">${tool.description || 'No description available'}</div>
-                                <div class="tool-actions">
-                                    <button class="btn-tool" onclick="runTool('${tool.name}')">▶️ Run</button>
-                                    <button class="btn-edit" onclick="editTool('${tool.name}')" title="Edit Parameters">⚙️</button>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-                
-                toolsSection.appendChild(categoryDiv);
-            });
-        }
-
-        function formatToolName(name) {
-            return name.split('_').map(word => 
-                word.charAt(0).toUpperCase() + word.slice(1)
-            ).join(' ');
-        }
-
-        async function runTool(toolName) {
-            if (!mcpClient || !mcpClient.isConnected) {
-                log('Not connected to server', 'error');
-                return;
-            }
-            
-            log(`Running tool: ${toolName}...`);
-            
-            try {
-                const result = await mcpClient.callTool(toolName, getDefaultParams(toolName));
-                log(`✅ ${toolName} completed successfully`, 'success');
-                log(`Response: ${JSON.stringify(result, null, 2)}`);
-            } catch (error) {
-                log(`❌ ${toolName} failed: ${error.message}`, 'error');
-            }
-        }
-
-        function editTool(toolName) {
-            const defaultParams = getDefaultParams(toolName);
-            showParameterEditor(toolName, defaultParams);
-        }
-
-        function showParameterEditor(toolName, defaultParams) {
-            const modal = document.createElement('div');
-            modal.className = 'modal-overlay';
-            
-            modal.innerHTML = `
-                <div class="modal" onclick="event.stopPropagation()">
-                    <div class="modal-header">
-                        <h3 class="modal-title">${formatToolName(toolName)}</h3>
-                        <p class="modal-subtitle">Configure parameters for this tool</p>
-                    </div>
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label class="form-label">Tool Parameters (JSON)</label>
-                            <textarea class="form-textarea" id="paramEditor" rows="12">${JSON.stringify(defaultParams, null, 2)}</textarea>
-                            <div class="form-help">Edit the JSON parameters above.</div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-                        <button class="btn btn-primary" onclick="runToolWithCustomParams('${toolName}')">▶️ Run Tool</button>
-                    </div>
-                </div>
-            `;
-            
-            // Close on background click
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    closeModal();
-                }
-            });
-            
-            document.body.appendChild(modal);
-            currentModal = modal;
-            
-            // Focus textarea
-            setTimeout(() => {
-                document.getElementById('paramEditor').focus();
-            }, 100);
-        }
-
-        async function runToolWithCustomParams(toolName) {
-            const editor = document.getElementById('paramEditor');
-            let params;
-            
-            try {
-                params = JSON.parse(editor.value);
-            } catch (error) {
-                log(`Invalid JSON: ${error.message}`, 'error');
-                return;
-            }
-            
-            closeModal();
-            
-            if (!mcpClient || !mcpClient.isConnected) {
-                log('Not connected to server', 'error');
-                return;
-            }
-            
-            log(`Running ${toolName} with custom parameters...`);
-            
-            try {
-                const result = await mcpClient.callTool(toolName, params);
-                log(`✅ ${toolName} completed successfully`, 'success');
-                log(`Response: ${JSON.stringify(result, null, 2)}`);
-            } catch (error) {
-                log(`❌ ${toolName} failed: ${error.message}`, 'error');
-            }
-        }
-
-        function closeModal() {
-            if (currentModal) {
-                document.body.removeChild(currentModal);
-                currentModal = null;
-            }
-        }
-
-        async function refreshTools() {
-            if (!mcpClient || !mcpClient.isConnected) {
-                log('Not connected to server', 'error');
-                return;
-            }
-            
-            try {
-                log('Refreshing tools...');
-                const toolsResult = await mcpClient.listTools();
-                const tools = toolsResult.tools || [];
-                availableTools = tools;
-                
-                log(`Found ${tools.length} tools`, 'success');
-                renderTools(tools);
-            } catch (error) {
-                log(`Failed to refresh: ${error.message}`, 'error');
-            }
-        }
-
+        
+        // Global functions for compatibility
         function clearConsole() {
-            document.getElementById('console').innerHTML = `
-                <div class="console-line">
-                    <span class="console-timestamp">[${new Date().toLocaleTimeString()}]</span>
-                    <span class="console-info">🧹 Console cleared</span>
-                </div>
-            `;
-        }
-
-        function getDefaultParams(toolName) {
-            const defaults = {
-                'clarify_research_goals': {
-                    research_area: 'theoretical_physics',
-                    initial_goals: 'develop new framework'
-                },
-                'suggest_methodology': {
-                    research_goals: 'theoretical research',
-                    domain: 'physics'
-                },
-                'generate_latex_document': {
-                    title: 'Test Document',
-                    author: 'Researcher'
-                },
-                'semantic_search': {
-                    query: 'quantum mechanics'
-                }
-            };
-            
-            return defaults[toolName] || { test: 'parameter' };
+            if (app) app.clearConsole();
         }
     </script>
 </body>

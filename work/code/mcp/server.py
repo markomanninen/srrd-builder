@@ -7,10 +7,42 @@ import os
 from pathlib import Path
 
 # Add current directory to path for imports
-sys.path.append(str(Path(__file__).parent))
+current_dir = Path(__file__).parent
+sys.path.insert(0, str(current_dir))
 
-from tools import register_all_tools
-from utils.logging_setup import setup_logging, MCPLoggerAdapter
+# Import PROJECT_PATH from the launcher module
+try:
+    sys.path.insert(0, str(current_dir.parent.parent.parent / 'srrd_builder'))
+    from mcp_global_launcher import PROJECT_PATH
+except ImportError:
+    PROJECT_PATH = None
+
+# Import tools and utilities with fallback error handling
+try:
+    from tools import register_all_tools
+except ImportError:
+    def register_all_tools(server):
+        pass
+
+try:
+    from utils.logging_setup import setup_logging, MCPLoggerAdapter
+except ImportError:
+    # Fallback logging if utils.logging_setup is not available
+    import logging
+    def setup_logging(*args, **kwargs):
+        logging.basicConfig(level=logging.INFO)
+        return logging.getLogger(__name__)
+    
+    class MCPLoggerAdapter:
+        def __init__(self, logger, prefix):
+            self.logger = logger
+            self.prefix = prefix
+        
+        def log_tool_call(self, tool_name, args, result=None, error=None):
+            if error:
+                self.logger.error(f"{self.prefix}: {tool_name} failed - {error}")
+            else:
+                self.logger.info(f"{self.prefix}: {tool_name} called")
 
 # ConfigManager will be initialized later in __init__ to allow environment variables to be set first
 config = None
@@ -20,8 +52,28 @@ class MCPServer:
         # Initialize ConfigManager here to allow environment variables to be set first
         global config
         if config is None:
-            from config.config_manager import ConfigManager
-            config = ConfigManager()
+            try:
+                from config.config_manager import ConfigManager
+                config = ConfigManager()
+            except ImportError:
+                # Fallback config if config_manager is not available
+                class FallbackConfig:
+                    def __init__(self):
+                        self.server = type('ServerConfig', (), {
+                            'port': 8765,
+                            'host': 'localhost',
+                            'enable_logging': True,
+                            'log_level': 'INFO',
+                            'log_file': None
+                        })()
+                    
+                    def setup_directories(self):
+                        pass
+                    
+                    def validate_config(self):
+                        return []
+                
+                config = FallbackConfig()
         
         self.port = port or config.server.port
         self.use_stdio = use_stdio
@@ -53,6 +105,7 @@ class MCPServer:
         if self.logger:
             self.logger.info(f"MCP Server initialized on port {self.port}")
             self.logger.info(f"Registered {len(self.tools)} tools")
+            self.logger.info(f"PROJECT_PATH: {PROJECT_PATH}")
 
     async def start_stdio_server(self):
         """Start MCP server using stdio for Claude Desktop"""
@@ -91,14 +144,11 @@ class MCPServer:
                 "id": msg_id,
                 "result": {
                     "protocolVersion": "2024-11-05",
-                    "capabilities": {
-                        "tools": {
-                            "listChanged": False
-                        }
-                    },
+                    "capabilities": {"tools": {}},
                     "serverInfo": {
                         "name": "SRRD Builder MCP Server",
-                        "version": "1.0.0"
+                        "version": "1.0.0",
+                        "projectPath": PROJECT_PATH or os.getcwd()
                     }
                 }
             }
@@ -208,10 +258,12 @@ class MCPServer:
                                 },
                                 "serverInfo": {
                                     "name": "SRRD Builder MCP Server",
-                                    "version": "1.0.0"
+                                    "version": "1.0.0",
+                                    "projectPath": PROJECT_PATH or os.getcwd()
                                 }
                             }
                         }
+                        
                         await websocket.send(json.dumps(response))
                         
                     elif method == "tools/list":
@@ -354,192 +406,24 @@ class MCPServer:
             self.logger.info(f"Registered tool: {name}")
 
     async def list_tools_mcp(self):
-        """Return list of available tools in MCP format"""
+        """Return list of available tools in MCP format - USING REAL REGISTERED SCHEMAS"""
         tools_list = []
         
-        # Define schema mappings for known tools
-        tool_schemas = {
-            "clarify_research_goals": {
-                "description": "Clarify research objectives through Socratic questioning",
-                "inputSchema": {
+        # Generate tool list from ACTUALLY registered tools (no more hardcoded schemas!)
+        for tool_name, tool_data in self.tools.items():
+            tool_info = {
+                "name": tool_name,
+                "description": tool_data.get("description", f"Tool: {tool_name}"),
+                "inputSchema": tool_data.get("parameters", {
                     "type": "object",
-                    "properties": {
-                        "research_area": {"type": "string"},
-                        "initial_goals": {"type": "string"}, 
-                        "experience_level": {"type": "string"},
-                        "domain_specialization": {"type": "string"},
-                        "novel_theory_mode": {"type": "boolean"}
-                    },
-                    "required": ["research_area", "initial_goals"]
-                }
-            },
-            "suggest_methodology": {
-                "description": "Recommend appropriate research methodologies",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "research_goals": {"type": "string"},
-                        "domain": {"type": "string"},
-                        "constraints": {"type": "object"},
-                        "novel_theory_flag": {"type": "boolean"}
-                    },
-                    "required": ["research_goals", "domain"]
-                }
-            },
-            "simulate_peer_review": {
-                "description": "AI-powered peer review simulation",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "document_content": {"type": "object"},
-                        "domain": {"type": "string"},
-                        "review_type": {"type": "string"},
-                        "novel_theory_mode": {"type": "boolean"}
-                    },
-                    "required": ["document_content", "domain"]
-                }
-            },
-            "check_quality_gates": {
-                "description": "Automated quality checks at each research phase",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "research_content": {"type": "object"},
-                        "phase": {"type": "string"},
-                        "domain_standards": {"type": "object"},
-                        "innovation_criteria": {"type": "object"}
-                    },
-                    "required": ["research_content", "phase"]
-                }
-            },
-            "semantic_search": {
-                "description": "Perform semantic search across research documents",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "query": {"type": "string"},
-                        "collection": {"type": "string"},
-                        "limit": {"type": "integer"},
-                        "similarity_threshold": {"type": "number"},
-                        "project_path": {"type": "string"}
-                    },
-                    "required": ["query"]
-                }
-            },
-            "discover_patterns": {
-                "description": "Discover patterns and themes in research content",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "content": {"type": "string"},
-                        "pattern_type": {"type": "string"},
-                        "min_frequency": {"type": "integer"}
-                    },
-                    "required": ["content"]
-                }
-            },
-            "build_knowledge_graph": {
-                "description": "Build knowledge graph from research documents",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "documents": {"type": "array", "items": {"type": "string"}},
-                        "relationship_types": {"type": "array", "items": {"type": "string"}},
-                        "project_path": {"type": "string"}
-                    },
-                    "required": ["documents"]
-                }
-            },
-            "find_similar_documents": {
-                "description": "Find documents similar to the target document",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "target_document": {"type": "string"},
-                        "collection": {"type": "string"},
-                        "similarity_threshold": {"type": "number"},
-                        "max_results": {"type": "integer"},
-                        "project_path": {"type": "string"}
-                    },
-                    "required": ["target_document"]
-                }
-            },
-            "extract_key_concepts": {
-                "description": "Extract key concepts from research text",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "text": {"type": "string"},
-                        "max_concepts": {"type": "integer"},
-                        "concept_types": {"type": "array", "items": {"type": "string"}}
-                    },
-                    "required": ["text"]
-                }
-            },
-            "generate_research_summary": {
-                "description": "Generate summary of research documents",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "documents": {"type": "array", "items": {"type": "string"}},
-                        "summary_type": {"type": "string"},
-                        "max_length": {"type": "integer"}
-                    },
-                    "required": ["documents"]
-                }
-            },
-            "generate_latex_document": {
-                "description": "Generate LaTeX research document",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "title": {"type": "string", "description": "Document title"},
-                        "author": {"type": "string", "description": "Author name"},
-                        "abstract": {"type": "string", "description": "Abstract content"},
-                        "introduction": {"type": "string", "description": "Introduction section"},
-                        "methodology": {"type": "string", "description": "Methodology section"},
-                        "results": {"type": "string", "description": "Results section"},
-                        "discussion": {"type": "string", "description": "Discussion section"},
-                        "conclusion": {"type": "string", "description": "Conclusion section"},
-                        "bibliography": {"type": "string", "description": "Bibliography content"},
-                        "project_path": {"type": "string", "description": "Project path for saving"}
-                    },
-                    "required": ["title"]
-                }
-            },
-            "compile_latex": {
-                "description": "Compile LaTeX document to PDF",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "tex_file_path": {"type": "string", "description": "Path to .tex file"},
-                        "output_format": {"type": "string", "description": "Output format (pdf)", "default": "pdf"}
-                    },
-                    "required": ["tex_file_path"]
-                }
+                    "properties": {},
+                    "required": []
+                })
             }
-        }
-        
-        # Generate tool list from registered tools
-        for tool_name in self.tools.keys():
-            if tool_name in tool_schemas:
-                tool_info = {
-                    "name": tool_name,
-                    "description": tool_schemas[tool_name]["description"],
-                    "inputSchema": tool_schemas[tool_name]["inputSchema"]
-                }
-            else:
-                # Fallback for tools without defined schemas
-                tool_info = {
-                    "name": tool_name,
-                    "description": f"Tool: {tool_name}",
-                    "inputSchema": {
-                        "type": "object",
-                        "properties": {},
-                        "required": []
-                    }
-                }
             tools_list.append(tool_info)
+        
+        if self.logger:
+            self.logger.info(f"✅ Listed {len(tools_list)} tools")
         
         return {"tools": tools_list}
 

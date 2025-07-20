@@ -2,7 +2,6 @@
 """
 SRRD-Builder MCP Server for Claude Desktop
 Model Context Protocol server providing 24 research assistance tools
-Version: UPDATED_20250717_1834
 """
 import asyncio
 import json

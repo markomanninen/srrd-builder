@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Schema Debug Tool</title>
+    <link rel="stylesheet" href="styles.css?v=8">
+    <style>
+        .debug-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            height: 100vh;
+        }
+        
+        .debug-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: 1.5rem;
+            overflow-y: auto;
+        }
+        
+        .debug-panel h2 {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            border-bottom: 2px solid var(--primary-blue);
+            padding-bottom: 0.5rem;
+        }
+        
+        .tool-selector {
+            margin-bottom: 1.5rem;
+        }
+        
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .tool-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.5rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.85rem;
+        }
+        
+        .tool-btn:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+        
+        .tool-btn.active {
+            background: var(--primary-blue);
+            color: white;
+            border-color: var(--primary-blue);
+        }
+        
+        .schema-info {
+            background: var(--bg-tertiary);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+        }
+        
+        .schema-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .status-valid { background: var(--primary-green); }
+        .status-invalid { background: var(--primary-red); }
+        .status-unknown { background: var(--primary-amber); }
+        
+        .parameter-form {
+            margin-bottom: 1rem;
+        }
+        
+        .param-field {
+            margin-bottom: 1rem;
+        }
+        
+        .param-label {
+            display: block;
+            color: var(--text-primary);
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+        }
+        
+        .param-required {
+            color: var(--primary-red);
+            font-weight: bold;
+        }
+        
+        .param-input, .param-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-family: monospace;
+        }
+        
+        .param-input:focus, .param-textarea:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+        
+        .param-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .test-btn {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+        
+        .test-btn:hover {
+            background: var(--secondary-blue);
+        }
+        
+        .test-btn.secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .test-btn.secondary:hover {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+        }
+        
+        .results-panel {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            min-height: 300px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            color: var(--text-secondary);
+        }
+        
+        .log-entry {
+            margin-bottom: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .log-success { background: rgba(16, 185, 129, 0.1); color: var(--primary-green); }
+        .log-error { background: rgba(239, 68, 68, 0.1); color: var(--primary-red); }
+        .log-warning { background: rgba(245, 158, 11, 0.1); color: var(--primary-amber); }
+        .log-info { background: rgba(59, 130, 246, 0.1); color: var(--primary-blue); }
+        
+        .json-display {
+            background: var(--bg-code);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin: 0.5rem 0;
+            overflow-x: auto;
+        }
+        
+        .connection-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .server-info {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        @media (max-width: 1200px) {
+            .debug-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <!-- Left Panel: Tool Selection & Schema Info -->
+        <div class="debug-panel">
+            <h2>🔧 MCP Schema Debug Tool</h2>
+            
+            <div class="connection-panel">
+                <div class="connection-status">
+                    <div>
+                        <div id="connectionStatus" class="schema-status">
+                            <div class="status-indicator status-unknown"></div>
+                            <span>Not Connected</span>
+                        </div>
+                        <div class="server-info" id="serverInfo">Click connect to start debugging</div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <button id="connectBtn" class="test-btn">Connect to MCP</button>
+                        <button id="exportAllBtn" class="test-btn secondary" style="display: none;">📄 Export All Schemas</button>
+                    </div>
+                </div>
+                <div>
+                    <strong>Tools Available:</strong> <span id="toolCount">0</span>
+                </div>
+            </div>
+            
+            <div class="tool-selector">
+                <h3>Select Tool to Debug</h3>
+                <div id="toolGrid" class="tool-grid">
+                    <div class="tool-btn">Connect to server to load tools...</div>
+                </div>
+            </div>
+            
+            <div id="schemaPanel" style="display: none;">
+                <h3>Schema Information</h3>
+                <div id="schemaStatus" class="schema-status">
+                    <div class="status-indicator status-unknown"></div>
+                    <span>No tool selected</span>
+                </div>
+                <div id="schemaInfo" class="schema-info">Select a tool to view its schema</div>
+                
+                <h3>Parameter Form</h3>
+                <form id="parameterForm" class="parameter-form">
+                    <p>Select a tool to see its parameters</p>
+                </form>
+                
+                <div class="test-buttons">
+                    <button type="button" id="testBtn" class="test-btn">🧪 Test Tool</button>
+                    <button type="button" id="validateBtn" class="test-btn secondary">✅ Validate Schema</button>
+                    <button type="button" id="generateBtn" class="test-btn secondary">🎲 Generate Defaults</button>
+                    <button type="button" id="clearBtn" class="test-btn secondary">🗑️ Clear Results</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Panel: Results & Logs -->
+        <div class="debug-panel">
+            <h2>📊 Test Results & Debug Logs</h2>
+            <div id="resultsPanel" class="results-panel">
+                MCP Schema Debug Tool Ready
+                =====================================
+                
+                This tool helps debug MCP tool schemas by:
+                • Connecting to MCP server and listing tools
+                • Displaying schema information for each tool
+                • Validating parameter requirements
+                • Testing tools with generated or custom parameters
+                • Showing detailed error messages and responses
+                
+                Click "Connect to MCP" to start debugging!
+            </div>
+        </div>
+    </div>
+
+    <script src="mcp-client.js?v=8"></script>
+    <script>
+        class MCPSchemaDebugger {
+            constructor() {
+                this.mcpClient = null;
+                this.availableTools = [];
+                this.selectedTool = null;
+                this.isConnected = false;
+                
+                this.init();
+            }
+            
+            init() {
+                this.mcpClient = new MCPClient(`ws://localhost:8765?v=${Date.now()}`);
+                this.setupEventListeners();
+                this.log('MCP Schema Debugger initialized', 'info');
+            }
+            
+            setupEventListeners() {
+                document.getElementById('connectBtn').addEventListener('click', () => this.connect());
+                document.getElementById('testBtn').addEventListener('click', () => this.testTool());
+                document.getElementById('validateBtn').addEventListener('click', () => this.validateSchema());
+                document.getElementById('generateBtn').addEventListener('click', () => this.generateDefaults());
+                document.getElementById('exportAllBtn').addEventListener('click', () => this.exportAllSchemas());
+                document.getElementById('clearBtn').addEventListener('click', () => this.clearResults());
+            }
+            
+            async connect() {
+                const connectBtn = document.getElementById('connectBtn');
+                const statusElement = document.getElementById('connectionStatus');
+                const serverInfo = document.getElementById('serverInfo');
+                
+                connectBtn.textContent = 'Connecting...';
+                connectBtn.disabled = true;
+                
+                try {
+                    this.log('Attempting to connect to MCP server...', 'info');
+                    const initResponse = await this.mcpClient.connect();
+                    
+                    // Update connection status
+                    statusElement.innerHTML = '<div class="status-indicator status-valid"></div><span>Connected</span>';
+                    serverInfo.textContent = `Server: ${initResponse?.serverInfo?.name || 'MCP Server'} v${initResponse?.serverInfo?.version || '1.0'}`;
+                    connectBtn.textContent = 'Connected ✓';
+                    connectBtn.disabled = true;
+                    
+                    // Show export button after successful connection
+                    document.getElementById('exportAllBtn').style.display = 'inline-block';
+                    
+                    this.isConnected = true;
+                    this.log('✅ Connected to MCP server successfully!', 'success');
+                    
+                    // Load tools
+                    await this.loadTools();
+                    
+                } catch (error) {
+                    this.log(`❌ Connection failed: ${error.message}`, 'error');
+                    statusElement.innerHTML = '<div class="status-indicator status-invalid"></div><span>Connection Failed</span>';
+                    serverInfo.textContent = 'Failed to connect to server';
+                    connectBtn.textContent = 'Retry Connection';
+                    connectBtn.disabled = false;
+                }
+            }
+            
+            async loadTools() {
+                try {
+                    this.log('Loading tools from server...', 'info');
+                    const response = await this.mcpClient.listTools();
+                    
+                    let tools = [];
+                    if (Array.isArray(response)) {
+                        tools = response;
+                    } else if (response && Array.isArray(response.tools)) {
+                        tools = response.tools;
+                    } else if (response && response.result && Array.isArray(response.result.tools)) {
+                        tools = response.result.tools;
+                    }
+                    
+                    this.availableTools = tools;
+                    document.getElementById('toolCount').textContent = tools.length;
+                    
+                    this.log(`✅ Loaded ${tools.length} tools from server`, 'success');
+                    this.renderToolGrid();
+                    
+                } catch (error) {
+                    this.log(`❌ Failed to load tools: ${error.message}`, 'error');
+                }
+            }
+            
+            renderToolGrid() {
+                const toolGrid = document.getElementById('toolGrid');
+                
+                if (this.availableTools.length === 0) {
+                    toolGrid.innerHTML = '<div class="tool-btn">No tools available</div>';
+                    return;
+                }
+                
+                const toolButtons = this.availableTools.map(tool => {
+                    const hasSchema = tool.inputSchema && 
+                                    tool.inputSchema.properties && 
+                                    Object.keys(tool.inputSchema.properties).length > 0;
+                    const statusIcon = hasSchema ? '✅' : '⚠️';
+                    
+                    return `<button class="tool-btn" data-tool="${tool.name}">
+                        ${statusIcon} ${this.formatToolName(tool.name)}
+                    </button>`;
+                }).join('');
+                
+                toolGrid.innerHTML = toolButtons;
+                
+                // Add click listeners
+                toolGrid.querySelectorAll('.tool-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const toolName = btn.getAttribute('data-tool');
+                        this.selectTool(toolName);
+                    });
+                });
+            }
+            
+            selectTool(toolName) {
+                this.selectedTool = this.availableTools.find(tool => tool.name === toolName);
+                
+                if (!this.selectedTool) {
+                    this.log(`❌ Tool ${toolName} not found`, 'error');
+                    return;
+                }
+                
+                // Update active button
+                document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`[data-tool="${toolName}"]`).classList.add('active');
+                
+                // Show schema panel
+                document.getElementById('schemaPanel').style.display = 'block';
+                
+                this.log(`🔍 Selected tool: ${toolName}`, 'info');
+                this.displaySchema();
+                this.generateParameterForm();
+            }
+            
+            displaySchema() {
+                const statusElement = document.getElementById('schemaStatus');
+                const schemaInfo = document.getElementById('schemaInfo');
+                
+                if (!this.selectedTool) return;
+                
+                const hasValidSchema = this.selectedTool.inputSchema && 
+                                     this.selectedTool.inputSchema.properties && 
+                                     Object.keys(this.selectedTool.inputSchema.properties).length > 0;
+                
+                // Update status
+                if (hasValidSchema) {
+                    statusElement.innerHTML = '<div class="status-indicator status-valid"></div><span>Valid Schema</span>';
+                } else {
+                    statusElement.innerHTML = '<div class="status-indicator status-invalid"></div><span>No Schema / Empty Schema</span>';
+                }
+                
+                // Display schema info
+                const schemaText = JSON.stringify(this.selectedTool.inputSchema || {}, null, 2);
+                const required = this.selectedTool.inputSchema?.required || [];
+                const propCount = Object.keys(this.selectedTool.inputSchema?.properties || {}).length;
+                
+                schemaInfo.textContent = `Tool: ${this.selectedTool.name}
+Description: ${this.selectedTool.description || 'No description'}
+Properties: ${propCount}
+Required: ${required.length} (${required.join(', ')})
+
+Schema JSON:
+${schemaText}`;
+                
+                this.log(`📋 Schema for ${this.selectedTool.name}:`, 'info');
+                this.log(`Properties: ${propCount}, Required: ${required.length}`, 'info');
+            }
+            
+            generateParameterForm() {
+                const form = document.getElementById('parameterForm');
+                
+                if (!this.selectedTool || !this.selectedTool.inputSchema) {
+                    form.innerHTML = '<p>No schema available for this tool</p>';
+                    return;
+                }
+                
+                const properties = this.selectedTool.inputSchema.properties || {};
+                const required = this.selectedTool.inputSchema.required || [];
+                
+                if (Object.keys(properties).length === 0) {
+                    form.innerHTML = '<p>This tool has no documented parameters</p>';
+                    return;
+                }
+                
+                const formFields = Object.entries(properties).map(([name, prop]) => {
+                    const isRequired = required.includes(name);
+                    const defaultValue = this.getDefaultValue(prop);
+                    
+                    let inputElement;
+                    if (prop.type === 'string' && (defaultValue.length > 50 || name.includes('content'))) {
+                        inputElement = `<textarea class="param-textarea" id="param_${name}" placeholder="${prop.description || ''}">${defaultValue}</textarea>`;
+                    } else if (prop.type === 'boolean') {
+                        inputElement = `<input type="checkbox" id="param_${name}" ${defaultValue ? 'checked' : ''}>`;
+                    } else if (prop.type === 'number' || prop.type === 'integer') {
+                        inputElement = `<input type="number" class="param-input" id="param_${name}" value="${defaultValue}" placeholder="${prop.description || ''}">`;
+                    } else {
+                        inputElement = `<input type="text" class="param-input" id="param_${name}" value="${defaultValue}" placeholder="${prop.description || ''}">`;
+                    }
+                    
+                    return `
+                        <div class="param-field">
+                            <label class="param-label">
+                                ${name}${isRequired ? ' <span class="param-required">*</span>' : ''}
+                            </label>
+                            ${inputElement}
+                            ${prop.description ? `<small style="color: var(--text-muted); font-size: 0.8rem;">${prop.description}</small>` : ''}
+                        </div>
+                    `;
+                }).join('');
+                
+                form.innerHTML = formFields;
+            }
+            
+            getDefaultValue(property) {
+                if (property.default !== undefined) return property.default;
+                
+                switch (property.type) {
+                    case 'string':
+                        return 'Sample research text for analysis and processing';
+                    case 'number':
+                    case 'integer':
+                        return 42;
+                    case 'boolean':
+                        return false;
+                    case 'array':
+                        return ['sample', 'array', 'values'];
+                    case 'object':
+                        return { title: 'Sample Object', content: 'Sample content' };
+                    default:
+                        return '';
+                }
+            }
+            
+            collectFormData() {
+                const form = document.getElementById('parameterForm');
+                const formData = {};
+                
+                form.querySelectorAll('[id^="param_"]').forEach(input => {
+                    const paramName = input.id.replace('param_', '');
+                    
+                    if (input.type === 'checkbox') {
+                        formData[paramName] = input.checked;
+                    } else if (input.type === 'number') {
+                        formData[paramName] = parseFloat(input.value) || 0;
+                    } else if (input.value.trim()) {
+                        // Try to parse as JSON for complex types
+                        try {
+                            if (input.value.startsWith('{') || input.value.startsWith('[')) {
+                                formData[paramName] = JSON.parse(input.value);
+                            } else {
+                                formData[paramName] = input.value;
+                            }
+                        } catch (e) {
+                            formData[paramName] = input.value;
+                        }
+                    }
+                });
+                
+                return formData;
+            }
+            
+            async testTool() {
+                if (!this.selectedTool) {
+                    this.log('❌ No tool selected', 'error');
+                    return;
+                }
+                
+                const parameters = this.collectFormData();
+                const toolName = this.selectedTool.name;
+                
+                this.log(`🧪 Testing tool: ${toolName}`, 'info');
+                this.log(`Parameters: ${JSON.stringify(parameters, null, 2)}`, 'info');
+                
+                try {
+                    const result = await this.mcpClient.callTool(toolName, parameters);
+                    this.log(`✅ Tool ${toolName} executed successfully!`, 'success');
+                    this.log(`Result:`, 'success');
+                    this.logJson(result);
+                    
+                } catch (error) {
+                    this.log(`❌ Tool ${toolName} failed: ${error.message}`, 'error');
+                    
+                    if (error.message.includes('Missing required parameter')) {
+                        this.log(`💡 Hint: Check required parameters in the schema above`, 'warning');
+                    }
+                }
+            }
+            
+            validateSchema() {
+                if (!this.selectedTool) {
+                    this.log('❌ No tool selected', 'error');
+                    return;
+                }
+                
+                const schema = this.selectedTool.inputSchema;
+                this.log(`🔍 Validating schema for: ${this.selectedTool.name}`, 'info');
+                
+                if (!schema) {
+                    this.log('❌ No schema defined for this tool', 'error');
+                    return;
+                }
+                
+                const properties = schema.properties || {};
+                const required = schema.required || [];
+                
+                this.log(`✅ Schema structure is valid`, 'success');
+                this.log(`📊 Properties: ${Object.keys(properties).length}`, 'info');
+                this.log(`📋 Required fields: ${required.length}`, 'info');
+                
+                if (required.length > 0) {
+                    this.log(`Required parameters: ${required.join(', ')}`, 'info');
+                }
+                
+                // Validate each property
+                Object.entries(properties).forEach(([name, prop]) => {
+                    const issues = [];
+                    
+                    if (!prop.type) issues.push('missing type');
+                    if (!prop.description) issues.push('missing description');
+                    
+                    if (issues.length > 0) {
+                        this.log(`⚠️ ${name}: ${issues.join(', ')}`, 'warning');
+                    } else {
+                        this.log(`✅ ${name}: valid property`, 'success');
+                    }
+                });
+            }
+            
+            generateDefaults() {
+                if (!this.selectedTool) {
+                    this.log('❌ No tool selected', 'error');
+                    return;
+                }
+                
+                this.log(`🎲 Generating default values for: ${this.selectedTool.name}`, 'info');
+                this.generateParameterForm(); // Refresh form with defaults
+                this.log('✅ Default values populated in form', 'success');
+            }
+            
+            clearResults() {
+                document.getElementById('resultsPanel').textContent = 'Results cleared.\n';
+            }
+            
+            exportAllSchemas() {
+                if (!this.availableTools || this.availableTools.length === 0) {
+                    this.log('❌ No tools available to export', 'error');
+                    return;
+                }
+                
+                this.log('📊 Analyzing all tool schemas...', 'info');
+                
+                const schemaReport = {
+                    generatedAt: new Date().toISOString(),
+                    serverInfo: this.mcpClient?.serverInfo || {},
+                    totalTools: this.availableTools.length,
+                    analysis: {
+                        validSchemas: 0,
+                        emptySchemas: 0,
+                        brokenSchemas: 0
+                    },
+                    tools: {}
+                };
+                
+                this.availableTools.forEach(tool => {
+                    const hasValidSchema = tool.inputSchema && 
+                                          tool.inputSchema.properties && 
+                                          Object.keys(tool.inputSchema.properties).length > 0;
+                    
+                    const required = tool.inputSchema?.required || [];
+                    const properties = tool.inputSchema?.properties || {};
+                    const propCount = Object.keys(properties).length;
+                    
+                    // Categorize schema quality
+                    let schemaStatus = 'empty';
+                    if (propCount > 0) {
+                        schemaStatus = 'valid';
+                        schemaReport.analysis.validSchemas++;
+                    } else if (tool.inputSchema) {
+                        schemaStatus = 'empty';
+                        schemaReport.analysis.emptySchemas++;
+                    } else {
+                        schemaStatus = 'broken';
+                        schemaReport.analysis.brokenSchemas++;
+                    }
+                    
+                    schemaReport.tools[tool.name] = {
+                        name: tool.name,
+                        description: tool.description || null,
+                        schemaStatus: schemaStatus,
+                        propertyCount: propCount,
+                        requiredCount: required.length,
+                        required: required,
+                        inputSchema: tool.inputSchema || null,
+                        issues: this.analyzeSchemaIssues(tool)
+                    };
+                });
+                
+                // Log summary
+                this.log(`📋 Schema Analysis Complete:`, 'info');
+                this.log(`✅ Valid schemas: ${schemaReport.analysis.validSchemas}`, 'success');
+                this.log(`⚠️ Empty schemas: ${schemaReport.analysis.emptySchemas}`, 'warning');
+                this.log(`❌ Broken schemas: ${schemaReport.analysis.brokenSchemas}`, 'error');
+                
+                // Create downloadable JSON file
+                const jsonString = JSON.stringify(schemaReport, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `mcp-schemas-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                this.log(`✅ Schema export downloaded: ${link.download}`, 'success');
+                this.logJson(schemaReport);
+                
+                // Also show recommendations
+                this.generateSchemaRecommendations(schemaReport);
+            }
+            
+            analyzeSchemaIssues(tool) {
+                const issues = [];
+                
+                if (!tool.inputSchema) {
+                    issues.push('No schema defined');
+                    return issues;
+                }
+                
+                const properties = tool.inputSchema.properties || {};
+                const required = tool.inputSchema.required || [];
+                
+                if (Object.keys(properties).length === 0) {
+                    issues.push('Empty schema - no properties defined');
+                }
+                
+                if (!tool.description) {
+                    issues.push('Missing tool description');
+                }
+                
+                // Check each property
+                Object.entries(properties).forEach(([name, prop]) => {
+                    if (!prop.type) {
+                        issues.push(`Property '${name}' missing type`);
+                    }
+                    if (!prop.description) {
+                        issues.push(`Property '${name}' missing description`);
+                    }
+                });
+                
+                return issues;
+            }
+            
+            generateSchemaRecommendations(report) {
+                this.log('', 'info'); // Empty line
+                this.log('🔧 SCHEMA IMPROVEMENT RECOMMENDATIONS:', 'info');
+                this.log('=====================================', 'info');
+                
+                const emptyTools = Object.values(report.tools).filter(tool => tool.schemaStatus === 'empty');
+                
+                if (emptyTools.length > 0) {
+                    this.log('', 'info');
+                    this.log('⚠️ TOOLS WITH EMPTY SCHEMAS:', 'warning');
+                    emptyTools.forEach(tool => {
+                        this.log(`• ${tool.name}`, 'warning');
+                    });
+                    
+                    this.log('', 'info');
+                    this.log('💡 These tools need proper schema definitions. Add them to server.py:', 'info');
+                    this.log('', 'info');
+                    
+                    // Generate example schema fixes
+                    emptyTools.slice(0, 3).forEach(tool => {
+                        const exampleSchema = this.generateExampleSchema(tool.name);
+                        this.log(`Example for "${tool.name}":`, 'info');
+                        this.logJson({
+                            [tool.name]: exampleSchema
+                        });
+                    });
+                }
+                
+                const validTools = Object.values(report.tools).filter(tool => tool.schemaStatus === 'valid');
+                if (validTools.length > 0) {
+                    this.log('', 'info');
+                    this.log('✅ TOOLS WITH GOOD SCHEMAS:', 'success');
+                    validTools.forEach(tool => {
+                        this.log(`• ${tool.name} (${tool.propertyCount} properties, ${tool.requiredCount} required)`, 'success');
+                    });
+                }
+            }
+            
+            generateExampleSchema(toolName) {
+                // Generate smart example schemas based on tool names
+                const baseSchema = {
+                    "description": `Enhanced description for ${toolName}`,
+                    "inputSchema": {
+                        "type": "object",
+                        "properties": {},
+                        "required": []
+                    }
+                };
+                
+                // Common patterns based on tool name
+                if (toolName.includes('search') || toolName.includes('find')) {
+                    baseSchema.inputSchema.properties = {
+                        "query": {
+                            "type": "string",
+                            "description": "Search query or criteria"
+                        },
+                        "limit": {
+                            "type": "integer", 
+                            "description": "Maximum number of results",
+                            "default": 10
+                        }
+                    };
+                    baseSchema.inputSchema.required = ["query"];
+                } else if (toolName.includes('generate') || toolName.includes('create')) {
+                    baseSchema.inputSchema.properties = {
+                        "title": {
+                            "type": "string",
+                            "description": "Title for generated content"
+                        },
+                        "content": {
+                            "type": "string", 
+                            "description": "Content or description to generate"
+                        }
+                    };
+                    baseSchema.inputSchema.required = ["title"];
+                } else if (toolName.includes('analyze') || toolName.includes('process')) {
+                    baseSchema.inputSchema.properties = {
+                        "text": {
+                            "type": "string",
+                            "description": "Text content to analyze"
+                        },
+                        "options": {
+                            "type": "object",
+                            "description": "Analysis options",
+                            "properties": {
+                                "detailed": {"type": "boolean", "default": false}
+                            }
+                        }
+                    };
+                    baseSchema.inputSchema.required = ["text"];
+                } else {
+                    // Generic schema
+                    baseSchema.inputSchema.properties = {
+                        "input": {
+                            "type": "string",
+                            "description": "Input data for the tool"
+                        },
+                        "options": {
+                            "type": "object",
+                            "description": "Tool options",
+                            "properties": {}
+                        }
+                    };
+                    baseSchema.inputSchema.required = ["input"];
+                }
+                
+                return baseSchema;
+            }
+            
+            log(message, type = 'info') {
+                const resultsPanel = document.getElementById('resultsPanel');
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry log-${type}`;
+                logEntry.textContent = `[${timestamp}] ${message}`;
+                resultsPanel.appendChild(logEntry);
+                resultsPanel.scrollTop = resultsPanel.scrollHeight;
+            }
+            
+            logJson(obj) {
+                const resultsPanel = document.getElementById('resultsPanel');
+                const jsonDiv = document.createElement('div');
+                jsonDiv.className = 'json-display';
+                jsonDiv.textContent = JSON.stringify(obj, null, 2);
+                resultsPanel.appendChild(jsonDiv);
+                resultsPanel.scrollTop = resultsPanel.scrollHeight;
+            }
+            
+            formatToolName(toolName) {
+                return toolName
+                    .split('_')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
+            }
+        }
+        
+        // Initialize debugger when page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            window.debugger = new MCPSchemaDebugger();
+        });
+    </script>
+</body>
+</html>

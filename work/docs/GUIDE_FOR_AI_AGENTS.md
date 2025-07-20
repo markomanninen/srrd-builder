@@ -279,6 +279,8 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
 - **Test Tolerance**: Never accept test failures, warnings, or skipped tests
 - **Overhyping Maturity**: Avoid inflating current development state or capabilities
 - **Incomplete Error Handling**: Never ignore edge cases or error conditions
+- **Performative Output**: Never run meaningless commands like `echo "✅ Task completed!"` to fake completion
+- **Status Theater**: Avoid outputting useless strings just to appear productive or finished
 
 ## Troubleshooting and Support
 

@@ -30,9 +30,9 @@ class MCPClient {
                     this.notifyStatusChange(true, 'Connected to MCP Server');
                     this.log('WebSocket connection established', 'success');
                     
-                    // Send MCP initialization
-                    this.initializeMCP().then(() => {
-                        resolve();
+                    // Send MCP initialization and return the response
+                    this.initializeMCP().then((initResponse) => {
+                        resolve(initResponse);
                     }).catch(reject);
                 };
 
@@ -94,8 +94,9 @@ class MCPClient {
         };
 
         try {
-            await this.sendMessage(initMessage);
+            const response = await this.sendMessage(initMessage);
             this.log('MCP protocol initialized', 'success');
+            return response; // Return the response so the frontend can access serverInfo
         } catch (error) {
             this.log(`MCP initialization failed: ${error.message}`, 'error');
             throw error;
