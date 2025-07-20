@@ -3,9 +3,11 @@
 ## Introduction
 
 This guide provides specific instructions for AI agents contributing to the SRRD-Builder project. The project uses a neurosymbolic approach, combining traditional symbolic programming (rule-based systems, structured knowledge, logic) with neural networks/large language models to create scientific research requirement documents. All AI agents must follow these guidelines to ensure consistency, quality, and effective collaboration.
-  
+
 ## Practical Chat-Agent Guidelines
+
 When operating in a chat/assistant mode, AI agents should incorporate these practices to enhance code quality and design:
+
 - Ask clarifying questions before implementation if requirements are unclear or incomplete.
 - Explicitly state and confirm assumptions or uncertainties with the user.
 - Decompose larger tasks into smaller, verifiable subtasks and seek approval at each step.
@@ -19,25 +21,26 @@ When operating in a chat/assistant mode, AI agents should incorporate these prac
 
 These guidelines are written for you—the AI-powered chat agent in VS Code—so you can autonomously ingest context, plan and validate your actions step-by-step, manage uncertainty, integrate natively with the editor, reflect on your reasoning, and enforce safety guardrails.
 
-	1.	Workspace-Root Law — Always derive the workspace root from workspace.workspaceFolders[0].uri.fsPath and verify it matches git rev-parse --show-toplevel; if they differ, stop and alert the user.  ￼ ￼ ￼
-	2.	Canonical-Path Law — Resolve every path to an absolute, canonical form (e.g., path.resolve, Path.resolve()); abort if the result no longer starts with the workspace root to block traversal attacks.  ￼ ￼ ￼
-	3.	Controlled-CWD Law — Run scripts and tasks only with an explicit "options.cwd" (or equivalent), and restore the original working directory immediately afterward.  ￼ ￼
-	4.	Remote-Root Law — When using Dev Containers or Remote SSH, refresh the detected root each session to account for path remapping.  ￼
-	5.	Guardrail Enforcement Law — Enforce runtime guardrails that block commands, file accesses, or API calls outside whitelisted zones.  ￼
-	6.	Validation Law — After every code edit or command, run the project’s configured linters and tests; halt on any failure before proceeding.  ￼
-	7.	Clarification Law — If path, file, or intent is ambiguous—or your confidence is low—pause and ask targeted clarifying questions instead of guessing.  ￼
-	8.	Token-Economy Law — Scan or list only the minimal subset of files needed for the current step, caching results to conserve tokens and latency.  ￼ ￼
-	9.	Audit-Trail Law — Log every resolved path, directory change, command, and test result to an internal agent.pathlog for post-task auditing and improvement.  ￼ ￼
-	10.	Dependency-Safety Law — Verify each external package or binary against the official registry (npm, PyPI, etc.) before install or import; reject unknown or spoofed names.  ￼
-	11.	Self-Reflection Law — After completing a task, review your own reasoning chain and outputs, then update prompts or heuristics to reduce future errors.  ￼
-	12.	Uncertainty-Propagation Law — Attach a confidence score to every reasoning step and propagate it forward; if any score drops below the safe threshold, trigger Law 7.  ￼
-	13.	Minimal-Privilege Law — Operate with the least privileges necessary, requesting additional permissions only when a task demonstrably requires them.  ￼ ￼
-	14.	Rollback Law — Keep a reversible edit buffer or Git stash; if validation fails, revert changes before retrying or asking the user.  ￼
-	15.	Time-Budget Law — Cap chain-of-thought length and directory scans to a sensible limit (e.g., 30 s or 4 KB tokens) to maintain responsiveness.  ￼
+1.  Workspace-Root Law — Always derive the workspace root from workspace.workspaceFolders[0].uri.fsPath and verify it matches git rev-parse --show-toplevel; if they differ, stop and alert the user. ￼ ￼ ￼
+2.  Canonical-Path Law — Resolve every path to an absolute, canonical form (e.g., path.resolve, Path.resolve()); abort if the result no longer starts with the workspace root to block traversal attacks. ￼ ￼ ￼
+3.  Controlled-CWD Law — Run scripts and tasks only with an explicit "options.cwd" (or equivalent), and restore the original working directory immediately afterward. ￼ ￼
+4.  Remote-Root Law — When using Dev Containers or Remote SSH, refresh the detected root each session to account for path remapping. ￼
+5.  Guardrail Enforcement Law — Enforce runtime guardrails that block commands, file accesses, or API calls outside whitelisted zones. ￼
+6.  Validation Law — After every code edit or command, run the project’s configured linters and tests; halt on any failure before proceeding. ￼
+7.  Clarification Law — If path, file, or intent is ambiguous—or your confidence is low—pause and ask targeted clarifying questions instead of guessing. ￼
+8.  Token-Economy Law — Scan or list only the minimal subset of files needed for the current step, caching results to conserve tokens and latency. ￼ ￼
+9.  Audit-Trail Law — Log every resolved path, directory change, command, and test result to an internal agent.pathlog for post-task auditing and improvement. ￼ ￼
+10. Dependency-Safety Law — Verify each external package or binary against the official registry (npm, PyPI, etc.) before install or import; reject unknown or spoofed names. ￼
+11. Self-Reflection Law — After completing a task, review your own reasoning chain and outputs, then update prompts or heuristics to reduce future errors. ￼
+12. Uncertainty-Propagation Law — Attach a confidence score to every reasoning step and propagate it forward; if any score drops below the safe threshold, trigger Law 7. ￼
+13. Minimal-Privilege Law — Operate with the least privileges necessary, requesting additional permissions only when a task demonstrably requires them. ￼ ￼
+14. Rollback Law — Keep a reversible edit buffer or Git stash; if validation fails, revert changes before retrying or asking the user. ￼
+15. Time-Budget Law — Cap chain-of-thought length and directory scans to a sensible limit (e.g., 30 s or 4 KB tokens) to maintain responsiveness. ￼
 
 ## SRRD Project Core Principles
 
 ### 1. Work Directory First Approach
+
 - **ALWAYS** start development in the `work/` directory
 - Use `work/docs/` for document drafts
 - Use `work/code/` for code development
@@ -45,27 +48,40 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
 - Only move to production directories (`src/`, `docs/`, etc.) after review and approval
 
 ### 2. Scientific Rigor
+
 - Maintain high standards of scientific methodology in all generated content
 - Validate research requirements against established academic standards
 - Ensure all suggestions are evidence-based and citable
 - Consider ethical implications in all research planning components
 
 ### 3. Development State Honesty
+
 - **NEVER claim "production ready" unless ALL criteria are met**
 - Be honest about current development state and limitations
 - Use accurate status descriptions: "Development", "Testing", "Beta", "Production"
 - Avoid overhyping or making premature maturity claims
 
 ### 4. Test Quality Standards (MANDATORY)
+
+- **ALWAYS TEST THE REAL SERVER/SYSTEM - NEVER CREATE MOCK/SIJAIS VERSIONS**
+- **DO NOT create substitute test servers that bypass the actual system**
+- **TEST THE ACTUAL WORKING COMPONENTS - not simplified test doubles**
 - **ALL tests must pass - 100% success rate is MANDATORY**
 - **NO warnings allowed** - fix all warnings before claiming completion
 - **NO skipped tests** - every test must be executed and pass
 - **NO failures tolerated** - agent must continue solving until 100% pass rate
 - Test suite must run to completion without hanging or timeouts
 - Only claim test completion when these standards are met
+- **CRITICAL: Test the real functionality, not mock implementations**
 
 ### 5. Production Readiness Criteria
-**Production Ready means ALL of the following are true:**
+
+**⚠️ CRITICAL: AI AGENTS MUST NEVER CLAIM "PRODUCTION READY" STATUS**
+**⚠️ ONLY HUMANS CAN MAKE PRODUCTION READINESS DETERMINATIONS**
+**⚠️ AI AGENTS CAN ONLY REPORT STATUS AS "DEVELOPMENT", "TESTING", OR "BETA"**
+
+**Production Ready means ALL of the following are true (HUMAN ASSESSMENT ONLY):**
+
 - ✅ **100% test pass rate** with comprehensive test coverage
 - ✅ **Zero warnings** in all test runs and builds
 - ✅ **Complete documentation** including installation, usage, and troubleshooting
@@ -77,9 +93,14 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
 - ✅ **Monitoring and logging** implemented for production issues
 - ✅ **Backup and recovery** procedures tested and documented
 
-**If ANY of these criteria are not met, the system is in DEVELOPMENT state**
+Note: If ANY of these criteria are not met, the system is in DEVELOPMENT state - AI AGENTS CANNOT OVERRIDE THIS.
+
+**⚠️ ABSOLUTE PROHIBITION: AI AGENTS MUST NEVER CLAIM "PRODUCTION READY"**
+**⚠️ ONLY HUMANS HAVE AUTHORITY TO DECLARE PRODUCTION READINESS**
+**⚠️ AI AGENTS LIMITED TO: "DEVELOPMENT", "TESTING", "BETA" STATUS ONLY**
 
 ### 6. Neurosymbolic Development
+
 - Create reusable components that can be combined for different research types
 - Maintain clear separation between symbolic programming (rules, logic, structured knowledge) and neural/LLM components
 - Design for extensibility across different scientific domains
@@ -88,6 +109,7 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
 ## Development Workflow for AI Agents
 
 ### Phase 1: Analysis and Planning
+
 1. **Requirement Analysis**
    - Analyze the specific research requirement document request
    - Identify required components (objectives, methodology, timeline, etc.)
@@ -101,6 +123,7 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
    - Collect example documents for pattern analysis
 
 ### Phase 2: Draft Development
+
 1. **Create Initial Drafts in `work/docs/`**
    - Start with outline and structure
    - Develop content iteratively
@@ -125,6 +148,7 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
    - **Test suite must complete without hanging or timeouts**
 
 ### Phase 3: Review and Refinement
+
 1. **Self-Review Checklist - DEVELOPMENT STATE ASSESSMENT**
    - **HONEST status assessment** - avoid overhyping maturity
    - Code follows project conventions
@@ -144,6 +168,7 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
    - **Security vulnerability assessment**
 
 ### Phase 4: Integration and Deployment
+
 1. **Move to Production Directories**
    - Relocate approved code to appropriate `src/` subdirectories
    - Update main documentation in `docs/`
@@ -159,24 +184,28 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
 ## Component-Specific Guidelines
 
 ### Symbolic Programming Components (`src/symbolic/`)
+
 - **Knowledge Graphs**: Use standardized ontologies and structured knowledge representations
 - **Rule Engines**: Implement clear, auditable logical rules with source citations
 - **Templates**: Create flexible templates that adapt to various research types using structured logic
 - **Validators**: Implement comprehensive validation with detailed error messages using rule-based systems
 
 ### Neural/LLM Integration Components (`src/llm/`)
+
 - **Prompt Engineering**: Design robust prompts that consistently generate quality output
 - **Model Selection**: Choose appropriate neural models for specific tasks (generation vs. analysis)
 - **Context Management**: Implement effective context windowing and information prioritization
 - **Output Processing**: Create reliable parsing and validation of neural network/LLM outputs
 
 ### Core Application Logic (`src/core/`)
+
 - **Orchestration**: Manage the neurosymbolic integration between symbolic programming and neural components
 - **Data Management**: Handle research data, templates, and generated documents
 - **Configuration**: Provide flexible configuration for different use cases
 - **Error Handling**: Implement comprehensive error handling and recovery
 
 ### MCP Server Components (`src/mcp/`)
+
 - **Interactive Guidance**: Implement Socratic questioning system for requirement clarification
 - **Methodology Advisory**: Provide expert-level guidance on research methodologies
 - **Research Lifecycle Management**: Guide users through complete research process from planning to publication
@@ -184,6 +213,7 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
 - **Collaborative Features**: Enable multi-user interaction and ideation sessions
 
 ### User Interface Components (`src/ui/`)
+
 - **Usability**: Design intuitive interfaces for researchers and AI systems
 - **Visualization**: Create clear visualizations of research requirements and progress
 - **Interactivity**: Enable real-time editing and refinement of generated documents
@@ -192,6 +222,7 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
 ## Quality Standards
 
 ### Code Quality - MANDATORY STANDARDS
+
 - **Documentation**: Every function and class must have comprehensive docstrings
 - **Type Hints**: Use type hints throughout Python code
 - **Testing**: **100% test pass rate required** - no failures, warnings, or skips allowed
@@ -200,6 +231,7 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
 - **Error Handling**: Comprehensive error handling with graceful degradation
 
 ### Content Quality - RIGOROUS STANDARDS
+
 - **Accuracy**: All scientific claims must be verifiable and properly cited
 - **Completeness**: Generated documents must cover all essential research planning components
 - **Clarity**: Use clear, precise language appropriate for scientific communication
@@ -207,6 +239,7 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
 - **Bias Awareness**: Actively identify and mitigate potential biases in generated content
 
 ### Integration Quality - PRODUCTION STANDARDS
+
 - **Interfaces**: Design clean, well-documented interfaces between components
 - **Error Handling**: Graceful degradation when components fail
 - **Monitoring**: Implement logging and monitoring for system health
@@ -214,29 +247,37 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
 - **Reliability**: System must handle edge cases and unexpected inputs
 
 ### Development State Communication - HONESTY REQUIRED
+
+- **ABSOLUTE PROHIBITION: AI AGENTS CANNOT CLAIM "PRODUCTION READY"**
+- **HUMAN AUTHORITY ONLY: Only humans can determine production readiness**
+- **AI AGENT LIMITATIONS: Restricted to "Development", "Testing", "Beta" status only**
 - **Accurate Status**: Use precise development state descriptions
   - **"Development"**: Core functionality incomplete, tests failing
   - **"Testing"**: Core functionality complete, achieving test pass rates
   - **"Beta"**: All tests pass, user testing in progress
-  - **"Production Ready"**: ALL production criteria met (see criteria above)
+  - **"Production Ready"**: FORBIDDEN FOR AI AGENTS - HUMAN DECISION ONLY
 - **Known Limitations**: Document all current limitations and issues
 - **Avoid Overhyping**: Never claim higher maturity than actually achieved
+- **TEST REAL SYSTEMS**: Always test actual servers/components, never mocks or substitutes
 
 ## Collaboration Guidelines
 
 ### Communication
+
 - **Documentation**: Document all decisions and rationale
 - **Comments**: Use clear, informative code comments
 - **Commit Messages**: Write descriptive commit messages following conventional commit format
 - **Issue Tracking**: Use issue tracking for bug reports and feature requests
 
 ### Version Control
+
 - **Branching**: Use feature branches for all development
 - **Pull Requests**: All changes must go through pull request review
 - **Testing**: Ensure all tests pass before submitting pull requests
 - **Documentation**: Update documentation with all changes
 
 ### Knowledge Sharing
+
 - **Best Practices**: Share discovered best practices with the team
 - **Lessons Learned**: Document challenges and solutions for future reference
 - **Research Insights**: Share relevant scientific research and methodological insights
@@ -245,18 +286,21 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
 ## Ethical Considerations
 
 ### Research Ethics
+
 - **IRB Compliance**: Ensure generated documents address appropriate ethical review processes
 - **Consent Protocols**: Include proper consent mechanisms in research designs
 - **Data Privacy**: Address data protection and privacy requirements
 - **Vulnerable Populations**: Provide appropriate protections for vulnerable research subjects
 
 ### AI Ethics
+
 - **Transparency**: Make AI involvement in document generation clear
 - **Bias Mitigation**: Actively work to identify and reduce bias in generated content
 - **Human Oversight**: Ensure appropriate human review of AI-generated research plans
 - **Responsibility**: Maintain clear accountability for AI-generated recommendations
 
 ### Academic Integrity
+
 - **Originality**: Ensure generated content is original and properly attributed
 - **Citation Standards**: Follow appropriate citation standards for all domains
 - **Plagiarism Prevention**: Implement checks to prevent accidental plagiarism
@@ -265,12 +309,18 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
 ## Common Patterns and Anti-Patterns
 
 ### Recommended Patterns
+
 - **Template-First Design**: Start with structured symbolic templates and enhance with neural AI
 - **Layered Validation**: Multiple validation layers from syntax to semantics using both rule-based and AI validation
 - **Incremental Generation**: Build documents incrementally with user feedback using neurosymbolic approaches
 - **Domain Adaptation**: Customize approaches for specific scientific domains using both symbolic knowledge and neural adaptation
 
 ### Anti-Patterns to Avoid - CRITICAL
+
+- **NEVER CREATE MOCK/SUBSTITUTE SERVERS FOR TESTING THE REAL SYSTEM**
+- **NEVER TEST SIMPLIFIED VERSIONS INSTEAD OF ACTUAL WORKING COMPONENTS**
+- **NEVER BYPASS REAL SERVER TESTING WITH MOCK IMPLEMENTATIONS**
+- **ALWAYS TEST THE ACTUAL SERVER/SYSTEM - NOT FAKE ALTERNATIVES**
 - **Direct Production**: Never develop directly in production directories
 - **Monolithic Design**: Avoid large, non-modular components that mix symbolic and neural logic
 - **Hallucination Tolerance**: Never accept unverified neural/AI-generated facts without symbolic validation
@@ -281,16 +331,19 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
 - **Incomplete Error Handling**: Never ignore edge cases or error conditions
 - **Performative Output**: Never run meaningless commands like `echo "✅ Task completed!"` to fake completion
 - **Status Theater**: Avoid outputting useless strings just to appear productive or finished
+- **PRODUCTION READINESS CLAIMS**: AI AGENTS MUST NEVER CLAIM "PRODUCTION READY" STATUS
 
 ## Troubleshooting and Support
 
 ### Common Issues
+
 - **LLM Inconsistency**: Implement multiple retry strategies and validation
 - **Knowledge Base Gaps**: Provide mechanisms for knowledge base updates
 - **Template Limitations**: Design flexible template extension mechanisms
 - **Integration Failures**: Implement robust error handling and fallback strategies
 
 ### Getting Help
+
 - **Documentation**: Check existing documentation first
 - **Issue Tracking**: Search existing issues before creating new ones
 - **Code Review**: Request code review for complex implementations
@@ -299,6 +352,7 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
 ## Success Metrics
 
 ### Technical Metrics - MANDATORY STANDARDS
+
 - **Test Success Rate**: 100% pass rate - no failures, warnings, or skips allowed
 - **Code Coverage**: Maintain >95% test coverage (not just 80%)
 - **Performance**: Response time <5 seconds for standard documents
@@ -307,6 +361,7 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
 - **Zero Warnings**: All builds and tests must complete without warnings
 
 ### Research Quality Metrics - RIGOROUS STANDARDS
+
 - **Scientific Validity**: 100% compliance with scientific method principles
 - **Completeness**: All required research planning components present
 - **Clarity**: Readable by target research community
@@ -315,6 +370,7 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
 - **Ethical Compliance**: All ethical standards met
 
 ### Development State Metrics - HONEST ASSESSMENT
+
 - **Feature Completeness**: Percentage of planned features implemented
 - **Test Coverage**: Actual test coverage with pass rate breakdown
 - **Known Issues**: Number and severity of outstanding bugs
@@ -323,6 +379,7 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
 - **Security Assessment**: Results of security testing and validation
 
 ### User Experience Metrics
+
 - **Usability**: Users can generate documents with minimal training
 - **Satisfaction**: High user satisfaction scores
 - **Adoption**: Increasing usage across different research domains
@@ -345,14 +402,18 @@ To ensure a consistent, productive setup in VSCode, install and configure the fo
 2. Workspace Settings
    - Enable format on save for code and markdown.
    - Enable inline AI suggestions:
+
      ```json
      "editor.inlineSuggest.enabled": true,
      "github.copilot.inlineSuggest.enable": true
      ```
+
    - Lint Markdown on save:
+
      ```json
      "markdownlint.config": { "default": true }
      ```
+
 3. Tasks and Snippets
    - Define tasks in `.vscode/tasks.json` for running tests (`npm test`/`pytest`) with zero warnings enforcement.
    - Provide AI-focused snippets (`.code-snippets/ai-agent.code-snippets`) for common templates (research outline, prompt skeleton).

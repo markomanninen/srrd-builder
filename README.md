@@ -2,30 +2,30 @@
 
 - [🧪 Test Suite Status](work/docs/TEST_SUITE.md) - Testing documentation and guidelines
 - **Run Tests:** `bash run_tests.sh` - Execute test suite (183/183 tests passing)
-- **Production Status:** Production-ready with 100% test success rateS**cientific **R**esearch **R**equirement **D**ocument Builder - An AI-powered toolkit for scientific research collaboration and document generation.
+- **Production Status:** Production-ready with 100% test success rateS**cientific **R**esearch **R**equirement **D\*\*ocument Builder - An AI-powered toolkit for scientific research collaboration and document generation.
 
 ## Testing Status
 
-**✅ 100% Test Success Achieved**: Test suite fully operational with complete pass rate:
+## ✅ 100% Test Success Achieved\*\*: Test suite fully operational with complete pass rate
 
 - 183/183 tests passing (100% success rate)
 - Comprehensive coverage across unit, integration, and validation tests
 - Full research lifecycle persistence implemented and validated
 - Production-ready with robust error handling and quality assurance
 
-
 ## Testing & Quality
+
 - [🧪 Test Suite Status](work/docs/TEST_SUITE.md) - Testing documentation and guidelines
 - **Run Tests:** `bash run_tests.sh` - Execute test suite (working toward 100% pass rate)
 - **Development Status:** Test suite in development, working toward comprehensive coverage
 
 ## Overview
 
-SRRD-Builder uses a **neurosymbolic approach**, combining traditional symbolic programming (rule-based systems, structured knowledge, logical reasoning) with neural networks/large language models to support the scientific research lifecycle from initial planning to publication-ready documents. 
+SRRD-Builder uses a **neurosymbolic approach**, combining traditional symbolic programming (rule-based systems, structured knowledge, logical reasoning) with neural networks/large language models to support the scientific research lifecycle from initial planning to publication-ready documents.
 
 The system features an **MCP (Model Context Protocol) server** that integrates with Claude Desktop and VS Code, providing **44 research tools** for document generation, knowledge management, and research quality assurance. It specializes in novel theory development for fundamental physics research, ensuring rigorous development of alternative paradigms with equal treatment to mainstream approaches.
 
-**⚠️ Production Ready**: This project is production-ready with complete functionality and comprehensive testing. Core features are fully implemented with 100% test success rate.
+## ⚠️ Production Ready\*\*: This project is production-ready with complete functionality and comprehensive testing. Core features are fully implemented with 100% test success rate
 
 ## Key Features
 
@@ -46,6 +46,7 @@ The system features an **MCP (Model Context Protocol) server** that integrates w
 ## Quick Start
 
 ### 🚀 Automated Installation
+
 ```bash
 git clone https://github.com/markomanninen/srrd-builder
 cd srrd-builder
@@ -56,14 +57,16 @@ cd srrd-builder
 ```
 
 This will:
+
 - Install Python dependencies
 - Install the `srrd` and `srrd-server` CLI tools
 - Configure LaTeX (if needed)
 - Set up Claude Desktop configuration
 - Test all components
 - **Optionally run test suite (158 tests in development)**
-  
+
 ## AI Agents Guide
+
 We maintain a central guide for configuring and using AI agents in VS Code. See [AI Agent Quick Start](AI_AGENT_GUIDE.md) for details, including recommended extensions, settings, tasks, and snippets.
 
 ### 📱 Server Access Methods
@@ -71,6 +74,7 @@ We maintain a central guide for configuring and using AI agents in VS Code. See 
 SRRD-Builder provides two ways to access the MCP server:
 
 #### 1. Project-Aware Server (`srrd serve`)
+
 For use within SRRD projects with Claude Desktop/VS Code integration:
 
 ```bash
@@ -84,11 +88,12 @@ srrd serve start
 # Check configuration and server status
 srrd configure --status
 
-# Stop the MCP server  
-srrd serve stop  
+# Stop the MCP server
+srrd serve stop
 ```
 
 #### 2. Global WebSocket Server (`srrd-server`)
+
 For demos, web interfaces, and external access:
 
 ```bash
@@ -106,6 +111,7 @@ srrd-server --help
 ```
 
 ### 🔧 Requirements
+
 - Python 3.8+
 - LaTeX distribution (MacTeX on macOS, TeXLive on Linux)
 - Claude Desktop or VS Code with MCP support (for project-aware mode)
@@ -125,7 +131,7 @@ srrd-server --help
 ### Method 2: Web Interface Demo (Global)
 
 1. Start the demo system: `srrd-server --with-frontend`
-2. Open web interface: http://localhost:8080
+2. Open web interface: <http://localhost:8080>
 3. Click "Connect to Server" to establish WebSocket connection
 4. Test any of the 38 available tools using the categorized interface
 
@@ -133,47 +139,47 @@ srrd-server --help
 
 The MCP server provides **44 tools** organized by research workflow categories:
 
-**🧪 Research Planning & Goal Setting (2 tools)**
+## 🧪 Research Planning & Goal Setting (2 tools)\*\*
 
 - Socratic questioning to clarify research objectives and requirements
 - Methodology advisory for selecting appropriate research approaches
 
-**✅ Quality Assurance & Review (2 tools)**
+## ✅ Quality Assurance & Review (2 tools)\*\*
 
 - AI-powered peer review simulation mimicking expert feedback
 - Quality gates with automated validation at each research phase
 
-**🗄️ Storage & Project Management (6 tools)**
+## 🗄️ Storage & Project Management (6 tools)\*\*
 
 - Git-based project initialization and version control
 - Session save/restore for research continuity
 - Backup and project archival systems
 
-**📄 Document Generation & LaTeX (6 tools)**
+## 📄 Document Generation & LaTeX (6 tools)\*\*
 
 - LaTeX document generation with automatic formatting
 - Bibliography management and citation integration
 - Template-based research document creation
 
-**🔍 Search & Discovery (6 tools)**
+## 🔍 Search & Discovery (6 tools)\*\*
 
 - Semantic search across research documents and knowledge bases
 - Key concept extraction and pattern discovery
 - Document similarity analysis and knowledge graph building
 
-**⚗️ Methodology & Validation (4 tools)**
+## ⚗️ Methodology & Validation (4 tools)\*\*
 
 - Research methodology explanation and guidance
 - Experimental design validation and ethics review
 - Statistical analysis framework recommendations
 
-**🚀 Novel Theory Development (8 tools)**
+## 🚀 Novel Theory Development (8 tools)\*\*
 
 - Alternative paradigm development for fundamental physics
 - Foundational assumption analysis and paradigm comparison
 - Equal treatment validation for alternative theories
 
-**🔄 Research Lifecycle Persistence (6 tools)**
+## 🔄 Research Lifecycle Persistence (6 tools)\*\*
 
 - Automatic tool usage logging and progress tracking
 - Research session management and milestone tracking
@@ -181,7 +187,7 @@ The MCP server provides **44 tools** organized by research workflow categories:
 
 ### Example Workflow
 
-```
+```text
 # Method 1: In Claude Desktop (project-aware):
 "Initialize a new research project on quantum computing"
 "Generate a LaTeX document with bibliography from my vector database"
@@ -200,12 +206,14 @@ The MCP server provides **44 tools** organized by research workflow categories:
 SRRD-Builder uses a **dual server architecture** to support different use cases:
 
 ### Project-Aware Server (`srrd serve`)
+
 - **Purpose**: Integration with Claude Desktop/VS Code within research projects
 - **Protocol**: stdio (standard input/output)
 - **Context**: Project-specific data and configuration
 - **Use Case**: Daily research work, manuscript writing, project management
 
 ### Global WebSocket Server (`srrd-server`)
+
 - **Purpose**: Demos, web interfaces, and external tool integration
 - **Protocol**: WebSocket on localhost:8765
 - **Context**: Global tool access without project dependency
@@ -215,19 +223,22 @@ SRRD-Builder uses a **dual server architecture** to support different use cases:
 
 SRRD-Builder implements a **neurosymbolic architecture** that combines:
 
-**Symbolic Components**
+## Symbolic Components\*\*
+
 - Rule-based validation and quality control systems
-- Structured templates for different research types  
+- Structured templates for different research types
 - Knowledge graphs for research methodology relationships
 - Git-based project management and version control
 
-**Neural Components**
+### Neural Components\*\*
+
 - Large language model integration for content generation
 - Semantic search across research documents and knowledge bases
 - AI-powered peer review simulation and quality assessment
 - Natural language processing for research requirement extraction
 
-**Integration Layer**
+### Integration Layer\*\*
+
 - MCP server interface for Claude Desktop and VS Code integration
 - WebSocket server for web interfaces and external tool access
 - Vector database storage for semantic search capabilities
@@ -235,27 +246,32 @@ SRRD-Builder implements a **neurosymbolic architecture** that combines:
 
 ## Use Cases
 
-**Academic Researchers**
+### Academic Researchers
+
 - Generate research protocols and methodology frameworks
 - Access interactive Socratic guidance for research planning
 - Create structured literature reviews with semantic search
 
-**Graduate Students & Early Career Researchers**
+### Graduate Students & Early Career Researchers
+
 - Learn research methodology through interactive questioning
 - Develop thesis proposals with systematic guidance
 - Practice peer review processes with AI simulation
 
-**Fundamental Physics Research**
+### Fundamental Physics Research
+
 - Develop alternative theories with equal treatment frameworks
 - Challenge existing paradigms through rigorous investigation
 - Create publication-ready documents for novel ontologies
 
-**Research Institutions**
+### Research Institutions\*\*
+
 - Standardize research planning processes across departments
 - Implement consistent quality control for research projects
 - Coordinate multi-institutional collaborative efforts
 
-**AI Research Systems**
+### AI Research Systems\*\*
+
 - Provide structured requirements for autonomous research
 - Generate comprehensive research requirement documents
 - Integrate systematic research planning into AI workflows
@@ -263,25 +279,30 @@ SRRD-Builder implements a **neurosymbolic architecture** that combines:
 ## Documentation
 
 ### Getting Started
-- [📖 Installation Guide](INSTALLATION.md) - Detailed installation instructions and troubleshooting  
+
+- [📖 Installation Guide](INSTALLATION.md) - Detailed installation instructions and troubleshooting
 - [📋 Project Status](work/PROJECT_STATUS.md) - Current implementation status and completion tracking
 
 ### Testing & Quality
+
 - [🧪 Test Suite Status](work/docs/TEST_SUITE.md) - Comprehensive testing documentation and guidelines
 - **Run Tests:** `bash run_tests.sh` - Execute 183 tests with 100% success rate
 - **Test Coverage:** Complete coverage across unit, integration, and validation tests (183/183 passing)
 
 ### Usage Guides
+
 - [⚙️ Technical Requirements](work/docs/TECHNICAL_REQUIREMENTS.md) - Software library requirements and test specifications
 - [🤖 Guide for AI Agents](work/docs/GUIDE_FOR_AI_AGENTS.md) - Instructions for AI-assisted development
 
 ### Development Documentation
+
 - [🗺️ Implementation Roadmap](work/docs/IMPLEMENTATION_ROADMAP.md) - Phase-by-phase development plan
 - [📁 Work Directory Guide](work/WORK_DIRECTORY_GUIDE.md) - Overview of project structure
 - [🌐 MCP Server Specification](work/docs/specifications/MCP_SERVER_SPECIFICATION.md) - Model Context Protocol server requirements
 - [📦 Global Package Specification](work/docs/specifications/GLOBAL_PACKAGE_SPECIFICATION.md) - CLI and global installation requirements
 
 ### Research Support
+
 - [📝 Research Templates](work/docs/templates/RESEARCH_TEMPLATES.md) - Domain-specific templates including theoretical physics
 - [📖 Main README Draft](work/docs/README_DRAFT.md) - Comprehensive project overview and objectives
 
@@ -292,9 +313,9 @@ SRRD-Builder implements a **neurosymbolic architecture** that combines:
 1. **Project-aware server not responding**: Check status with `srrd configure --status` and restart with `srrd serve restart`
 2. **Global server connection failed**: Ensure `srrd-server` is running and check port 8765 availability
 3. **Web interface can't connect**: Make sure WebSocket server is running with `srrd-server`
-2. **Claude Desktop not finding tools**: Ensure server is running (`srrd serve start`) and restart Claude Desktop
-3. **LaTeX compilation errors**: Verify LaTeX installation with `pdflatex --version`
-4. **Import errors**: Ensure virtual environment is activated: `source venv/bin/activate`
+4. **Claude Desktop not finding tools**: Ensure server is running (`srrd serve start`) and restart Claude Desktop
+5. **LaTeX compilation errors**: Verify LaTeX installation with `pdflatex --version`
+6. **Import errors**: Ensure virtual environment is activated: `source venv/bin/activate`
 
 ### Getting Help
 
@@ -311,7 +332,7 @@ SRRD-Builder implements a **neurosymbolic architecture** that combines:
 ✅ **Production Ready Features:**
 
 - MCP Server with 44 research tools (full functionality)
-- CLI tool for server management  
+- CLI tool for server management
 - Vector database integration
 - LaTeX document generation
 - Git-based project management

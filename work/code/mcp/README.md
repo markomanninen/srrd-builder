@@ -22,7 +22,8 @@ This directory contains the Model Context Protocol (MCP) server for SRRD-Builder
 
 All 38 tools are now enhanced with automatic context detection:
 
-### Enhanced Tool Categories:
+### Enhanced Tool Categories
+
 - **Storage Management** (5/5) - Project initialization, session management, version control
 - **Document Generation** (6/6) - LaTeX generation, compilation, formatting
 - **Search & Discovery** (3/3) - Semantic search, knowledge base search
@@ -32,9 +33,10 @@ All 38 tools are now enhanced with automatic context detection:
 - **Novel Theory Development** (8/8) - Paradigm challenge, framework development
 - **Additional Tools** (8/8) - Bibliography management, pattern discovery
 
-### Usage Examples:
+### Usage Examples
 
 **Traditional (still works):**
+
 ```python
 # Explicit project_path parameter
 result = await save_session_tool(
@@ -44,6 +46,7 @@ result = await save_session_tool(
 ```
 
 **New Context-Aware:**
+
 ```python
 # When running with 'srrd serve' - project_path is auto-injected
 result = await save_session_tool(
@@ -74,6 +77,7 @@ The MCP server is configured in Claude Desktop's config file as:
 ```
 
 **Context-Aware Environment Variables:**
+
 - `SRRD_PROJECT_PATH` - Path to current SRRD project (set by `srrd serve`)
 - `SRRD_CONFIG_PATH` - Path to project config file (set by `srrd serve`)
 
@@ -94,6 +98,7 @@ echo '{"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}' | pytho
 Should return a list of 38 available tools.
 
 **Run comprehensive tests:**
+
 ```bash
 # Run the complete organized test suite (158 tests)
 cd ../../../ && bash run_tests.sh
@@ -116,17 +121,21 @@ A neurosymbolic Model Context Protocol (MCP) server for AI-driven scientific res
 ## 🚀 Quick Start
 
 ### Installation
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### Run the Server
+
 ```bash
 python3 web_server.py
 ```
+
 The server will start on `localhost:8083` with WebSocket endpoint `ws://localhost:8083`
 
 ### Test the Implementation
+
 ```bash
 # All testing is now handled by the organized test suite
 cd ../../../ && bash run_tests.sh
@@ -137,6 +146,7 @@ cd ../../../ && bash run_tests.sh
 ## 🧠 Neurosymbolic Architecture
 
 This implementation combines:
+
 - **Symbolic Programming**: Rule-based logic, structured knowledge representation
 - **Neural Networks/LLMs**: Natural language processing, pattern recognition
 - **MCP Protocol**: Standardized tool interface for AI interactions
@@ -144,40 +154,48 @@ This implementation combines:
 ## 🛠️ Available Tools (21 total)
 
 ### Research Planning
+
 - `clarify_research_goals`: Socratic questioning for goal refinement
 - `suggest_methodology`: Research methodology recommendations
 
 ### Quality Assurance  
+
 - `simulate_peer_review`: AI-driven peer review simulation
 - `check_quality_gates`: Research quality validation
 
 ### Document Generation
+
 - `generate_latex_document`: LaTeX document with physics templates
 - `format_research_content`: Content formatting and structure
 - `generate_bibliography`: Bibliography and citation management
 
 ### Search & Discovery
+
 - `semantic_search`: Intelligent content search
 - `discover_patterns`: Research pattern identification  
 - `extract_key_concepts`: Concept extraction and analysis
 
 ### Storage Management
+
 - `initialize_project`: Project setup and configuration
 - Additional Git, SQLite, and vector database tools
 
 ## 🔬 Novel Theory Development Features
 
 ### Equal Treatment Protocols
+
 - Alternative theories receive equal computational resources
 - Bias detection and mitigation in research evaluation
 - Paradigm-agnostic methodology recommendations
 
 ### Foundational Analysis
+
 - Assumption identification and examination
 - Conceptual framework comparison
 - Paradigm innovation support
 
 ### Socratic Questioning Engine
+
 - Progressive question refinement
 - Research goal clarification
 - Methodology validation through inquiry
@@ -185,16 +203,19 @@ This implementation combines:
 ## 💾 Storage Systems
 
 ### Git Integration
+
 - Project versioning and history
 - Collaborative research support
 - Backup and recovery systems
 
 ### SQLite Database
+
 - Project metadata and sessions
 - Interaction logging and tracking
 - Structured data storage
 
 ### Vector Database (ChromaDB)
+
 - Semantic search capabilities
 - Research content indexing
 - Pattern discovery and analysis
@@ -213,7 +234,7 @@ The system passes **24/24 comprehensive tests** (100% success rate):
 
 ## 📁 Directory Structure
 
-```
+```text
 mcp/
 ├── server.py              # Main MCP server implementation
 ├── web_server.py          # Web GUI server startup script
@@ -229,6 +250,7 @@ mcp/
 ## 🔧 Configuration
 
 Default configuration in `config/default_config.json`:
+
 - Server settings (host, port, logging)
 - Database paths and settings
 - Vector database collections
@@ -237,6 +259,7 @@ Default configuration in `config/default_config.json`:
 ## 🔌 MCP Protocol Compliance
 
 Fully implements Model Context Protocol specification:
+
 - Tool discovery and registration
 - Structured input/output schemas
 - Error handling and validation

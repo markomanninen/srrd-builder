@@ -6,7 +6,7 @@ The `work/` directory serves as the development sandbox for the SRRD-Builder pro
 
 ## Directory Structure
 
-```
+```text
 work/
 ├── docs/                      # Draft documents and specifications
 │   ├── README_DRAFT.md        # Project README draft
@@ -26,18 +26,22 @@ work/
 ## Development Workflow
 
 ### 1. Start Here Always
+
 - All new features begin in `work/`
 - Create appropriate subdirectories as needed
 - Document your approach in `work/docs/`
 
 ### 2. Iterative Development
+
 - Develop incrementally
 - Test frequently
 - Document decisions and rationale
 - Keep track of alternative approaches
 
 ### 3. Quality Gates
+
 Before moving to production directories, ensure:
+
 - [ ] Code is well-documented
 - [ ] Tests provide adequate coverage
 - [ ] Documentation is complete
@@ -45,7 +49,9 @@ Before moving to production directories, ensure:
 - [ ] Scientific accuracy is validated
 
 ### 4. Promotion Process
+
 When ready for production:
+
 1. Review all work directory contents
 2. Move code to appropriate `src/` subdirectories
 3. Update main project documentation
@@ -55,17 +61,20 @@ When ready for production:
 ## Current Status
 
 ### Completed
+
 - [x] README draft with comprehensive project overview
 - [x] AI agent collaboration guide
 - [x] Work directory structure and guidelines
 
 ### In Progress
+
 - [ ] Technical specifications for core components
 - [ ] Prototype symbolic reasoning engine
 - [ ] LLM integration framework
 - [ ] Template system design
 
 ### Next Steps
+
 1. Define technical specifications for each component
 2. Create initial prototypes in `work/code/prototypes/`
 3. Develop test cases for validation
@@ -74,17 +83,20 @@ When ready for production:
 ## Guidelines for Contributors
 
 ### File Naming
+
 - Use descriptive, lowercase names with underscores
 - Include version or draft indicators: `_draft`, `_v1`, `_prototype`
 - Date stamp important milestones: `_20250716`
 
 ### Documentation
+
 - Document all decisions and rationale
 - Include alternative approaches considered
 - Note dependencies and requirements
 - Track issues and resolutions
 
 ### Version Control
+
 - Commit frequently with descriptive messages
 - Use feature branches for significant changes
 - Tag important milestones

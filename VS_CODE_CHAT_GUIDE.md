@@ -1,9 +1,11 @@
 # VS Code Chat Guide: Using SRRD-Builder MCP Tools
 
 ## 🎯 Overview
+
 This guide demonstrates how to use all 38 context-aware SRRD-Builder MCP tools through VS Code Chat. The tools automatically detect your project context and work without requiring explicit `project_path` parameters.
 
 ## 🚀 Setup Complete
+
 - **Project**: `/tmp/vscode-chat-demo`
 - **Domain**: Computer Science
 - **MCP Server**: Ready to start
@@ -12,6 +14,7 @@ This guide demonstrates how to use all 38 context-aware SRRD-Builder MCP tools t
 ## 📋 How to Use This Guide
 
 ### Step 1: Start the MCP Server
+
 First, start the MCP server for this project:
 
 ```bash
@@ -20,184 +23,235 @@ srrd serve start
 ```
 
 ### Step 2: Open VS Code Chat
+
 - Press `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux)
 - Type "Chat: Open Chat"
 - Or use the chat icon in the sidebar
 
 ### Step 3: Use MCP Tools in Chat
+
 Now you can use any of the 38 SRRD-Builder tools directly in VS Code Chat!
 
 ## 🛠️ Available MCP Tools (All Context-Aware)
 
 ### 📚 Bibliography Management
+
 Use these tools to manage research literature:
 
 **Store a bibliography reference:**
+
 ```
 @mcp_srrd-builder_store_bibliography_reference
 ```
+
 - **What it does**: Stores a research paper reference in your project's database
 - **Context-aware**: Automatically uses `/tmp/vscode-chat-demo` as project path
 - **Example**: Store papers about machine learning, software engineering, etc.
 
 **Retrieve bibliography references:**
+
 ```
 @mcp_srrd-builder_retrieve_bibliography_references
 ```
+
 - **What it does**: Searches and retrieves stored references
 - **Context-aware**: Searches only in your current project's database
 - **Example**: Query for "machine learning" to find related papers
 
 **Generate bibliography:**
+
 ```
 @mcp_srrd-builder_generate_bibliography
 ```
+
 - **What it does**: Creates formatted bibliography from your stored references
 - **Context-aware**: Uses references from current project only
 
 ### 🔬 Research Planning
+
 Plan and organize your research:
 
 **Clarify research objectives:**
+
 ```
 @mcp_srrd-builder_clarify_research_goals
 ```
+
 - **What it does**: Helps define and refine research objectives through Socratic questioning
 - **Context-aware**: Considers your project's domain (cs)
 
 **Suggest research methodology:**
+
 ```
 @mcp_srrd-builder_suggest_methodology
 ```
+
 - **What it does**: Recommends appropriate research methods for your goals
 - **Context-aware**: Tailored to your project's domain and context
 
 ### 📊 Data Management
+
 Organize and analyze research data:
 
 **Extract key concepts:**
+
 ```
 @mcp_srrd-builder_extract_key_concepts
 ```
+
 - **What it does**: Identifies important concepts from research text
 - **Context-aware**: Saves concepts to your project's knowledge base
 
 **Discover patterns:**
+
 ```
 @mcp_srrd-builder_discover_patterns
 ```
+
 - **What it does**: Finds themes and patterns in research content
 - **Context-aware**: Analyzes data within your project scope
 
 **Build knowledge graph:**
+
 ```
 @mcp_srrd-builder_build_knowledge_graph
 ```
+
 - **What it does**: Creates visual connections between research concepts
 - **Context-aware**: Uses your project's stored documents and data
 
 ### 📝 Document Generation
+
 Create professional research documents:
 
 **Generate LaTeX document:**
+
 ```
 @mcp_srrd-builder_generate_latex_document
 ```
+
 - **What it does**: Creates professional LaTeX research papers
 - **Context-aware**: Uses your project's bibliography and data
 
 **Generate with database bibliography:**
+
 ```
 @mcp_srrd-builder_generate_document_with_database_bibliography
 ```
+
 - **What it does**: Creates document with automatically retrieved bibliography
 - **Context-aware**: Pulls bibliography from your project's database
 
 **Compile LaTeX to PDF:**
+
 ```
 @mcp_srrd-builder_compile_latex
 ```
+
 - **What it does**: Converts LaTeX documents to PDF
 - **Context-aware**: Outputs to your project's publications folder
 
 ### 🔍 Search & Discovery
+
 Find and explore research content:
 
 **Semantic search:**
+
 ```
 @mcp_srrd-builder_semantic_search
 ```
+
 - **What it does**: Intelligent search across your research documents
 - **Context-aware**: Searches only within your project's knowledge base
 
 **Search knowledge base:**
+
 ```
 @mcp_srrd-builder_search_knowledge
 ```
+
 - **What it does**: Vector-based search through stored research content
 - **Context-aware**: Limited to your project's scope
 
 **Find similar documents:**
+
 ```
 @mcp_srrd-builder_find_similar_documents
 ```
+
 - **What it does**: Finds documents similar to a target document
 - **Context-aware**: Searches within your project's document collection
 
 ### 🎯 Quality Assurance
+
 Ensure research quality and standards:
 
 **Check quality gates:**
+
 ```
 @mcp_srrd-builder_check_quality_gates
 ```
+
 - **What it does**: Validates research against quality standards
 - **Context-aware**: Uses your project's domain-specific criteria
 
 **Simulate peer review:**
+
 ```
 @mcp_srrd-builder_simulate_peer_review
 ```
+
 - **What it does**: AI-powered peer review simulation
 - **Context-aware**: Considers your project's domain and standards
 
 ### 🔄 Version Control
+
 Track and manage research versions:
 
 **Version control operations:**
+
 ```
 @mcp_srrd-builder_version_control
 ```
+
 - **What it does**: Git operations for research project management
 - **Context-aware**: Works with your project's Git repository
 
 **Backup project:**
+
 ```
 @mcp_srrd-builder_backup_project
 ```
+
 - **What it does**: Creates project backups
 - **Context-aware**: Backs up your current project automatically
 
 ### 📈 Session Management
+
 Manage research sessions:
 
 **Save research session:**
+
 ```
 @mcp_srrd-builder_save_session
 ```
+
 - **What it does**: Saves current research session state
 - **Context-aware**: Saves to your project's session database
 
 **Restore research session:**
+
 ```
 @mcp_srrd-builder_restore_session
 ```
+
 - **What it does**: Restores a previous research session
 - **Context-aware**: Restores from your project's session history
 
 ## 💡 Example VS Code Chat Conversations
 
 ### Example 1: Starting a Research Project
+
 ```
 You: I want to start researching machine learning algorithms for recommendation systems.
 
@@ -213,6 +267,7 @@ Domain: "cs"
 ```
 
 ### Example 2: Managing Bibliography
+
 ```
 You: I need to store some research papers about neural networks and then find them later.
 
@@ -232,6 +287,7 @@ Query: "neural networks attention"
 ```
 
 ### Example 3: Creating Documents
+
 ```
 You: Generate a research paper draft about my findings on recommendation systems.
 
@@ -246,21 +302,25 @@ Introduction: "This paper presents novel approaches to..."
 ## 🔧 Key Features of Context-Aware Tools
 
 ### 1. **Automatic Project Detection**
+
 - Tools automatically detect you're in `/tmp/vscode-chat-demo`
 - No need to specify `project_path` parameter
 - Environment variables set automatically
 
 ### 2. **Database Isolation**
+
 - Each project has its own separate databases
 - Your research data stays organized by project
 - No cross-contamination between projects
 
 ### 3. **Intelligent Defaults**
+
 - Tools use your project's domain (`cs`) for context
 - Appropriate templates and standards applied
 - Domain-specific recommendations
 
 ### 4. **Seamless Integration**
+
 - Works directly in VS Code Chat
 - No external tools needed
 - Real-time interaction with your research data
@@ -268,11 +328,13 @@ Introduction: "This paper presents novel approaches to..."
 ## 🎯 Try It Now!
 
 1. **Start the MCP server** (if not already running):
+
    ```bash
    srrd serve start
    ```
 
 2. **Open VS Code Chat** and try this:
+
    ```
    @mcp_srrd-builder_clarify_research_goals
    ```
@@ -284,17 +346,17 @@ Introduction: "This paper presents novel approaches to..."
 
 ## 📊 Tool Categories Summary
 
-| Category | Tools | Purpose |
-|----------|--------|---------|
-| **Bibliography** | 3 tools | Manage research literature |
-| **Research Planning** | 8 tools | Plan and organize research |
-| **Data Management** | 6 tools | Organize and analyze data |
-| **Document Generation** | 6 tools | Create professional documents |
-| **Search & Discovery** | 4 tools | Find and explore content |
-| **Quality Assurance** | 4 tools | Ensure research quality |
-| **Version Control** | 2 tools | Track and manage versions |
-| **Session Management** | 2 tools | Manage research sessions |
-| **Project Management** | 3 tools | Initialize and manage projects |
+| Category                | Tools   | Purpose                        |
+| ----------------------- | ------- | ------------------------------ |
+| **Bibliography**        | 3 tools | Manage research literature     |
+| **Research Planning**   | 8 tools | Plan and organize research     |
+| **Data Management**     | 6 tools | Organize and analyze data      |
+| **Document Generation** | 6 tools | Create professional documents  |
+| **Search & Discovery**  | 4 tools | Find and explore content       |
+| **Quality Assurance**   | 4 tools | Ensure research quality        |
+| **Version Control**     | 2 tools | Track and manage versions      |
+| **Session Management**  | 2 tools | Manage research sessions       |
+| **Project Management**  | 3 tools | Initialize and manage projects |
 
 **Total: 38 Context-Aware MCP Tools**
 

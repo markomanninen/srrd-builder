@@ -13,6 +13,7 @@ cd srrd-builder
 ```
 
 This script will:
+
 - Install Python dependencies with fallback to minimal requirements
 - Install the `srrd` CLI tool
 - Set up LaTeX (macOS/Linux)
@@ -67,7 +68,8 @@ pip install -e .
 
 LaTeX is required for the document generation tools (`generate_latex_document`, `compile_latex`).
 
-#### macOS:
+#### macOS
+
 ```bash
 # Install MacTeX (recommended - full distribution)
 brew install --cask mactex
@@ -78,7 +80,8 @@ sudo tlmgr update --self
 sudo tlmgr install collection-latex collection-latexrecommended
 ```
 
-#### Ubuntu/Debian:
+#### Ubuntu/Debian
+
 ```bash
 # Full LaTeX distribution
 sudo apt-get update
@@ -88,7 +91,8 @@ sudo apt-get install texlive-full
 sudo apt-get install texlive-latex-base texlive-latex-extra texlive-fonts-recommended
 ```
 
-#### Windows:
+#### Windows
+
 ```bash
 # Install MiKTeX
 winget install MiKTeX.MiKTeX
@@ -100,12 +104,14 @@ winget install MiKTeX.MiKTeX
 
 The semantic search tools can work with various vector databases:
 
-#### ChromaDB (Default):
+#### ChromaDB (Default)
+
 ```bash
 pip install chromadb
 ```
 
 #### Alternative: Pinecone
+
 ```bash
 pip install pinecone-client
 ```
@@ -186,24 +192,29 @@ srrd serve --help
 ## Feature-Specific Requirements
 
 ### Document Generation Tools
+
 - **Required**: LaTeX distribution (see above)
 - **Tools affected**: `generate_latex_document`, `compile_latex`, `format_research_content`
 
 ### Semantic Search Tools
+
 - **Required**: Vector database (ChromaDB recommended)
 - **Optional**: Sentence transformers for better embeddings
 - **Tools affected**: `semantic_search`, `find_similar_documents`, `build_knowledge_graph`
 
 ### Quality Assurance Tools
+
 - **Required**: None (uses built-in Python libraries)
 - **Tools affected**: `simulate_peer_review`, `check_quality_gates`
 
 ### Storage Management Tools
+
 - **Required**: Git (for version control)
 - **Optional**: Cloud storage backends
 - **Tools affected**: `initialize_project`, `version_control`, `backup_project`
 
 ### Research Planning Tools
+
 - **Required**: None (uses built-in Python libraries)
 - **Tools affected**: `clarify_research_goals`, `suggest_methodology`
 
@@ -271,19 +282,21 @@ echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "compile_lat
 ### Performance Optimization
 
 1. **For large document processing:**
+
    ```bash
    # Install faster JSON processing
    pip install orjson
-   
+
    # Install parallel processing support
    pip install joblib
    ```
 
 2. **For enhanced semantic search:**
-   ```bash
-   # Install GPU-accelerated libraries (if CUDA available)
-   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-   ```
+
+```bash
+# Install GPU-accelerated libraries (if CUDA available)
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+```
 
 ## Minimal Installation
 
