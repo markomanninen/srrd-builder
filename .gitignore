@@ -320,3 +320,5 @@ Thumbs.db
 
 # Dynamically generated files
 srrd_builder/mcp_global_launcher.py
+
+*.tex

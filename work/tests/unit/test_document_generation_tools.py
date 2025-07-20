@@ -50,6 +50,10 @@ class TestDocumentGenerationTools:
                 import shutil
                 shutil.rmtree(temp_dir)
 
+    def teardown_method(self):
+        """Clean up after each test method"""
+        self.cleanup()
+
     @pytest.mark.asyncio
     async def test_generate_latex_document(self):
         """Test LaTeX document generation"""
