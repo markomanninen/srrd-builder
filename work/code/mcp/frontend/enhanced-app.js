@@ -26,6 +26,13 @@ class EnhancedSRRDApp {
         this.setupEventListeners();
         this.log('Enhanced SRRD Frontend initialized');
         
+        // Add cleanup handler to prevent WebSocket errors on page unload
+        window.addEventListener('beforeunload', () => {
+            if (this.mcpClient && this.isConnected) {
+                this.mcpClient.disconnect();
+            }
+        });
+        
         // Try to auto-connect
         setTimeout(() => this.connectToServer(), 1000);
     }

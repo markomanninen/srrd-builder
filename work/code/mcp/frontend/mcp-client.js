@@ -38,12 +38,19 @@ class MCPClient {
 
                 this.ws.onclose = (event) => {
                     this.isConnected = false;
-                    this.notifyStatusChange(false, `Connection closed (${event.code})`);
-                    this.log(`WebSocket connection closed: ${event.code} - ${event.reason}`, 'info');
                     
-                    // Attempt reconnection if not intentional
-                    if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
-                        this.attemptReconnect();
+                    // Only log and attempt reconnection if this was an unexpected closure
+                    if (event.code !== 1000 && event.code !== 1001) {
+                        this.notifyStatusChange(false, `Connection lost (${event.code})`);
+                        this.log(`WebSocket connection lost: ${event.code} - ${event.reason || 'Unknown reason'}`, 'warning');
+                        
+                        // Attempt reconnection if not intentional and within limits
+                        if (this.reconnectAttempts < this.maxReconnectAttempts) {
+                            this.attemptReconnect();
+                        }
+                    } else {
+                        this.notifyStatusChange(false, 'Disconnected');
+                        this.log('WebSocket connection closed normally', 'info');
                     }
                 };
 
@@ -115,11 +122,13 @@ class MCPClient {
     }
 
     disconnect() {
-        if (this.ws) {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.log('Closing WebSocket connection...', 'info');
             this.ws.close(1000, 'Client disconnect');
-            this.ws = null;
         }
+        this.ws = null;
         this.isConnected = false;
+        this.pendingRequests.clear(); // Clear any pending requests
         this.notifyStatusChange(false, 'Disconnected');
     }
 
