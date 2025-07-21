@@ -349,12 +349,63 @@ For more information, visit: https://github.com/markomanninen/srrd-builder
             sys.exit(1)
     
     elif args.action == "status":
-        if is_server_running():
-            pid_data = load_server_pid()
-            print(f"✅ Server is running (PID: {pid_data.get('pid')})")
-            print(f"   Started: {pid_data.get('started')}")
-            print(f"   Address: {pid_data.get('host')}:{pid_data.get('port')}")
-            sys.exit(0)
+        pid_data = load_server_pid()
+        if pid_data:
+            pid = pid_data.get('pid')
+            frontend_pid = pid_data.get('frontend_pid')
+            host = pid_data.get('host', 'localhost')
+            port = pid_data.get('port', 8080)
+            frontend_port = pid_data.get('frontend_port', 8765)
+            
+            servers_running = []
+            
+            # Check MCP server
+            if pid:
+                try:
+                    os.kill(pid, 0)
+                    # Check if port is in use
+                    import socket
+                    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                        sock.settimeout(1)
+                        if sock.connect_ex((host, port)) == 0:
+                            servers_running.append({
+                                'name': 'MCP Server',
+                                'pid': pid,
+                                'port': port,
+                                'type': 'MCP (Claude Desktop)'
+                            })
+                except (ProcessLookupError, socket.error):
+                    pass
+            
+            # Check Web GUI server
+            if frontend_pid:
+                try:
+                    os.kill(frontend_pid, 0)
+                    # Check if port is in use
+                    import socket
+                    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                        sock.settimeout(1)
+                        if sock.connect_ex((host, frontend_port)) == 0:
+                            servers_running.append({
+                                'name': 'Web GUI Server',
+                                'pid': frontend_pid,
+                                'port': frontend_port,
+                                'type': 'WebSocket (Browser)'
+                            })
+                except (ProcessLookupError, socket.error):
+                    pass
+            
+            if servers_running:
+                print(f"✅ SRRD Servers are running ({len(servers_running)} servers)")
+                for server in servers_running:
+                    print(f"   📡 {server['name']} (PID: {server['pid']}) - {host}:{server['port']}")
+                print(f"   Started: {pid_data.get('started', 'unknown')}")
+                sys.exit(0)
+            else:
+                print("❌ Server processes exist but not responding")
+                # Clean up stale PID file
+                get_pid_file_path().unlink(missing_ok=True)
+                sys.exit(1)
         else:
             print("❌ Server is not running")
             sys.exit(1)
@@ -373,10 +424,49 @@ For more information, visit: https://github.com/markomanninen/srrd-builder
     elif args.action == "start":
         if is_server_running():
             pid_data = load_server_pid()
-            print(f"⚠️  Server is already running (PID: {pid_data.get('pid')})")
-            print(f"   Started: {pid_data.get('started')}")
-            print(f"   Address: {pid_data.get('host')}:{pid_data.get('port')}")
-            print("   Use 'srrd-server stop' to stop it or 'srrd-server restart' to restart")
+            pid = pid_data.get('pid')
+            frontend_pid = pid_data.get('frontend_pid')
+            host = pid_data.get('host', 'localhost')
+            port = pid_data.get('port', 8080)
+            frontend_port = pid_data.get('frontend_port', 8765)
+            
+            servers_running = []
+            
+            # Check MCP server
+            if pid:
+                try:
+                    os.kill(pid, 0)
+                    servers_running.append({
+                        'name': 'MCP Server',
+                        'pid': pid,
+                        'port': port,
+                        'type': 'Claude Desktop'
+                    })
+                except OSError:
+                    pass
+            
+            # Check Web GUI server
+            if frontend_pid:
+                try:
+                    os.kill(frontend_pid, 0)
+                    servers_running.append({
+                        'name': 'Web GUI Server', 
+                        'pid': frontend_pid,
+                        'port': frontend_port,
+                        'type': 'Browser WebSocket'
+                    })
+                except OSError:
+                    pass
+            
+            if servers_running:
+                print(f"⚠️  SRRD Servers are already running ({len(servers_running)} servers)")
+                for server in servers_running:
+                    print(f"   📡 {server['name']} (PID: {server['pid']}) - {host}:{server['port']}")
+                print(f"   Started: {pid_data.get('started')}")
+                print("   Use 'srrd-server stop' to stop them or 'srrd-server restart' to restart")
+            else:
+                print(f"⚠️  Server process file exists but servers not responding")
+                print(f"   You may need to clean up with 'srrd-server stop'")
             sys.exit(1)
     
     # Find the MCP server module

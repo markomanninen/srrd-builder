@@ -161,7 +161,7 @@ fi
 
 # Test CLI command
 echo "Testing CLI command..."
-if python -m srrd_builder.cli.main --version; then
+if PYTHONWARNINGS="ignore" python -m srrd_builder.cli.main --version 2>/dev/null; then
     echo "CLI test passed"
 else
     echo "❌ CLI test failed"
@@ -208,21 +208,19 @@ fi
 echo "Testing MCP server..."
 if [ -f "work/code/mcp/mcp_server.py" ]; then
     TEST_RESULT=$(echo '{"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}' | python3 work/code/mcp/mcp_server.py 2>/dev/null)
-    if echo "$TEST_RESULT" | grep -q '"tools"'; then
-        TOOL_COUNT=$(echo "$TEST_RESULT" | python3 -c "
-import json, sys
-try:
-    data = json.load(sys.stdin)
-    print(len(data.get('result', {}).get('tools', [])))
-except:
-    print('0')
-")
+    JSON_LINE=$(echo "$TEST_RESULT" | grep '^{')
+    if [ -n "$JSON_LINE" ] && echo "$JSON_LINE" | grep -q '"tools"'; then
+        TOOL_INFO=$(echo "$JSON_LINE" | python3 -c "import sys, json; data = json.load(sys.stdin); tools = data.get('result', {}).get('tools', []); print(len(tools)); print('\n'.join([t.get('name', '') for t in tools])) if tools else None")
+        TOOL_COUNT=$(echo "$TOOL_INFO" | head -n1)
+        TOOL_NAMES=$(echo "$TOOL_INFO" | tail -n +3 | tr '\n' ',' | sed 's/,$//')
         echo "✅ MCP server working ($TOOL_COUNT tools available)"
     else
         echo "❌ MCP server test failed"
+        TOOL_NAMES=""
     fi
 else
     echo "⚠️  MCP server file not found at work/code/mcp/mcp_server.py"
+    TOOL_NAMES=""
 fi
 
 # Test LaTeX if available
@@ -328,4 +326,4 @@ echo "   srrd configure --status      # Check configuration and server status"
 echo "   srrd configure --claude      # Configure Claude Desktop"
 echo "   srrd-server --with-frontend  # Start web demo"
 echo ""
-echo "📖 Available tools: research planning, document generation, semantic search, quality assurance, and storage management"
+echo "📖 Available tools: $TOOL_NAMES"

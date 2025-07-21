@@ -19,55 +19,102 @@ def check_port_in_use(host, port):
 def handle_status(args):
     """Handle 'srrd status' command"""
     current_dir = Path.cwd()
+    home = Path.home()
     
-    # Check if SRRD is initialized
+    # Check if SRRD is initialized in current directory
     srrd_dir = current_dir / '.srrd'
-    if not srrd_dir.exists():
-        print("❌ SRRD not initialized in current directory")
-        print("   Run 'srrd init' first")
-        return 1
+    local_initialized = srrd_dir.exists()
     
     print(f"📋 SRRD Status for: {current_dir}")
     print("=" * 50)
     
-    # Check initialization
-    print(f"✅ SRRD initialized: {srrd_dir.exists()}")
+    # Check local initialization
+    print(f"✅ Local SRRD initialized: {local_initialized}")
     
-    # Check server status
-    pid_file = srrd_dir / 'server.pid'
-    if pid_file.exists():
+    # Check global server status (new global server system)
+    global_pid_file = home / '.srrd' / 'server.pid'
+    server_running = False
+    server_info = None
+    
+    if global_pid_file.exists():
         try:
-            with open(pid_file, 'r') as f:
-                pid_data = json.load(f)
+            with open(global_pid_file, 'r') as f:
+                server_info = json.load(f)
             
-            host = pid_data.get('host', 'localhost')
-            port = pid_data.get('port', 8080)
+            pid = server_info.get('pid')
+            frontend_pid = server_info.get('frontend_pid')
+            host = server_info.get('host', 'localhost')
+            port = server_info.get('port', 8080)
+            frontend_port = server_info.get('frontend_port', 8765)
             
-            if check_port_in_use(host, port):
-                print(f"🟢 Server running")
-                print(f"   PID: {pid_data.get('pid', 'unknown')}")
-                print(f"   Started: {pid_data.get('started', 'unknown')}")
-                print(f"   Host: {host}")
-                print(f"   Port: {port}")
+            servers_running = []
+            
+            # Check MCP server
+            if pid:
+                try:
+                    import os
+                    os.kill(pid, 0)
+                    if check_port_in_use(host, port):
+                        servers_running.append({
+                            'name': 'MCP Server',
+                            'pid': pid,
+                            'port': port,
+                            'type': 'MCP (Claude Desktop)'
+                        })
+                except ProcessLookupError:
+                    pass
+            
+            # Check Web GUI server
+            if frontend_pid:
+                try:
+                    import os
+                    os.kill(frontend_pid, 0)
+                    if check_port_in_use(host, frontend_port):
+                        servers_running.append({
+                            'name': 'Web GUI Server',
+                            'pid': frontend_pid,
+                            'port': frontend_port,
+                            'type': 'WebSocket (Browser)'
+                        })
+                except ProcessLookupError:
+                    pass
+            
+            if servers_running:
+                server_running = True
+                print(f"🟢 Global SRRD Servers: {len(servers_running)} Running")
+                for server in servers_running:
+                    print(f"   📡 {server['name']}")
+                    print(f"      PID: {server['pid']}, Port: {server['port']}")
+                    print(f"      Type: {server['type']}")
+                print(f"   Started: {server_info.get('started', 'unknown')}")
+                print(f"   Project: {server_info.get('project_path', 'global')}")
             else:
-                print(f"🟡 Server tracking file exists but port {port} not in use")
-                print(f"   (Server may have stopped unexpectedly)")
+                print(f"🟡 Global server tracking file exists but servers not responding")
                 
         except (json.JSONDecodeError, FileNotFoundError):
-            print("🟡 Server tracking file corrupted")
+            print("🟡 Global server tracking file corrupted")
+    
+    if not server_running:
+        print("🔴 Global SRRD servers not running")
+        print("   Use 'srrd-server' to start the global server")
+        print("   Or 'srrd configure --claude' + restart Claude to use MCP tools")
+    
+    # Check local project files (if locally initialized)
+    if local_initialized:
+        print()
+        print("📁 Local Project Files:")
+        config_file = srrd_dir / 'config.json'
+        print(f"   📄 Config file: {'✅' if config_file.exists() else '❌'}")
+        
+        db_file = srrd_dir / 'srrd.db'
+        print(f"   🗄️  SQLite database: {'✅' if db_file.exists() else '❌'}")
+        
+        vector_db_dir = srrd_dir / 'vector_db'
+        print(f"   🔍 Vector database: {'✅' if vector_db_dir.exists() else '❌'}")
     else:
-        print("🔴 Server not running")
-    
-    # Check configuration
-    config_file = srrd_dir / 'config.json'
-    print(f"📄 Config file: {'✅' if config_file.exists() else '❌'}")
-    
-    # Check databases
-    db_file = srrd_dir / 'srrd.db'
-    print(f"🗄️  SQLite database: {'✅' if db_file.exists() else '❌'}")
-    
-    vector_db_dir = srrd_dir / 'vector_db'
-    print(f"🔍 Vector database: {'✅' if vector_db_dir.exists() else '❌'}")
+        print()
+        print("💡 Tip: This directory is not initialized as an SRRD project")
+        print("   Run 'srrd init' to initialize a local research project")
     
     # Check Git repository
     git_dir = current_dir / '.git'

@@ -73,14 +73,14 @@ def get_claude_config_path():
         return None
 
 def get_vscode_config_path():
-    """Get VS Code settings.json path based on OS"""
+    """Get VS Code mcp.json path based on OS"""
     system = platform.system()
     if system == "Darwin":  # macOS
-        return Path.home() / "Library" / "Application Support" / "Code" / "User" / "settings.json"
+        return Path.home() / "Library" / "Application Support" / "Code" / "User" / "mcp.json"
     elif system == "Windows":
-        return Path.home() / "AppData" / "Roaming" / "Code" / "User" / "settings.json"
+        return Path.home() / "AppData" / "Roaming" / "Code" / "User" / "mcp.json"
     elif system == "Linux":
-        return Path.home() / ".config" / "Code" / "User" / "settings.json"
+        return Path.home() / ".config" / "Code" / "User" / "mcp.json"
     else:
         return None
 
@@ -88,14 +88,13 @@ def get_srrd_mcp_config():
     """Get SRRD MCP server configuration"""
     # Get the path to the MCP server
     package_root = Path(__file__).parent.parent.parent.parent
-    mcp_server_path = package_root / 'work' / 'code' / 'mcp' / 'mcp_server.py'
+    mcp_server_path = package_root / 'srrd_builder' / 'mcp_global_launcher.py'
     
     return {
         "command": "python3",
-        "args": [str(mcp_server_path), "--stdio"],
-        "env": {
-            "PYTHONPATH": str(mcp_server_path.parent)
-        }
+        "args": [str(mcp_server_path)],
+        "env": {},
+        "type": "stdio"
     }
 
 def configure_claude(force=False):
@@ -152,7 +151,7 @@ def configure_vscode(force=False):
         print("❌ Unsupported operating system for VS Code configuration")
         return False
     
-    print(f"📁 VS Code config path: {config_path}")
+    print(f"📁 VS Code MCP config path: {config_path}")
     
     # Create config directory if it doesn't exist
     config_path.parent.mkdir(parents=True, exist_ok=True)
@@ -160,27 +159,28 @@ def configure_vscode(force=False):
     # Load existing config or create new one
     if config_path.exists():
         try:
-            config = load_json_with_comments(config_path)
-        except:
-            print("⚠️  Existing VS Code config is invalid JSON, creating new one")
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+        except json.JSONDecodeError:
+            print("⚠️  Existing VS Code MCP config is invalid JSON, creating new one")
             config = {}
     else:
         config = {}
     
-    # Ensure mcp section exists
-    if "mcp" not in config:
-        config["mcp"] = {}
-    if "servers" not in config["mcp"]:
-        config["mcp"]["servers"] = {}
+    # Ensure servers section exists
+    if "servers" not in config:
+        config["servers"] = {}
+    if "inputs" not in config:
+        config["inputs"] = []
     
     # Check if SRRD is already configured
-    if "srrd-builder" in config["mcp"]["servers"] and not force:
+    if "srrd-builder" in config["servers"] and not force:
         print("✅ SRRD-Builder already configured in VS Code")
         print("   Use --force to overwrite existing configuration")
         return True
     
     # Add SRRD MCP server configuration
-    config["mcp"]["servers"]["srrd-builder"] = get_srrd_mcp_config()
+    config["servers"]["srrd-builder"] = get_srrd_mcp_config()
     
     # Write updated config
     try:
@@ -190,7 +190,7 @@ def configure_vscode(force=False):
         print("   Restart VS Code to use the new configuration")
         return True
     except Exception as e:
-        print(f"❌ Failed to write VS Code config: {e}")
+        print(f"❌ Failed to write VS Code MCP config: {e}")
         return False
 
 def show_config_status():
@@ -200,8 +200,8 @@ def show_config_status():
     
     # Check if server is currently running
     current_dir = Path.cwd()
-    srrd_dir = current_dir / '.srrd'
-    pid_file = srrd_dir / 'server.pid'
+    home = Path.home()
+    pid_file = home / '.srrd' / 'server.pid'  # Global server PID file in home directory
     
     server_running = False
     server_info = None
@@ -212,31 +212,68 @@ def show_config_status():
                 server_info = json.load(f)
             
             pid = server_info.get('pid')
+            frontend_pid = server_info.get('frontend_pid')
+            host = server_info.get('host', 'localhost')
+            port = server_info.get('port', 8080)
+            frontend_port = server_info.get('frontend_port', 8765)
+            
+            servers_running = []
+            
+            # Check MCP server
             if pid:
                 try:
-                    # Check if process is still running (this doesn't kill, just checks)
                     import os
                     os.kill(pid, 0)
-                    
-                    server_running = True
-                    print(f"🟢 Local Server: Running")
-                    print(f"   PID: {pid}")
-                    print(f"   Started: {server_info.get('started', 'unknown')}")
-                    print(f"   Mode: MCP (stdio)")
-                    print(f"   Project: {server_info.get('project_path', current_dir)}")
-                    
-                    # Show connection info for clients
-                    print(f"🔗 Connection Info:")
-                    print(f"   Claude Desktop: Configured via stdio (restart Claude to connect)")
-                    print(f"   VS Code: Configured via stdio (reload window to connect)")
-                    
+                    if check_port_in_use(host, port):
+                        servers_running.append({
+                            'name': 'MCP Server',
+                            'pid': pid,
+                            'port': port,
+                            'type': 'MCP (Claude Desktop)'
+                        })
                 except ProcessLookupError:
-                    print(f"🟡 Local Server: Process not found (PID {pid})")
-                    print(f"   Tracking file exists but process has stopped")
-                    # Clean up stale PID file
-                    pid_file.unlink()
+                    pass
+            
+            # Check Web GUI server
+            if frontend_pid:
+                try:
+                    import os
+                    os.kill(frontend_pid, 0)
+                    if check_port_in_use(host, frontend_port):
+                        servers_running.append({
+                            'name': 'Web GUI Server',
+                            'pid': frontend_pid,
+                            'port': frontend_port,
+                            'type': 'WebSocket (Browser)'
+                        })
+                except ProcessLookupError:
+                    pass
+            
+            if servers_running:
+                server_running = True
+                print(f"🟢 SRRD Servers: {len(servers_running)} Running")
+                for server in servers_running:
+                    print(f"   📡 {server['name']}")
+                    print(f"      PID: {server['pid']}")
+                    print(f"      Address: {host}:{server['port']}")
+                    print(f"      Type: {server['type']}")
+                print(f"   Started: {server_info.get('started', 'unknown')}")
+                print(f"   Project: {server_info.get('project_path', current_dir)}")
+                
+                # Show connection info for clients
+                print(f"🔗 Connection Info:")
+                mcp_running = any(s['name'] == 'MCP Server' for s in servers_running)
+                web_running = any(s['name'] == 'Web GUI Server' for s in servers_running)
+                
+                if mcp_running:
+                    print(f"   Claude Desktop: Ready (restart Claude to connect)")
+                    print(f"   VS Code: Ready (reload window to connect)")
+                if web_running:
+                    print(f"   Browser: http://{host}:{frontend_port}")
             else:
-                print("🟡 Local Server: Invalid tracking file")
+                print(f"🟡 Servers: Process files exist but servers not responding")
+                print(f"   Main PID {pid}, Frontend PID {frontend_pid}")
+                # Clean up stale PID file
                 pid_file.unlink()
                 
         except (json.JSONDecodeError, FileNotFoundError):
@@ -278,11 +315,12 @@ def show_config_status():
     vscode_path = get_vscode_config_path()
     if vscode_path and vscode_path.exists():
         try:
-            vscode_config = load_json_with_comments(vscode_path)
+            with open(vscode_path, 'r') as f:
+                vscode_config = json.load(f)
             
-            if "mcp" in vscode_config and "servers" in vscode_config["mcp"] and "srrd-builder" in vscode_config["mcp"]["servers"]:
+            if "servers" in vscode_config and "srrd-builder" in vscode_config["servers"]:
                 print("✅ VS Code: SRRD-Builder configured")
-                srrd_config = vscode_config["mcp"]["servers"]["srrd-builder"]
+                srrd_config = vscode_config["servers"]["srrd-builder"]
                 print(f"   Command: {srrd_config.get('command', 'unknown')}")
                 print(f"   Server Path: {' '.join(srrd_config.get('args', []))}")
                 if server_running:
@@ -291,16 +329,27 @@ def show_config_status():
                 print("❌ VS Code: SRRD-Builder not configured")
                 print("   Use 'srrd configure --vscode' to configure")
         except Exception as e:
-            print(f"⚠️  VS Code: Config file exists but unreadable - {e}")
+            print(f"⚠️  VS Code: MCP config file exists but unreadable - {e}")
     else:
-        print("❌ VS Code: Config file not found")
+        print("❌ VS Code: MCP config file not found")
         print("   Use 'srrd configure --vscode' to configure")
     
-    # Show MCP server path
+    # Show MCP server components
+    print("📍 MCP Server Components:")
     srrd_config = get_srrd_mcp_config()
-    mcp_server_path = Path(srrd_config["args"][0])
-    print(f"📍 MCP Server: {mcp_server_path}")
-    print(f"   Exists: {'✅' if mcp_server_path.exists() else '❌'}")
+    launcher_path = Path(srrd_config["args"][0])
+    print(f"   Launcher: {launcher_path}")
+    print(f"   Launcher exists: {'✅' if launcher_path.exists() else '❌'}")
+    
+    # Check actual MCP server files
+    package_root = launcher_path.parent.parent
+    actual_server_path = package_root / 'work' / 'code' / 'mcp' / 'server.py'
+    print(f"   MCP Server: {actual_server_path}")
+    print(f"   Server exists: {'✅' if actual_server_path.exists() else '❌'}")
+    
+    # Check MCP tools
+    tools_path = package_root / 'work' / 'code' / 'mcp' / 'tools'
+    print(f"   Tools directory: {'✅' if tools_path.exists() else '❌'}")
     
     # Show usage tips
     if server_running:
