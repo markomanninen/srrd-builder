@@ -6,9 +6,59 @@ This guide covers all the dependencies and components needed to use the SRRD-Bui
 
 The fastest way to get started is using the automated setup script:
 
-### Windows
+### Wi## MCP Configuration
 
-```powershell
+Configure your MCP client to use the SRRD-Builder MCP server.
+
+### VS Code Configuration
+
+For VS Code with MCP extension, create or edit your MCP configuration file:
+
+- **Windows**: `%APPDATA%\Code\User\mcp.json`
+- **macOS**: `~/Library/Application Support/Code/User/mcp.json`
+- **Linux**: `~/.config/Code/User/mcp.json`
+
+**Configuration Format:**
+
+```json
+{
+  "servers": {
+    "srrd-builder": {
+      "command": "python3",
+      "args": ["/path/to/srrd-builder/work/code/mcp/mcp_server.py"],
+      "cwd": "/path/to/srrd-builder/work/code/mcp",
+      "env": {
+        "PYTHONPATH": "/path/to/srrd-builder/work/code/mcp"
+      }
+    }
+  }
+}
+```
+
+### Claude Desktop Configuration
+
+For Claude Desktop users, add to your configuration file:
+
+- **Windows**: `%APPDATA%\Claude\config.json`
+- **macOS**: `~/Library/Application Support/Claude/config.json`
+- **Linux**: `~/.config/Claude/config.json`
+
+**Configuration Format:**
+
+```json
+{
+  "mcpServers": {
+    "srrd-builder": {
+      "command": "python3",
+      "args": ["/path/to/srrd-builder/work/code/mcp/mcp_server.py"],
+      "cwd": "/path/to/srrd-builder/work/code/mcp",
+      "env": {
+        "PYTHONPATH": "/path/to/srrd-builder/work/code/mcp"
+      }
+    }
+  }
+}
+```wershell
 git clone https://github.com/markomanninen/srrd-builder
 cd srrd-builder
 setup.bat
@@ -50,6 +100,9 @@ srrd configure --status         # Check configuration and status
 # Claude Desktop Integration (automatic - no manual server management)
 srrd configure --claude         # Configure Claude Desktop to use MCP server
 
+# VS Code Integration (automatic with MCP extension)
+srrd configure --vscode         # Configure VS Code to use MCP server
+
 # WebSocket Demo Server (for testing and web interfaces only)
 srrd-server --with-frontend     # Start demo server with web interface
 srrd-server status              # Check demo server status
@@ -60,7 +113,7 @@ srrd-server stop                # Stop demo server
 
 ### Windows Installation
 
-#### Prerequisites
+#### Windows Prerequisites
 
 - **Python 3.8+**: Download from [python.org](https://python.org)
 - **Claude Desktop**: Required for using the MCP server
@@ -78,6 +131,7 @@ setup.bat
 ```
 
 The Windows setup script will:
+
 - Check Python installation
 - Create a virtual environment
 - Install Python dependencies
@@ -137,6 +191,7 @@ bash setup.sh
 ```
 
 **Important WSL Notes:**
+
 - The script will automatically detect and remove any Windows-style virtual environments
 - Creates a new Unix-style virtual environment with proper activation scripts
 - Installs all dependencies in the WSL environment
@@ -155,13 +210,13 @@ sudo apt-get install texlive-full
 
 ### macOS Installation
 
-#### Prerequisites
+#### macOS Prerequisites
 
 - **Python 3.8+**: Pre-installed or via Homebrew
 - **Claude Desktop**: Required for using the MCP server
 - **Git**: Pre-installed or via Xcode Command Line Tools
 
-#### Automated Setup
+#### Automated macOS Setup
 
 ```bash
 git clone https://github.com/markomanninen/srrd-builder
@@ -170,6 +225,7 @@ cd srrd-builder
 ```
 
 The macOS setup script will:
+
 - Install or check for Homebrew
 - Install LaTeX (MacTeX) if not present
 - Download spaCy and NLTK language models
@@ -187,7 +243,7 @@ brew install --cask basictex
 
 ### Linux Installation
 
-#### Prerequisites
+#### Linux Prerequisites
 
 - **Python 3.8+**: Usually pre-installed or available via package manager
 - **Claude Desktop**: Required for using the MCP server
@@ -266,7 +322,7 @@ pip install nltk spacy
 python -m spacy download en_core_web_sm
 ```
 
-## Claude Desktop Configuration
+## Configuring Claude Desktop
 
 ### Automatic Configuration (Recommended)
 
@@ -307,6 +363,7 @@ srrd configure --claude
 ```
 
 **Windows Path Example:**
+
 ```json
 {
   "mcpServers": {
@@ -323,6 +380,20 @@ srrd configure --claude
 ```
 
 ## Server Management
+
+### VS Code MCP (Automatic)
+
+VS Code with MCP extension automatically manages the server:
+
+```bash
+# Configure once
+srrd configure --vscode
+
+# Check configuration status
+srrd configure --status
+
+# VS Code automatically runs: python3 mcp_server.py
+```
 
 ### Claude Desktop (Automatic)
 
@@ -441,6 +512,7 @@ echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "compile_lat
    - Remove Windows venv: `rm -rf venv` and run setup again
 
 3. **"Python3 not found in WSL"**
+
    ```bash
    sudo apt update
    sudo apt install python3 python3-pip python3-venv
@@ -448,24 +520,30 @@ echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "compile_lat
 
 #### Cross-Platform Issues
 
-4. **"MCP server not starting"**
-   - Check status: `srrd configure --status`
-   - View logs: Check files in `work/code/mcp/logs/`
-   - Restart: `srrd-server restart`
+1. **"MCP tools not found in VS Code"**
+   - Check VS Code MCP extension is installed and enabled
+   - Verify mcp.json configuration: `srrd configure --status`
+   - Restart VS Code after configuration changes
+   - Check path separators (Windows uses `\`, Unix uses `/`)
 
-5. **"pdflatex not found"**
-   - Install LaTeX distribution (see platform-specific instructions above)
-   - Ensure pdflatex is in your PATH: `which pdflatex` (Unix) or `where pdflatex` (Windows)
-
-6. **"ModuleNotFoundError"**
-   - Install missing Python dependencies: `pip install [module_name]`
-   - Check virtual environment activation
-
-7. **"Claude Desktop not finding tools"**
+2. **"Claude Desktop not finding tools"**
    - Check configuration: `srrd configure --status`
    - Ensure Claude Desktop config is properly set
    - Restart Claude Desktop after configuration changes
    - Check path separators (Windows uses `\`, Unix uses `/`)
+
+3. **"MCP server not starting"**
+   - Check status: `srrd configure --status`
+   - View logs: Check files in `work/code/mcp/logs/`
+   - Restart: `srrd-server restart`
+
+4. **"pdflatex not found"**
+   - Install LaTeX distribution (see platform-specific instructions above)
+   - Ensure pdflatex is in your PATH: `which pdflatex` (Unix) or `where pdflatex` (Windows)
+
+5. **"ModuleNotFoundError"**
+   - Install missing Python dependencies: `pip install [module_name]`
+   - Check virtual environment activation
 
 ### Performance Optimization
 
@@ -560,10 +638,12 @@ If you encounter issues:
 3. Check logs in `work/code/mcp/logs/`
 4. Run the comprehensive test suite: `bash run_tests.sh` (158 tests)
 5. Verify all dependencies are installed
-6. Check Claude Desktop logs:
-   - **Windows**: `%APPDATA%\Claude\logs\`
-   - **macOS**: `~/Library/Logs/Claude/`
-   - **Linux**: `~/.config/Claude/logs/`
+6. Check MCP client logs:
+   - **VS Code**: Open Developer Tools → Console for MCP extension logs
+   - **Claude Desktop**: Check logs in:
+     - Windows: `%APPDATA%\Claude\logs\`
+     - macOS: `~/Library/Logs/Claude/`
+     - Linux: `~/.config/Claude/logs/`
 
 ## Version Information
 

@@ -20,14 +20,17 @@ The system features an **MCP (Model Context Protocol) server** that integrates w
 ## Key Features
 
 - **MCP Server Integration** with Claude Desktop (automatic stdio mode)
+- **VS Code Integration** using dedicated mcp.json configuration (modern MCP format)
 - **CLI Tool (`srrd`)** for project initialization and configuration
-- **WebSocket Demo Server (`srrd-server`)** for testing and web interfaces
+- **Global Server Management (`srrd-server`)** with dual-server architecture
 - **44 Research Tools** including document generation, semantic search, and quality gates
 - **Research Lifecycle Persistence** with automatic tool logging and progress tracking
 - **Workflow Intelligence** providing AI-powered progress analysis and recommendations
 - **LaTeX Document Generation** with automatic bibliography integration
 - **Vector Database Storage** for semantic search and knowledge management
 - **Git-based Project Management** with session restoration
+- **Global Project Context** with `~/.srrd/globalproject` for home directory research
+- **Dual-Server Architecture** (MCP Server + Web GUI) with unified status monitoring
 - **Socratic Questioning Engine** for progressive research refinement
 - **Novel Theory Development Framework** for paradigm innovation in physics
 - **Web Frontend Interface** for testing and demonstration
@@ -67,7 +70,7 @@ cd srrd-builder
 ./setup.sh --with-tests
 ```
 
-### What the setup scripts do:
+### What the setup scripts do
 
 - Install Python dependencies with fallback to minimal requirements
 - Install the `srrd` and `srrd-server` CLI tools
@@ -126,7 +129,7 @@ srrd-server stop
 ### 🔧 Requirements
 
 - **Python 3.8+** (all platforms)
-- **LaTeX distribution**: 
+- **LaTeX distribution**
   - Windows: MiKTeX
   - macOS: MacTeX  
   - Linux: TeXLive
@@ -217,6 +220,44 @@ The MCP server provides **44 tools** organized by research workflow categories:
 4. Test tools by clicking category buttons
 5. View real-time results in console
 ```
+
+## CLI Commands & Server Management
+
+### CLI Command Reference
+
+The SRRD CLI provides comprehensive project and server management:
+
+```bash
+# Project Management
+srrd init                    # Initialize new research project
+srrd switch                  # Switch MCP context to current project
+srrd reset                   # Reset to global home project (~/.srrd/globalproject)
+srrd status                  # Check global servers and local project status
+
+# Server Management
+srrd-server                  # Start MCP WebSocket server
+srrd-server --with-frontend  # Start server + web GUI (localhost:8080)
+srrd-server status           # Check server status (shows both servers)
+srrd-server stop             # Stop all running servers
+srrd-server restart          # Restart servers
+
+# Configuration
+srrd configure --claude      # Configure Claude Desktop (uses mcp stdio)
+srrd configure --vscode      # Configure VS Code (uses mcp.json)
+srrd configure --status      # Show comprehensive configuration status
+srrd configure --all         # Configure both Claude Desktop and VS Code
+```
+
+### Dual-Server Architecture Status
+
+The system now provides unified status monitoring for both server types:
+
+- **MCP Server** (Port 8765) - Claude Desktop integration
+- **Web GUI Server** (Port 8080) - Browser-based interface
+- **Unified Status Commands** - Both `srrd configure --status` and `srrd-server status` show all running servers
+- **Global Project Support** - Default context uses `~/.srrd/globalproject` for home directory research
+
+**Note:** The CLI now uses `python3 -m srrd_builder.cli` (improved module structure without RuntimeWarning)
 
 ## Server Architecture
 
@@ -341,15 +382,18 @@ SRRD-Builder implements a **neurosymbolic architecture** that combines:
 #### Platform-Specific Issues
 
 **Windows:**
+
 - **"'srrd' is not recognized"**: Ensure virtual environment is activated with `venv\Scripts\activate.bat`
 - **"Access denied" errors**: Run as Administrator or check antivirus software
 
 **WSL:**
+
 - **"$'\r': command not found"**: Run `dos2unix setup.sh` to fix line endings
 - **"venv/bin/activate: No such file"**: Script will automatically detect and recreate Unix-style venv
 
 **All Platforms:**
-- **Virtual environment activation**: 
+
+- **Virtual environment activation**
   - Windows: `venv\Scripts\activate.bat`
   - macOS/Linux/WSL: `source venv/bin/activate`
 
