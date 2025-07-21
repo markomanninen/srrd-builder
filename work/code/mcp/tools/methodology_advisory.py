@@ -128,8 +128,7 @@ async def explain_methodology(**kwargs) -> str:
         "research_question": research_question,
         "domain": domain,
         "methodology_analysis": {},
-        "recommendations": [],
-        "next_steps": []
+        "recommendations": []
     }
     
     # If specific methodology requested, provide detailed explanation
@@ -167,11 +166,13 @@ async def explain_methodology(**kwargs) -> str:
         "Plan for adequate sample size and statistical power"
     ]
     
-    response["next_steps"] = [
-        "Refine research question to be more specific",
-        "Consult with methodology expert in your field",
-        "Submit research protocol for ethical review",
-        "Pilot test your methodology on small sample"
+    # Add user interaction requirement instead of automatic next_steps
+    response["user_interaction_required"] = "Please review this methodology analysis. Which aspect would you like to explore further or refine?"
+    response["next_step_options"] = [
+        "Refine the research question to be more specific",
+        "Get advice on selecting the most appropriate methodology",
+        "Understand ethical requirements for this research type",
+        "Learn about sample size and statistical power planning"
     ]
     
     return json.dumps(response, indent=2)
@@ -273,6 +274,16 @@ async def compare_approaches(**kwargs) -> str:
         "Ethical implications of each approach",
         "Timeline and practical constraints",
         "Statistical power and sample size requirements"
+    ]
+    
+    # Add user interaction requirement
+    comparison["user_interaction_required"] = "Please review this approach comparison. Which approach would you like to pursue, or would you like to explore specific aspects further?"
+    comparison["next_step_options"] = [
+        f"Proceed with {approach_a} approach and develop detailed protocol",
+        f"Proceed with {approach_b} approach and develop detailed protocol", 
+        "Explore hybrid approach combining elements of both",
+        "Get more detailed analysis of resource requirements",
+        "Understand ethical implications in more depth"
     ]
     
     return json.dumps(comparison, indent=2)
@@ -406,6 +417,16 @@ async def validate_design(**kwargs) -> str:
     else:
         validation_results["approval_status"] = "❌ Major revisions required"
     
+    # Add user interaction requirement
+    validation_results["user_interaction_required"] = "Please review this design validation. What aspect would you like to focus on addressing or improving?"
+    validation_results["next_step_options"] = [
+        "Address the critical issues identified in the validation",
+        "Refine the methodology based on improvement suggestions",
+        "Develop a detailed implementation plan", 
+        "Get ethics review and approval for the design",
+        "Create a pilot study to test the design"
+    ]
+    
     return json.dumps(validation_results, indent=2)
 
 @context_aware()
@@ -536,6 +557,16 @@ async def ensure_ethics(**kwargs) -> str:
         approvals.append("Multi-site ethics approval")
     
     ethics_review["required_approvals"] = approvals
+    
+    # Add user interaction requirement
+    ethics_review["user_interaction_required"] = "Please review this ethical analysis. Which aspects would you like to address first to ensure ethical compliance?"
+    ethics_review["next_step_options"] = [
+        "Work on completing missing compliance documentation",
+        "Develop risk mitigation strategies for identified concerns",
+        "Prepare IRB application and submission materials",
+        "Address specific ethical framework issues identified",
+        "Consult with institutional ethics committee"
+    ]
     
     return json.dumps(ethics_review, indent=2)
 

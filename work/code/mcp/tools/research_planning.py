@@ -105,8 +105,13 @@ class ResearchPlanningTool:
             "clarified_goals": self._analyze_goals(initial_goals, domain_specialization),
             "follow_up_questions": questions,
             "methodology_suggestions": methodology_suggestions,
-            "next_steps": next_steps,
-            "novel_theory_guidance": self._get_novel_theory_guidance() if novel_theory_mode else None
+            "novel_theory_guidance": self._get_novel_theory_guidance() if novel_theory_mode else None,
+            "user_interaction_required": "Please review these clarified goals and questions. Which specific aspect would you like to explore further? You can use suggest_methodology to get detailed methodology recommendations, or ask me to clarify any of these points.",
+            "next_step_options": [
+                "Use 'suggest_methodology' if you want detailed research methodology recommendations",
+                "Use 'generate_critical_questions' if you want more focused critical thinking questions", 
+                "Tell me which follow-up questions most interest you and I'll help you explore them"
+            ]
         }
     
     async def suggest_methodology(self, research_goals: str, domain: str,
@@ -171,7 +176,13 @@ class ResearchPlanningTool:
             "recommended_methodologies": methodologies,
             "domain_specific_considerations": self._get_domain_considerations(domain),
             "novel_theory_adaptations": self._get_novel_theory_adaptations() if novel_theory_flag else None,
-            "validation_framework": self._get_validation_framework(domain, novel_theory_flag)
+            "validation_framework": self._get_validation_framework(domain, novel_theory_flag),
+            "user_interaction_required": "Please review these methodology recommendations. Which methodology most interests you or fits your constraints? I can provide more detailed guidance on any specific approach.",
+            "next_step_options": [
+                "Ask me to elaborate on any specific methodology that interests you",
+                "Use 'explain_methodology' for detailed explanation of a particular approach",
+                "Tell me about your specific constraints and I'll help refine these recommendations"
+            ]
         }
     
     def _analyze_goals(self, goals: str, domain: str) -> str:

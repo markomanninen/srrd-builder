@@ -45,17 +45,20 @@ async def initialize_project_tool(**kwargs) -> str:
     if auto_switched:
         switch_status = """✅ **MCP Context Automatically Switched!**
    Claude Desktop is now using this project for all research tools."""
-        next_steps = """🚀 **Next Steps**:
-1. Start using research tools - they'll automatically work with your new project
-2. All your research data, sessions, and documents will be stored in this project
-3. Use other projects by running 'initialize_project' again or 'srrd switch'"""
+        next_steps = """🚀 **Your project is ready!**
+
+What would you like to work on next?
+• Use **clarify_research_goals** if you want to refine your research objectives
+• Use **suggest_methodology** if you want research methodology recommendations  
+• Use **start_research_session** if you want to begin a formal research session
+• Or simply tell me what aspect of your research you'd like to focus on"""
     else:
         switch_status = """⚠️ **Manual Switch Required**
    Auto-switch failed. Please run: srrd switch"""
-        next_steps = """🔧 **Next Steps**:
+        next_steps = """🔧 **Setup Required**:
 1. Navigate to your project: cd {resolved_path}
 2. Switch MCP context: srrd switch
-3. Then start using your research tools"""
+3. Then tell me what you'd like to work on!"""
     
     return f"""Project '{name}' initialized successfully!
 

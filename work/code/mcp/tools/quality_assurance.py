@@ -338,7 +338,19 @@ async def simulate_peer_review(**kwargs) -> Dict[str, Any]:
     # Filter out context parameters
     filtered_kwargs = {k: v for k, v in kwargs.items() if k not in ['project_path', 'config_path', 'config']}
     tool = QualityAssuranceTool()
-    return await tool.simulate_peer_review(**filtered_kwargs)
+    result = await tool.simulate_peer_review(**filtered_kwargs)
+    
+    # Add user interaction requirement
+    result["user_interaction_required"] = "Please review this peer review simulation. Which feedback areas would you like to focus on addressing?"
+    result["next_step_options"] = [
+        "Address the areas for improvement identified",
+        "Strengthen the identified strengths further",
+        "Respond to specific reviewer recommendations",
+        "Revise manuscript based on overall feedback",
+        "Prepare responses for actual peer review process"
+    ]
+    
+    return json.dumps(result, indent=2)
 
 @context_aware()
 async def check_quality_gates(**kwargs) -> Dict[str, Any]:
@@ -346,7 +358,19 @@ async def check_quality_gates(**kwargs) -> Dict[str, Any]:
     # Filter out context parameters
     filtered_kwargs = {k: v for k, v in kwargs.items() if k not in ['project_path', 'config_path', 'config']}
     tool = QualityAssuranceTool()
-    return await tool.check_quality_gates(**filtered_kwargs)
+    result = await tool.check_quality_gates(**filtered_kwargs)
+    
+    # Add user interaction requirement  
+    result["user_interaction_required"] = "Please review these quality gate results. What would you like to focus on improving to meet quality standards?"
+    result["next_step_options"] = [
+        "Address failed quality gates before proceeding",
+        "Improve specific quality metrics that scored low",
+        "Proceed to next research phase (if gates passed)",
+        "Get detailed guidance on quality improvements",
+        "Review domain-specific quality requirements"
+    ]
+    
+    return json.dumps(result, indent=2)
 
 def register_quality_tools(server):
     """Register quality assurance tools with the MCP server"""

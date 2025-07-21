@@ -275,6 +275,7 @@ async def get_workflow_recommendations_tool(**kwargs) -> str:
         
         # Format response
         response = "# Workflow Recommendations\n\n"
+        response += "*These are suggestions based on your current research progress. Please choose what interests you most or aligns with your current goals.*\n\n"
         
         for i, rec in enumerate(recommendations, 1):
             response += f"## {i}. {rec['tool']} ({rec['priority']} priority)\n"
@@ -282,6 +283,8 @@ async def get_workflow_recommendations_tool(**kwargs) -> str:
             response += f"- **Category**: {rec.get('category_name', rec['category'])}\n"
             response += f"- **Reasoning**: {rec['enhanced_reasoning']}\n"
             response += f"- **Effort**: {rec['effort_estimate']}\n\n"
+        
+        response += "\n**Next Steps**: Please let me know which of these recommendations interests you, or if you'd prefer to work on something else entirely. I'm here to support your research direction.\n"
         
         await sqlite_manager.close()
         return response

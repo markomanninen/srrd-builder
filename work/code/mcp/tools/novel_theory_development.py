@@ -212,16 +212,19 @@ async def initiate_paradigm_challenge(**kwargs) -> str:
     
     for i, opportunity in enumerate(innovation_opportunities, 1):
         challenge_report += f"{i}. {opportunity}\n"
-    
-    challenge_report += f"""
-**Next Steps**:
-1. Develop alternative theoretical framework
-2. Design paradigm comparison studies
-3. Identify crucial experimental tests
-4. Engage with expert community
-5. Validate innovative approach
 
+    challenge_report += f"""
 **Challenge Status**: Initiated - Ready for framework development
+
+🤝 **USER INTERACTION REQUIRED**
+Please review this paradigm challenge analysis. Which aspect would you like to focus on developing next?
+
+📋 **NEXT STEP OPTIONS**:
+1. Develop alternative theoretical framework based on identified opportunities
+2. Design specific experiments to test paradigm differences  
+3. Analyze foundational assumptions in more depth
+4. Explore hybrid approaches combining multiple directions
+5. Begin literature review of existing challenges to this paradigm
 """
     
     return challenge_report
@@ -328,6 +331,16 @@ async def develop_alternative_framework(**kwargs) -> str:
         "development_priority": _prioritize_development(framework_development)
     }
     
+    # Add user interaction requirement instead of automatic next_steps
+    framework_development["user_interaction_required"] = "Please review this alternative framework development analysis. What aspect would you like to focus on next?"
+    framework_development["next_step_options"] = [
+        "Refine and strengthen the mathematical formalization",
+        "Generate specific testable predictions from the framework",
+        "Design experiments to validate core principles",
+        "Compare this framework with existing paradigms",
+        "Develop applications of this framework to specific phenomena"
+    ]
+    
     return json.dumps(framework_development, indent=2)
 
 def _assess_innovation_level(principles: List[str]) -> str:
@@ -383,13 +396,13 @@ def _prioritize_development(framework_dev: Dict) -> List[str]:
 async def compare_paradigms(**kwargs) -> str:
     """Equal-treatment comparison of competing theories"""
     
-    original_paradigm = kwargs.get("original_paradigm")
+    original_paradigm = kwargs.get("mainstream_paradigm")  # MCP registration uses mainstream_paradigm
     alternative_paradigm = kwargs.get("alternative_paradigm")
     comparison_criteria = kwargs.get("comparison_criteria", [])
     domain = kwargs.get("domain")
     
     if not original_paradigm or not alternative_paradigm or not domain:
-        return "Error: Missing required parameters (original_paradigm, alternative_paradigm, domain)"
+        return "Error: Missing required parameters (mainstream_paradigm, alternative_paradigm, domain)"
     
     comparison = {
         "comparison_overview": {
@@ -402,8 +415,7 @@ async def compare_paradigms(**kwargs) -> str:
         "detailed_comparison": {},
         "scoring_matrix": {},
         "paradigm_analysis": {},
-        "recommendation": "",
-        "next_steps": []
+        "recommendation": ""
     }
     
     # Create detailed comparison for each criterion
@@ -459,13 +471,14 @@ async def compare_paradigms(**kwargs) -> str:
     else:
         comparison["recommendation"] = f"The alternative paradigm '{alternative_paradigm}' requires further development before it can seriously challenge '{original_paradigm}'. Focus on strengthening weak areas identified in the comparison."
     
-    # Next steps
-    comparison["next_steps"] = [
-        "Conduct targeted experiments to test distinguishing predictions",
-        "Refine alternative framework based on comparison results",
-        "Seek paradigm-independent evidence",
-        "Submit findings for peer review simulation",
-        "Consider hybrid approaches combining strengths of both paradigms"
+    # Add user interaction requirement instead of automatic next_steps
+    comparison["user_interaction_required"] = "Please review this paradigm comparison analysis. Which direction would you like to pursue based on these findings?"
+    comparison["next_step_options"] = [
+        "Focus on developing the alternative paradigm further",
+        "Design experiments to test distinguishing predictions between paradigms", 
+        "Analyze specific weaknesses in the comparison results",
+        "Explore hybrid approaches combining strengths of both paradigms",
+        "Seek independent peer review of this comparison"
     ]
     
     return json.dumps(comparison, indent=2)
@@ -785,6 +798,16 @@ async def cultivate_innovation(**kwargs) -> str:
         ]
     }
     
+    # Add user interaction requirement instead of automatic next_steps
+    cultivation_plan["user_interaction_required"] = "Please review this systematic innovation cultivation plan. Which development stage would you like to begin with or focus on?"
+    cultivation_plan["next_step_options"] = [
+        "Start with Stage 1: Conceptualization and literature review",
+        "Jump to Stage 2: Begin formal framework development",
+        "Focus on developing the cultivation strategy in more detail",
+        "Refine the timeline and milestones based on available resources",
+        "Begin with risk mitigation planning for the innovation process"
+    ]
+    
     return json.dumps(cultivation_plan, indent=2)
 
 @context_aware()
@@ -894,6 +917,16 @@ async def assess_foundational_assumptions(**kwargs) -> str:
         for assumption in assumptions[:3]
     ]
     
+    # Add user interaction requirement instead of automatic next_steps
+    assessment["user_interaction_required"] = "Please review this foundational assumptions analysis. Which area of assumptions would you like to explore further or challenge?"
+    assessment["next_step_options"] = [
+        "Deep dive into the ontological assumptions and their alternatives",
+        "Examine the epistemological assumptions and validation methods",
+        "Focus on the vulnerability assessment and untested assumptions",
+        "Work through the Socratic questions systematically",
+        "Develop specific experiments to test the most critical assumptions"
+    ]
+    
     return json.dumps(assessment, indent=2)
 
 def _categorize_assumption(assumption: str) -> str:
@@ -999,6 +1032,16 @@ async def generate_critical_questions(**kwargs) -> str:
         ]
     
     question_framework["development_questions"] = development_questions
+    
+    # Add user interaction requirement instead of automatic next_steps
+    question_framework["user_interaction_required"] = "Please review this comprehensive questioning framework. Which category of questions would you like to work through systematically?"
+    question_framework["next_step_options"] = [
+        "Start with foundational assumptions questions to examine deep beliefs",
+        "Focus on paradigm innovation questions to generate alternative frameworks",
+        "Work through critical development questions to strengthen theories",
+        "Apply domain-specific questions to your particular research area",
+        "Use meta-questions to examine the questioning process itself"
+    ]
     
     return json.dumps(question_framework, indent=2)
 
@@ -1116,6 +1159,16 @@ async def evaluate_paradigm_shift_potential(**kwargs) -> str:
             "External technological advances"
         ]
     }
+    
+    # Add user interaction requirement instead of automatic next_steps
+    evaluation["user_interaction_required"] = "Please review this paradigm shift potential evaluation. Based on these results, what direction would you like to pursue?"
+    evaluation["next_step_options"] = [
+        "Focus on strengthening areas with low scores to increase shift potential",
+        "Develop the implementation strategy based on the assessed potential",
+        "Address specific adoption barriers identified in the analysis",
+        "Refine the theory framework to improve paradigm shift metrics",
+        "Begin pilot testing or proof-of-concept development"
+    ]
     
     return json.dumps(evaluation, indent=2)
 
