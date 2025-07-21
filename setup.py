@@ -8,7 +8,7 @@ from pathlib import Path
 
 # Read README for long description
 readme_file = Path(__file__).parent / "README.md"
-if readme_file.exists():
+if (readme_file.exists()):
     with open(readme_file, "r", encoding="utf-8") as f:
         long_description = f.read()
 else:
@@ -16,7 +16,7 @@ else:
 
 # Read requirements
 requirements_file = Path(__file__).parent / "requirements.txt"
-if requirements_file.exists():
+if (requirements_file.exists()):
     with open(requirements_file, "r") as f:
         requirements = [line.strip() for line in f if line.strip() and not line.startswith("#")]
 else:
@@ -30,7 +30,7 @@ else:
         "GitPython>=3.1.0",
         "chromadb>=0.4.0",
         "sentence-transformers>=2.2.0",
-        "numpy>=1.21.0",
+        "numpy>=1.26.0",  # Updated for Python 3.12 compatibility
         "asyncio"
     ]
 

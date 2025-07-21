@@ -1,10 +1,29 @@
 # SRRD-Builder MCP Server Installation Guide
 
-This guide covers all the dependencies and components needed to use the SRRD-Builder MCP server with Claude Desktop.
+This guide covers all the dependencies and components needed to use the SRRD-Builder MCP server with Claude Desktop on Windows, WSL, macOS, and Linux.
 
 ## Quick Installation (Recommended)
 
 The fastest way to get started is using the automated setup script:
+
+### Windows
+
+```powershell
+git clone https://github.com/markomanninen/srrd-builder
+cd srrd-builder
+setup.bat
+```
+
+### WSL (Windows Subsystem for Linux)
+
+```bash
+git clone https://github.com/markomanninen/srrd-builder
+cd srrd-builder
+dos2unix setup.sh  # Convert line endings from Windows format
+bash setup.sh
+```
+
+### macOS/Linux
 
 ```bash
 git clone https://github.com/markomanninen/srrd-builder
@@ -12,11 +31,11 @@ cd srrd-builder
 ./setup.sh
 ```
 
-This script will:
+These scripts will:
 
 - Install Python dependencies with fallback to minimal requirements
 - Install the `srrd` CLI tool
-- Set up LaTeX (macOS/Linux)
+- Set up LaTeX (platform-specific instructions)
 - Configure Claude Desktop
 - Test all components
 
@@ -37,24 +56,180 @@ srrd-server status              # Check demo server status
 srrd-server stop                # Stop demo server
 ```
 
+## Platform-Specific Installation
+
+### Windows Installation
+
+#### Prerequisites
+
+- **Python 3.8+**: Download from [python.org](https://python.org)
+- **Claude Desktop**: Required for using the MCP server
+- **Git**: Download from [git-scm.com](https://git-scm.com/)
+
+#### Automated Setup (Recommended)
+
+```powershell
+# Clone the repository
+git clone https://github.com/markomanninen/srrd-builder
+cd srrd-builder
+
+# Run the Windows setup script
+setup.bat
+```
+
+The Windows setup script will:
+- Check Python installation
+- Create a virtual environment
+- Install Python dependencies
+- Install the SRRD CLI package
+- Test all components
+- Provide next steps
+
+#### Manual Windows Installation
+
+```powershell
+# Create virtual environment
+python -m venv venv
+venv\Scripts\activate.bat
+
+# Install dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# Install SRRD CLI package
+pip install -e .
+
+# Test installation
+srrd --version
+```
+
+#### Windows LaTeX Installation
+
+```powershell
+# Install MiKTeX using winget
+winget install MiKTeX.MiKTeX
+
+# Or download manually from: https://miktex.org/download
+```
+
+### WSL (Windows Subsystem for Linux) Installation
+
+WSL provides a Linux environment on Windows. This is useful for users who prefer Unix-style tools.
+
+#### Prerequisites
+
+1. **Enable WSL**: Follow [Microsoft's WSL installation guide](https://docs.microsoft.com/en-us/windows/wsl/install)
+2. **Install Ubuntu or preferred Linux distribution**
+3. **Install Python 3.8+** in WSL
+
+#### WSL Setup
+
+```bash
+# Clone the repository (in WSL)
+git clone https://github.com/markomanninen/srrd-builder
+cd srrd-builder
+
+# Convert Windows line endings to Unix format
+dos2unix setup.sh
+
+# Run the Unix setup script
+bash setup.sh
+```
+
+**Important WSL Notes:**
+- The script will automatically detect and remove any Windows-style virtual environments
+- Creates a new Unix-style virtual environment with proper activation scripts
+- Installs all dependencies in the WSL environment
+- Provides Linux package manager commands for LaTeX installation
+
+#### WSL LaTeX Installation
+
+```bash
+# Ubuntu/Debian
+sudo apt-get update
+sudo apt-get install texlive-latex-base texlive-latex-extra texlive-fonts-recommended
+
+# Or full installation
+sudo apt-get install texlive-full
+```
+
+### macOS Installation
+
+#### Prerequisites
+
+- **Python 3.8+**: Pre-installed or via Homebrew
+- **Claude Desktop**: Required for using the MCP server
+- **Git**: Pre-installed or via Xcode Command Line Tools
+
+#### Automated Setup
+
+```bash
+git clone https://github.com/markomanninen/srrd-builder
+cd srrd-builder
+./setup.sh
+```
+
+The macOS setup script will:
+- Install or check for Homebrew
+- Install LaTeX (MacTeX) if not present
+- Download spaCy and NLTK language models
+- Configure Claude Desktop automatically
+
+#### macOS LaTeX Installation
+
+```bash
+# Install MacTeX (recommended - full distribution)
+brew install --cask mactex
+
+# Alternative: BasicTeX (minimal distribution)
+brew install --cask basictex
+```
+
+### Linux Installation
+
+#### Prerequisites
+
+- **Python 3.8+**: Usually pre-installed or available via package manager
+- **Claude Desktop**: Required for using the MCP server
+- **Git**: Usually pre-installed or available via package manager
+
+#### Automated Setup
+
+```bash
+git clone https://github.com/markomanninen/srrd-builder
+cd srrd-builder
+./setup.sh
+```
+
+#### Linux LaTeX Installation
+
+```bash
+# Ubuntu/Debian
+sudo apt-get install texlive-latex-base texlive-latex-extra texlive-fonts-recommended
+
+# CentOS/RHEL/Fedora
+sudo yum install texlive-scheme-basic texlive-latex
+# or
+sudo dnf install texlive-scheme-basic texlive-latex
+
+# Arch Linux
+sudo pacman -S texlive-most texlive-lang
+```
+
 ## Manual Installation
 
 If you prefer manual installation or encounter issues with the automated setup:
 
-## Prerequisites
+### Core Dependencies
 
-- **Python 3.8+**: Required for running the MCP server
-- **Claude Desktop**: Required for using the MCP server
-- **Git**: Required for version control features
-
-## Core Dependencies
-
-### 1. Python Environment
+#### 1. Python Environment
 
 ```bash
 # Create virtual environment (recommended)
 python3 -m venv venv
-source venv/bin/activate  # On macOS/Linux
+
+# Activate virtual environment
+source venv/bin/activate  # On macOS/Linux/WSL
 # or
 venv\Scripts\activate     # On Windows
 
@@ -65,61 +240,19 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
-### 2. LaTeX Distribution (Required for Document Generation)
-
-LaTeX is required for the document generation tools (`generate_latex_document`, `compile_latex`).
-
-#### macOS
-
-```bash
-# Install MacTeX (recommended - full distribution)
-brew install --cask mactex
-
-# Alternative: BasicTeX (minimal distribution)
-brew install --cask basictex
-sudo tlmgr update --self
-sudo tlmgr install collection-latex collection-latexrecommended
-```
-
-#### Ubuntu/Debian
-
-```bash
-# Full LaTeX distribution
-sudo apt-get update
-sudo apt-get install texlive-full
-
-# Minimal installation
-sudo apt-get install texlive-latex-base texlive-latex-extra texlive-fonts-recommended
-```
-
-#### Windows
-
-```bash
-# Install MiKTeX
-winget install MiKTeX.MiKTeX
-
-# Or download from: https://miktex.org/download
-```
-
-### 3. Vector Database (Optional - for semantic search)
+#### 2. Vector Database (Optional - for semantic search)
 
 The semantic search tools can work with various vector databases:
 
-#### ChromaDB (Default)
-
 ```bash
+# ChromaDB (Default)
 pip install chromadb
-```
 
-#### Alternative: Pinecone
-
-```bash
+# Alternative: Pinecone
 pip install pinecone-client
 ```
 
-### 4. Machine Learning Libraries (Optional - for advanced features)
-
-For enhanced semantic search and pattern discovery:
+#### 3. Machine Learning Libraries (Optional - for advanced features)
 
 ```bash
 # Sentence transformers for embeddings
@@ -137,11 +270,14 @@ python -m spacy download en_core_web_sm
 
 ### Automatic Configuration (Recommended)
 
-The setup script automatically configures Claude Desktop. To check or manually configure:
+The setup scripts automatically configure Claude Desktop. To check or manually configure:
 
 ```bash
 # Check current configuration status
 srrd configure --status
+
+# Automatically configure Claude Desktop
+srrd configure --claude
 
 # The CLI will show if Claude Desktop is properly configured
 ```
@@ -149,8 +285,9 @@ srrd configure --status
 ### Manual Configuration
 
 1. **Locate Claude Desktop config file:**
-   - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-   - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+   - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+   - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - **Linux**: `~/.config/Claude/claude_desktop_config.json`
 
 2. **Add SRRD-Builder server configuration:**
 
@@ -163,6 +300,22 @@ srrd configure --status
       "cwd": "/path/to/srrd-builder/work/code/mcp",
       "env": {
         "PYTHONPATH": "/path/to/srrd-builder/work/code/mcp"
+      }
+    }
+  }
+}
+```
+
+**Windows Path Example:**
+```json
+{
+  "mcpServers": {
+    "srrd-builder": {
+      "command": "python",
+      "args": ["C:\\Users\\YourName\\Documents\\GitHub\\srrd-builder\\work\\code\\mcp\\mcp_server.py"],
+      "cwd": "C:\\Users\\YourName\\Documents\\GitHub\\srrd-builder\\work\\code\\mcp",
+      "env": {
+        "PYTHONPATH": "C:\\Users\\YourName\\Documents\\GitHub\\srrd-builder\\work\\code\\mcp"
       }
     }
   }
@@ -207,7 +360,7 @@ srrd-server --help
 
 ### Document Generation Tools
 
-- **Required**: LaTeX distribution (see above)
+- **Required**: LaTeX distribution (see platform-specific installation above)
 - **Tools affected**: `generate_latex_document`, `compile_latex`, `format_research_content`
 
 ### Semantic Search Tools
@@ -236,7 +389,7 @@ srrd-server --help
 
 ### Automated Testing
 
-The setup script includes automated testing, but you can also test manually:
+The setup scripts include automated testing, but you can also test manually:
 
 ```bash
 # Test SRRD CLI
@@ -262,36 +415,57 @@ echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "compile_lat
 
 ### Common Issues
 
-1. **"srrd command not found"**
-   - Ensure virtual environment is activated: `source venv/bin/activate`
-   - Reinstall CLI package: `pip install -e .`
+#### Windows-Specific Issues
 
-2. **"MCP server not starting"**
+1. **"'srrd' is not recognized as an internal or external command"**
+   - Ensure virtual environment is activated: `venv\Scripts\activate.bat`
+   - Reinstall CLI package: `pip install -e .`
+   - Check if Python Scripts directory is in PATH
+
+2. **"setup.bat fails with 'may was unexpected at this time'"**
+   - This was a known issue that has been fixed in the current version
+   - Use the updated setup.bat script provided
+
+3. **"Access denied" errors during installation**
+   - Run PowerShell or Command Prompt as Administrator
+   - Check antivirus software isn't blocking the installation
+
+#### WSL-Specific Issues
+
+1. **"setup.sh: line X: $'\r': command not found"**
+   - Convert line endings: `dos2unix setup.sh`
+   - This happens when the script has Windows line endings
+
+2. **"venv/bin/activate: No such file or directory"**
+   - The script will automatically detect and fix this
+   - Remove Windows venv: `rm -rf venv` and run setup again
+
+3. **"Python3 not found in WSL"**
+   ```bash
+   sudo apt update
+   sudo apt install python3 python3-pip python3-venv
+   ```
+
+#### Cross-Platform Issues
+
+4. **"MCP server not starting"**
    - Check status: `srrd configure --status`
    - View logs: Check files in `work/code/mcp/logs/`
    - Restart: `srrd-server restart`
 
-3. **"pdflatex not found"**
-   - Install LaTeX distribution (see above)
-   - Ensure pdflatex is in your PATH: `which pdflatex`
+5. **"pdflatex not found"**
+   - Install LaTeX distribution (see platform-specific instructions above)
+   - Ensure pdflatex is in your PATH: `which pdflatex` (Unix) or `where pdflatex` (Windows)
 
-4. **"ModuleNotFoundError"**
+6. **"ModuleNotFoundError"**
    - Install missing Python dependencies: `pip install [module_name]`
    - Check virtual environment activation
 
-5. **"Claude Desktop not finding tools"**
+7. **"Claude Desktop not finding tools"**
    - Check configuration: `srrd configure --status`
    - Ensure Claude Desktop config is properly set
    - Restart Claude Desktop after configuration changes
-
-6. **"Config file not found"**
-   - Run setup script again: `./setup.sh`
-   - Check Claude Desktop config manually
-
-7. **"Tool execution error"**
-   - Check tool-specific requirements above
-   - Verify file paths are correct
-   - Check Python environment and dependencies
+   - Check path separators (Windows uses `\`, Unix uses `/`)
 
 ### Performance Optimization
 
@@ -307,10 +481,10 @@ echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "compile_lat
 
 2. **For enhanced semantic search:**
 
-```bash
-# Install GPU-accelerated libraries (if CUDA available)
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-```
+   ```bash
+   # Install GPU-accelerated libraries (if CUDA available)
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+   ```
 
 ## Minimal Installation
 
@@ -324,19 +498,48 @@ pip install chromadb sentence-transformers nltk
 # Document generation tools will show helpful error messages
 ```
 
-## Full Installation Script
+## Platform-Specific Full Installation Scripts
+
+### Windows PowerShell Script
+
+```powershell
+# Full SRRD-Builder installation script for Windows
+
+# Install Python dependencies
+pip install chromadb sentence-transformers nltk spacy numpy scipy scikit-learn
+
+# Download language models
+python -m spacy download en_core_web_sm
+
+# Download NLTK data
+python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords')"
+
+# Install MiKTeX (requires manual download)
+Write-Host "Please install MiKTeX from: https://miktex.org/download"
+Write-Host "SRRD-Builder Python components installation complete!"
+```
+
+### macOS/Linux Script
 
 ```bash
 #!/bin/bash
-# Full SRRD-Builder installation script for macOS
+# Full SRRD-Builder installation script for macOS/Linux
 
-# Install Homebrew if not present
-if ! command -v brew &> /dev/null; then
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+# Install system dependencies (macOS)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    if ! command -v brew &> /dev/null; then
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    fi
+    brew install --cask mactex
 fi
 
-# Install LaTeX
-brew install --cask mactex
+# Install system dependencies (Linux)
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    if command -v apt-get &> /dev/null; then
+        sudo apt-get update
+        sudo apt-get install texlive-latex-base texlive-latex-extra texlive-fonts-recommended
+    fi
+fi
 
 # Install Python dependencies
 pip install chromadb sentence-transformers nltk spacy numpy scipy scikit-learn
@@ -346,24 +549,27 @@ python -m spacy download en_core_web_sm
 python -c "import nltk; nltk.download('punkt'); nltk.download('stopwords')"
 
 echo "SRRD-Builder installation complete!"
-echo "Don't forget to configure Claude Desktop with the MCP server settings."
 ```
 
 ## Support
 
 If you encounter issues:
 
-1. Check this installation guide
+1. Check this installation guide for your specific platform
 2. Run `srrd configure --status` for current system status
 3. Check logs in `work/code/mcp/logs/`
 4. Run the comprehensive test suite: `bash run_tests.sh` (158 tests)
 5. Verify all dependencies are installed
-6. Check Claude Desktop logs: `~/Library/Logs/Claude/` (macOS)
+6. Check Claude Desktop logs:
+   - **Windows**: `%APPDATA%\Claude\logs\`
+   - **macOS**: `~/Library/Logs/Claude/`
+   - **Linux**: `~/.config/Claude/logs/`
 
 ## Version Information
 
 - **SRRD-Builder MCP Server**: v1.0.0
 - **Supported Python**: 3.8+
+- **Supported Platforms**: Windows, WSL, macOS, Linux
 - **Supported Claude Desktop**: Latest version with MCP support
 - **CLI Tool**: Included (`srrd` command)
 - **Last Updated**: January 17, 2025
