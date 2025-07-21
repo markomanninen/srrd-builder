@@ -10,7 +10,13 @@ from datetime import datetime
 # Import context-aware decorator
 import sys
 from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent / 'utils'))
+
+# Fix import path issues by adding utils directory to sys.path
+current_dir = Path(__file__).parent.parent
+utils_dir = current_dir / "utils"
+if str(utils_dir) not in sys.path:
+    sys.path.insert(0, str(utils_dir))
+
 from context_decorator import context_aware, project_required
 
 class QualityAssuranceTool:

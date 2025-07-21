@@ -12,14 +12,17 @@ import subprocess
 from pathlib import Path
 from datetime import datetime
 
-# Add parent directory to path to access storage modules
-import sys
-sys.path.append(str(Path(__file__).parent.parent))
-
 from storage.project_manager import ProjectManager
 
-# Add context-aware decorator
-sys.path.append(str(Path(__file__).parent.parent / 'utils'))
+# Fix import path issues by adding utils directory to sys.path
+import sys
+from pathlib import Path
+
+current_dir = Path(__file__).parent.parent
+utils_dir = current_dir / "utils"
+if str(utils_dir) not in sys.path:
+    sys.path.insert(0, str(utils_dir))
+
 from context_decorator import context_aware, project_required
 
 # LaTeX template for scientific research documents - FIXED VERSION

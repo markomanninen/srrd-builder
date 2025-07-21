@@ -1,6 +1,6 @@
 """
 Research Continuity Tools
-MCP tools for research lifecycle persistence and workflow guidance
+Research lifecycle persistence and workflow guidance
 """
 
 import json
@@ -8,8 +8,15 @@ import sys
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
+# Fix import path issues by adding utils directory to sys.path
+current_dir = Path(__file__).parent.parent
+utils_dir = current_dir / "utils"
+if str(utils_dir) not in sys.path:
+    sys.path.insert(0, str(utils_dir))
+
 # Add parent directory to path to access storage modules
-sys.path.append(str(Path(__file__).parent.parent))
+if str(current_dir) not in sys.path:
+    sys.path.insert(0, str(current_dir))
 
 try:
     from storage.sqlite_manager import SQLiteManager
@@ -18,19 +25,18 @@ except ImportError as e:
     SQLiteManager = None
 
 try:
-    from utils.research_framework import ResearchFrameworkService
+    from research_framework import ResearchFrameworkService
 except ImportError as e:
     print(f"Warning: Could not import ResearchFrameworkService: {e}")
     ResearchFrameworkService = None
 
 try:
-    from utils.workflow_intelligence import WorkflowIntelligence
+    from workflow_intelligence import WorkflowIntelligence
 except ImportError as e:
     print(f"Warning: Could not import WorkflowIntelligence: {e}")
     WorkflowIntelligence = None
 
-# Add context-aware decorator
-sys.path.append(str(Path(__file__).parent.parent / 'utils'))
+# Context-aware decorator imports
 try:
     from context_decorator import context_aware, project_required
 except ImportError as e:
@@ -44,8 +50,12 @@ except ImportError as e:
     def project_required(func):
         return func
 
-# Initialize services if available
-research_framework = ResearchFrameworkService() if ResearchFrameworkService else None
+# Function to safely initialize services when needed
+def _get_research_framework():
+    """Get research framework service, initializing if needed"""
+    if ResearchFrameworkService:
+        return ResearchFrameworkService()
+    return None
 
 @context_aware()
 async def get_research_progress_tool(**kwargs) -> str:
@@ -55,13 +65,24 @@ async def get_research_progress_tool(**kwargs) -> str:
     if not project_path:
         return "Error: Project context not available. Please ensure you are in an SRRD project or provide project_path parameter."
     
+    # Check if required services are available
+    if not SQLiteManager:
+        return "Error: Database functionality not available. Please check if SQLiteManager is properly installed."
+    
+    if not WorkflowIntelligence:
+        return "Error: Workflow intelligence functionality not available. Please check if WorkflowIntelligence is properly installed."
+    
+    if not ResearchFrameworkService:
+        return "Error: Research framework functionality not available. Please check if ResearchFrameworkService is properly installed."
+    
     try:
         # Initialize database
         db_path = str(Path(project_path) / '.srrd' / 'sessions.db')
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
         
-        # Initialize workflow intelligence
+        # Initialize services
+        research_framework = _get_research_framework()
         workflow_intelligence = WorkflowIntelligence(sqlite_manager, research_framework)
         
         # Get project ID
@@ -88,7 +109,11 @@ async def get_research_progress_tool(**kwargs) -> str:
 """
         
         for act_name, progress in analysis['research_acts'].items():
-            act_display_name = research_framework.acts[act_name]['name']
+            # Safely get act display name
+            if research_framework and hasattr(research_framework, 'acts') and act_name in research_framework.acts:
+                act_display_name = research_framework.acts[act_name]['name']
+            else:
+                act_display_name = act_name.replace('_', ' ').title()
             response += f"- **{act_display_name}**: {progress['completion_percentage']:.1f}% ({progress['tools_used']}/{progress['total_tools']} tools)\n"
         
         response += "\n## Research Velocity\n"
@@ -128,11 +153,18 @@ async def get_tool_usage_history_tool(**kwargs) -> str:
     if not project_path:
         return "Error: Project context not available. Please ensure you are in an SRRD project or provide project_path parameter."
     
+    # Check if required services are available
+    if not SQLiteManager:
+        return "Error: Database functionality not available. Please check if SQLiteManager is properly installed."
+    
     try:
         # Initialize database
         db_path = str(Path(project_path) / '.srrd' / 'sessions.db')
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
+        
+        # Initialize research framework
+        research_framework = _get_research_framework()
         
         if session_id:
             # Get history for specific session
@@ -163,7 +195,11 @@ async def get_tool_usage_history_tool(**kwargs) -> str:
             research_act = entry['research_act']
             success = "✅" if entry['success'] else "❌"
             
-            act_name = research_framework.acts.get(research_act, {}).get('name', research_act)
+            # Safely get act name
+            if research_framework and hasattr(research_framework, 'acts') and research_act in research_framework.acts:
+                act_name = research_framework.acts[research_act]['name']
+            else:
+                act_name = research_act.replace('_', ' ').title() if research_act else 'Unknown'
             
             response += f"## {timestamp}\n"
             response += f"- **Tool**: {tool_name} {success}\n"
@@ -194,12 +230,20 @@ async def get_workflow_recommendations_tool(**kwargs) -> str:
     if not project_path:
         return "Error: Project context not available. Please ensure you are in an SRRD project or provide project_path parameter."
     
+    # Check if required services are available
+    if not SQLiteManager:
+        return "Error: Database functionality not available. Please check if SQLiteManager is properly installed."
+    
+    if not WorkflowIntelligence:
+        return "Error: Workflow intelligence functionality not available. Please check if WorkflowIntelligence is properly installed."
+    
     try:
         # Initialize database and services
         db_path = str(Path(project_path) / '.srrd' / 'sessions.db')
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
         
+        research_framework = _get_research_framework()
         workflow_intelligence = WorkflowIntelligence(sqlite_manager, research_framework)
         
         # Get project ID and session ID
@@ -254,12 +298,20 @@ async def get_research_milestones_tool(**kwargs) -> str:
     if not project_path:
         return "Error: Project context not available. Please ensure you are in an SRRD project or provide project_path parameter."
     
+    # Check if required services are available
+    if not SQLiteManager:
+        return "Error: Database functionality not available. Please check if SQLiteManager is properly installed."
+    
+    if not WorkflowIntelligence:
+        return "Error: Workflow intelligence functionality not available. Please check if WorkflowIntelligence is properly installed."
+    
     try:
         # Initialize database
         db_path = str(Path(project_path) / '.srrd' / 'sessions.db')
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
         
+        research_framework = _get_research_framework()
         workflow_intelligence = WorkflowIntelligence(sqlite_manager, research_framework)
         
         # Get project ID
@@ -321,6 +373,10 @@ async def start_research_session_tool(**kwargs) -> str:
     if not project_path:
         return "Error: Project context not available. Please ensure you are in an SRRD project or provide project_path parameter."
     
+    # Check if required services are available
+    if not SQLiteManager:
+        return "Error: Database functionality not available. Please check if SQLiteManager is properly installed."
+    
     try:
         # Initialize database
         db_path = str(Path(project_path) / '.srrd' / 'sessions.db')
@@ -353,16 +409,28 @@ async def start_research_session_tool(**kwargs) -> str:
                 session_goals=session_goals
             )
         
-        # Generate initial recommendations
-        workflow_intelligence = WorkflowIntelligence(sqlite_manager, research_framework)
-        recommendations = await workflow_intelligence.generate_recommendations(project_id, session_id)
+        # Generate initial recommendations if WorkflowIntelligence is available
+        recommendations = []
+        if WorkflowIntelligence:
+            try:
+                research_framework = _get_research_framework()
+                workflow_intelligence = WorkflowIntelligence(sqlite_manager, research_framework)
+                recommendations = await workflow_intelligence.generate_recommendations(project_id, session_id)
+            except Exception as e:
+                # Continue even if recommendations fail
+                pass
         
         # Format response
         response = f"# New Research Session Started\n\n"
         response += f"**Session ID**: {session_id}\n"
         
         if research_act:
-            act_name = research_framework.acts.get(research_act, {}).get('name', research_act)
+            # Safely get act name
+            research_framework = _get_research_framework()
+            if research_framework and hasattr(research_framework, 'acts') and research_act in research_framework.acts:
+                act_name = research_framework.acts[research_act]['name']
+            else:
+                act_name = research_act.replace('_', ' ').title()
             response += f"**Research Act**: {act_name}\n"
         
         if research_focus:
@@ -391,12 +459,20 @@ async def get_session_summary_tool(**kwargs) -> str:
     if not project_path:
         return "Error: Project context not available. Please ensure you are in an SRRD project or provide project_path parameter."
     
+    # Check if required services are available
+    if not SQLiteManager:
+        return "Error: Database functionality not available. Please check if SQLiteManager is properly installed."
+    
+    if not WorkflowIntelligence:
+        return "Error: Workflow intelligence functionality not available. Please check if WorkflowIntelligence is properly installed."
+    
     try:
         # Initialize database
         db_path = str(Path(project_path) / '.srrd' / 'sessions.db')
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
         
+        research_framework = _get_research_framework()
         workflow_intelligence = WorkflowIntelligence(sqlite_manager, research_framework)
         
         # Get session ID if not provided
@@ -429,7 +505,11 @@ async def get_session_summary_tool(**kwargs) -> str:
         
         response += f"\n## Research Acts Involved\n"
         for act in summary['research_acts_involved']:
-            act_name = research_framework.acts.get(act, {}).get('name', act)
+            # Safely get act name
+            if research_framework and hasattr(research_framework, 'acts') and act in research_framework.acts:
+                act_name = research_framework.acts[act]['name']
+            else:
+                act_name = act.replace('_', ' ').title() if act else 'Unknown'
             response += f"- {act_name}\n"
         
         response += f"\n## Tools Used\n"

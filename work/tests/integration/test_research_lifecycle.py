@@ -16,6 +16,28 @@ import pytest
 from mcp_server import ClaudeMCPServer
 
 
+@pytest.fixture(autouse=True)
+def test_isolation():
+    """Ensure test isolation by clearing module cache"""
+    # Store original environment
+    import os
+    original_env = os.environ.get('SRRD_PROJECT_PATH')
+    
+    yield
+    
+    # Restore original environment
+    if original_env:
+        os.environ['SRRD_PROJECT_PATH'] = original_env
+    elif 'SRRD_PROJECT_PATH' in os.environ:
+        del os.environ['SRRD_PROJECT_PATH']
+    
+    # Clear module cache after test to prevent state pollution
+    modules_to_clear = [m for m in sys.modules.keys() if any(x in m for x in ['mcp_server', 'tools', 'storage', 'utils']) and m not in ['sys', 'os', 'pathlib', 'tempfile', 'json']]
+    for module in modules_to_clear:
+        if module in sys.modules:
+            del sys.modules[module]
+
+
 @pytest.mark.asyncio
 async def test_complete_research_lifecycle_persistence():
     """
@@ -25,6 +47,15 @@ async def test_complete_research_lifecycle_persistence():
     
     print("🚀 Starting Complete Research Lifecycle Test with MAIN MCP Server")
     print("=" * 70)
+    
+    # Clear module cache to prevent state pollution
+    modules_to_clear = [m for m in sys.modules.keys() if any(x in m for x in ['mcp_server', 'tools']) and m not in ['sys', 'os', 'pathlib', 'tempfile', 'json']]
+    for module in modules_to_clear:
+        if module in sys.modules:
+            del sys.modules[module]
+    
+    # Re-import after clearing cache
+    from mcp_server import ClaudeMCPServer
     
     # Create temporary project environment
     temp_dir = tempfile.mkdtemp()

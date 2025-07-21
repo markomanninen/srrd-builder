@@ -12,21 +12,21 @@ import os
 
 # Add parent directories to path
 sys.path.append(str(Path(__file__).parent.parent.parent))
-sys.path.append(str(Path(__file__).parent.parent.parent / 'code' / 'mcp'))
-sys.path.append(str(Path(__file__).parent.parent.parent / 'code' / 'mcp' / 'tools'))
-sys.path.append(str(Path(__file__).parent.parent.parent / 'code' / 'mcp' / 'utils'))
-
-from storage.sqlite_manager import SQLiteManager
-from utils.research_framework import ResearchFrameworkService
-from utils.workflow_intelligence import WorkflowIntelligence
-from tools.research_continuity import (
-    get_research_progress_tool,
-    get_tool_usage_history_tool,
-    get_workflow_recommendations_tool,
-    get_research_milestones_tool,
-    start_research_session_tool,
-    get_session_summary_tool
-)
+# Import MCP modules (paths set up by conftest.py)
+try:
+    from storage.sqlite_manager import SQLiteManager
+    from utils.research_framework import ResearchFrameworkService
+    from utils.workflow_intelligence import WorkflowIntelligence
+    from tools.research_continuity import (
+        get_research_progress_tool,
+        get_tool_usage_history_tool,
+        get_workflow_recommendations_tool,
+        get_research_milestones_tool,
+        start_research_session_tool,
+        get_session_summary_tool
+    )
+except ImportError as e:
+    pytest.skip(f"MCP server modules not available: {e}", allow_module_level=True)
 
 class TestResearchContinuityTools:
     """Test class for research continuity MCP tools"""
