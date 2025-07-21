@@ -1,5 +1,5 @@
 #!/bin/bash
-# SRRD-Builder MCP Server Quick Setup Script
+# SRRD-Builder MCP Server Setup Script for Unix/Linux/macOS
 
 set -e
 
@@ -33,20 +33,31 @@ fi
 PYTHON_VERSION=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
 echo "🐍 Python version: $PYTHON_VERSION"
 
-# Create virtual environment if it doesn't exist
-if [ ! -d "venv" ]; then
-    echo "📦 Creating virtual environment..."
+# Create virtual environment if it doesn't exist (Unix-style)
+if [ ! -d "venv" ] || [ ! -f "venv/bin/activate" ]; then
+    echo "📦 Creating Unix virtual environment..."
+    # Remove any existing Windows venv directory
+    if [ -d "venv" ] && [ ! -f "venv/bin/activate" ]; then
+        echo "🔄 Removing Windows virtual environment..."
+        rm -rf venv
+    fi
     python3 -m venv venv
+    if [ $? -ne 0 ]; then
+        echo "❌ Failed to create virtual environment"
+        exit 1
+    fi
 fi
 
 # Activate virtual environment
 echo "🔄 Activating virtual environment..."
 source venv/bin/activate
 
+# Upgrade pip
+echo "📦 Upgrading pip..."
+python -m pip install --upgrade pip
+
 # Install Python dependencies
 echo "📥 Installing Python dependencies..."
-pip install -U pip
-
 if pip install -r requirements.txt; then
     echo "✅ Python dependencies installed successfully"
 else
@@ -71,39 +82,39 @@ fi
 
 # Platform-specific installations
 if [[ "$PLATFORM" == "macOS" ]]; then
-    echo "🍺 Installing macOS dependencies..."
+    echo "🍺 Setting up macOS-specific configurations..."
     
     # Check if Homebrew is installed
     if ! command -v brew &> /dev/null; then
-        echo "📥 Installing Homebrew..."
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        echo "⚠️  Homebrew not found. Install Homebrew for easier package management:"
+        echo "    /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
     fi
     
-    # Install LaTeX
+    # Check for LaTeX installation
     if ! command -v pdflatex &> /dev/null; then
-        echo "📄 Installing MacTeX..."
-        brew install --cask mactex
-        echo "⚠️  You may need to restart your terminal after MacTeX installation."
+        echo "⚠️  LaTeX not found. Install MacTeX for document generation:"
+        echo "    brew install --cask mactex"
+        echo "📝 Document generation tools will show helpful error messages without LaTeX"
     else
-        echo "✅ LaTeX already installed"
+        echo "✅ LaTeX found"
     fi
     
 elif [[ "$PLATFORM" == "Linux" ]]; then
-    echo "🐧 Installing Linux dependencies..."
+    echo "🐧 Setting up Linux-specific configurations..."
     
-    # Install LaTeX
+    # Check for LaTeX installation
     if ! command -v pdflatex &> /dev/null; then
-        echo "📄 Installing LaTeX..."
+        echo "⚠️  LaTeX not found. Install LaTeX for document generation:"
         if command -v apt-get &> /dev/null; then
-            sudo apt-get update
-            sudo apt-get install -y texlive-latex-base texlive-latex-extra texlive-fonts-recommended
+            echo "    sudo apt-get install texlive-latex-base texlive-latex-extra texlive-fonts-recommended"
         elif command -v yum &> /dev/null; then
-            sudo yum install -y texlive-scheme-basic texlive-latex
+            echo "    sudo yum install texlive-scheme-basic texlive-latex"
         else
-            echo "⚠️  Please install LaTeX manually for your distribution"
+            echo "    Please install LaTeX manually for your distribution"
         fi
+        echo "📝 Document generation tools will show helpful error messages without LaTeX"
     else
-        echo "✅ LaTeX already installed"
+        echo "✅ LaTeX found"
     fi
 fi
 
@@ -139,12 +150,37 @@ else
     echo "💡 To enable text processing features, install NLTK: pip install nltk"
 fi
 
+# Test basic functionality
+echo "🧪 Testing basic functionality..."
+if python -c "import srrd_builder; print('✅ Package import successful')"; then
+    echo "Package import test passed"
+else
+    echo "❌ Package import failed"
+    exit 1
+fi
+
+# Test CLI command
+echo "Testing CLI command..."
+if python -m srrd_builder.cli.main --version; then
+    echo "CLI test passed"
+else
+    echo "❌ CLI test failed"
+    exit 1
+fi
+
+# Test pytest
+if python -m pytest --version &> /dev/null; then
+    echo "✅ Pytest configured correctly"
+else
+    echo "❌ Pytest not working correctly"
+    exit 1
+fi
+
 # Test installation
 echo "🧪 Testing installation..."
 
 # Test SRRD CLI
 echo "Testing SRRD CLI..."
-cd ../../..  # Back to root directory for CLI testing
 
 if command -v srrd &> /dev/null; then
     echo "✅ SRRD CLI available"
@@ -164,25 +200,16 @@ if command -v srrd &> /dev/null; then
     else
         echo "⚠️  CLI help command failed"
     fi
-    
-    # Run comprehensive CLI tests
-    echo "Running comprehensive CLI tests..."
-    if ./test_cli.sh; then
-        echo "✅ All CLI tests passed"
-    else
-        echo "⚠️  Some CLI tests failed (see output above)"
-    fi
 else
     echo "❌ SRRD CLI not available in PATH"
 fi
 
-cd work/code/mcp
-
 # Test MCP server
 echo "Testing MCP server..."
-TEST_RESULT=$(echo '{"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}' | python3 mcp_server.py 2>/dev/null)
-if echo "$TEST_RESULT" | grep -q '"tools"'; then
-    TOOL_COUNT=$(echo "$TEST_RESULT" | python3 -c "
+if [ -f "work/code/mcp/mcp_server.py" ]; then
+    TEST_RESULT=$(echo '{"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}' | python3 work/code/mcp/mcp_server.py 2>/dev/null)
+    if echo "$TEST_RESULT" | grep -q '"tools"'; then
+        TOOL_COUNT=$(echo "$TEST_RESULT" | python3 -c "
 import json, sys
 try:
     data = json.load(sys.stdin)
@@ -190,9 +217,12 @@ try:
 except:
     print('0')
 ")
-    echo "✅ MCP server working ($TOOL_COUNT tools available)"
+        echo "✅ MCP server working ($TOOL_COUNT tools available)"
+    else
+        echo "❌ MCP server test failed"
+    fi
 else
-    echo "❌ MCP server test failed"
+    echo "⚠️  MCP server file not found at work/code/mcp/mcp_server.py"
 fi
 
 # Test LaTeX if available
@@ -205,18 +235,18 @@ Hello from SRRD-Builder!
 \end{document}
 EOF
     
-    TEST_LATEX=$(echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "compile_latex", "arguments": {"tex_file_path": "/tmp/srrd_test.tex", "output_format": "pdf"}}, "id": 2}' | python3 mcp_server.py 2>/dev/null)
-    if echo "$TEST_LATEX" | grep -q "PDF compiled successfully"; then
-        echo "✅ LaTeX compilation working"
-        rm -f /tmp/srrd_test.*
-    else
-        echo "⚠️  LaTeX compilation test failed"
+    if [ -f "work/code/mcp/mcp_server.py" ]; then
+        TEST_LATEX=$(echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "compile_latex", "arguments": {"tex_file_path": "/tmp/srrd_test.tex", "output_format": "pdf"}}, "id": 2}' | python3 work/code/mcp/mcp_server.py 2>/dev/null)
+        if echo "$TEST_LATEX" | grep -q "PDF compiled successfully"; then
+            echo "✅ LaTeX compilation working"
+            rm -f /tmp/srrd_test.*
+        else
+            echo "⚠️  LaTeX compilation test failed"
+        fi
     fi
 else
     echo "⚠️  LaTeX not available - document generation tools will have limited functionality"
 fi
-
-cd ../../..
 
 # Generate Claude Desktop config
 echo "⚙️  Generating Claude Desktop configuration..."

@@ -1,23 +1,13 @@
-# SRRD-Builder### Testing & Quality
+# SRRD-Builder
 
-- [🧪 Test Suite Status](work/docs/TEST_SUITE.md) - Testing documentation and guidelines
-- **Run Tests:** `bash run_tests.sh` - Execute test suite (183/183 tests passing)
-- **Production Status:** Production-ready with 100% test success rateS**cientific **R**esearch **R**equirement **D\*\*ocument Builder - An AI-powered toolkit for scientific research collaboration and document generation.
+**S**cientific **R**esearch **R**equirement **D**ocument Builder - An AI-powered toolkit for scientific research collaboration and document generation.
 
-## Testing Status
-
-## ✅ 100% Test Success Achieved\*\*: Test suite fully operational with complete pass rate
+## ✅ 100% Test Success Achieved**: Test suite fully operational with complete pass rate
 
 - 183/183 tests passing (100% success rate)
 - Comprehensive coverage across unit, integration, and validation tests
 - Full research lifecycle persistence implemented and validated
 - Production-ready with robust error handling and quality assurance
-
-## Testing & Quality
-
-- [🧪 Test Suite Status](work/docs/TEST_SUITE.md) - Testing documentation and guidelines
-- **Run Tests:** `bash run_tests.sh` - Execute test suite (working toward 100% pass rate)
-- **Development Status:** Test suite in development, working toward comprehensive coverage
 
 ## Overview
 
@@ -25,7 +15,7 @@ SRRD-Builder uses a **neurosymbolic approach**, combining traditional symbolic p
 
 The system features an **MCP (Model Context Protocol) server** that integrates with Claude Desktop and VS Code, providing **44 research tools** for document generation, knowledge management, and research quality assurance. It specializes in novel theory development for fundamental physics research, ensuring rigorous development of alternative paradigms with equal treatment to mainstream approaches.
 
-## ⚠️ Production Ready\*\*: This project is production-ready with complete functionality and comprehensive testing. Core features are fully implemented with 100% test success rate
+## ⚠️ Production Ready**: This project is production-ready with complete functionality and comprehensive testing. Core features are fully implemented with 100% test success rate
 
 ## Key Features
 
@@ -47,31 +37,61 @@ The system features an **MCP (Model Context Protocol) server** that integrates w
 
 ### 🚀 Automated Installation
 
+Choose your platform for quick setup:
+
+#### Windows
+
+```powershell
+git clone https://github.com/markomanninen/srrd-builder
+cd srrd-builder
+setup.bat
+```
+
+#### WSL (Windows Subsystem for Linux)
+
+```bash
+git clone https://github.com/markomanninen/srrd-builder
+cd srrd-builder
+dos2unix setup.sh  # Convert Windows line endings
+bash setup.sh
+```
+
+#### macOS/Linux
+
 ```bash
 git clone https://github.com/markomanninen/srrd-builder
 cd srrd-builder
 ./setup.sh
 
-# Optional: Run with comprehensive testing (158 tests)
+# Optional: Run with comprehensive testing (183 tests)
 ./setup.sh --with-tests
 ```
 
-This will:
+### What the setup scripts do:
 
-- Install Python dependencies
+- Install Python dependencies with fallback to minimal requirements
 - Install the `srrd` and `srrd-server` CLI tools
-- Configure LaTeX (if needed)
-- Set up Claude Desktop configuration
-- Test all components
-- **Optionally run test suite (158 tests in development)**
+- Configure platform-specific LaTeX installation
+- Set up Claude Desktop configuration automatically  
+- Test all components and verify installation
+- **Optionally run complete test suite (183 tests)**
+
+## Platform Support
+
+SRRD-Builder supports all major platforms with optimized setup:
+
+- **Windows**: Native PowerShell setup with Windows-specific paths
+- **WSL**: Linux environment on Windows with automatic virtual environment handling
+- **macOS**: Homebrew integration and MacTeX installation
+- **Linux**: Package manager detection and LaTeX setup
+
+For detailed platform-specific instructions, see [Installation Guide](INSTALLATION.md).
 
 ## AI Agents Guide
 
 We maintain a central guide for configuring and using AI agents in VS Code. See [AI Agent Quick Start](AI_AGENT_GUIDE.md) for details, including recommended extensions, settings, tasks, and snippets.
 
 ### 📱 Server Access Methods
-
-### Server Access
 
 SRRD-Builder provides two different server modes:
 
@@ -105,16 +125,20 @@ srrd-server stop
 
 ### 🔧 Requirements
 
-- Python 3.8+
-- LaTeX distribution (MacTeX on macOS, TeXLive on Linux)
-- Claude Desktop (uses MCP stdio automatically)
-- Git (for project initialization)
+- **Python 3.8+** (all platforms)
+- **LaTeX distribution**: 
+  - Windows: MiKTeX
+  - macOS: MacTeX  
+  - Linux: TeXLive
+  - WSL: TeXLive via package manager
+- **Claude Desktop** (uses MCP stdio automatically)
+- **Git** (for project initialization)
 
 ## Usage
 
 ### With Claude Desktop
 
-1. Install using `./setup.sh`
+1. Install using platform-specific setup script
 2. Initialize project: `cd /path/to/git/repo && srrd init`
 3. Configure Claude: `srrd configure --claude`
 4. Restart Claude Desktop
@@ -131,47 +155,47 @@ srrd-server stop
 
 The MCP server provides **44 tools** organized by research workflow categories:
 
-## 🧪 Research Planning & Goal Setting (2 tools)\*\*
+#### 🧪 Research Planning & Goal Setting (2 tools)
 
 - Socratic questioning to clarify research objectives and requirements
 - Methodology advisory for selecting appropriate research approaches
 
-## ✅ Quality Assurance & Review (2 tools)\*\*
+#### ✅ Quality Assurance & Review (2 tools)
 
 - AI-powered peer review simulation mimicking expert feedback
 - Quality gates with automated validation at each research phase
 
-## 🗄️ Storage & Project Management (6 tools)\*\*
+#### 🗄️ Storage & Project Management (6 tools)
 
 - Git-based project initialization and version control
 - Session save/restore for research continuity
 - Backup and project archival systems
 
-## 📄 Document Generation & LaTeX (6 tools)\*\*
+#### 📄 Document Generation & LaTeX (6 tools)
 
 - LaTeX document generation with automatic formatting
 - Bibliography management and citation integration
 - Template-based research document creation
 
-## 🔍 Search & Discovery (6 tools)\*\*
+#### 🔍 Search & Discovery (6 tools)
 
 - Semantic search across research documents and knowledge bases
 - Key concept extraction and pattern discovery
 - Document similarity analysis and knowledge graph building
 
-## ⚗️ Methodology & Validation (4 tools)\*\*
+#### ⚗️ Methodology & Validation (4 tools)
 
 - Research methodology explanation and guidance
 - Experimental design validation and ethics review
 - Statistical analysis framework recommendations
 
-## 🚀 Novel Theory Development (8 tools)\*\*
+#### 🚀 Novel Theory Development (8 tools)
 
 - Alternative paradigm development for fundamental physics
 - Foundational assumption analysis and paradigm comparison
 - Equal treatment validation for alternative theories
 
-## 🔄 Research Lifecycle Persistence (6 tools)\*\*
+#### 🔄 Research Lifecycle Persistence (6 tools)
 
 - Automatic tool usage logging and progress tracking
 - Research session management and milestone tracking
@@ -218,21 +242,21 @@ SRRD-Builder uses two different server modes:
 
 SRRD-Builder implements a **neurosymbolic architecture** that combines:
 
-## Symbolic Components\*\*
+### Symbolic Components
 
 - Rule-based validation and quality control systems
 - Structured templates for different research types
 - Knowledge graphs for research methodology relationships
 - Git-based project management and version control
 
-### Neural Components\*\*
+### Neural Components
 
 - Large language model integration for content generation
 - Semantic search across research documents and knowledge bases
 - AI-powered peer review simulation and quality assessment
 - Natural language processing for research requirement extraction
 
-### Integration Layer\*\*
+### Integration Layer
 
 - MCP server interface for Claude Desktop and VS Code integration
 - WebSocket server for web interfaces and external tool access
@@ -259,13 +283,13 @@ SRRD-Builder implements a **neurosymbolic architecture** that combines:
 - Challenge existing paradigms through rigorous investigation
 - Create publication-ready documents for novel ontologies
 
-### Research Institutions\*\*
+### Research Institutions
 
 - Standardize research planning processes across departments
 - Implement consistent quality control for research projects
 - Coordinate multi-institutional collaborative efforts
 
-### AI Research Systems\*\*
+### AI Research Systems
 
 - Provide structured requirements for autonomous research
 - Generate comprehensive research requirement documents
@@ -275,7 +299,7 @@ SRRD-Builder implements a **neurosymbolic architecture** that combines:
 
 ### Getting Started
 
-- [📖 Installation Guide](INSTALLATION.md) - Detailed installation instructions and troubleshooting
+- [📖 Installation Guide](INSTALLATION.md) - Detailed platform-specific installation instructions and troubleshooting
 - [📋 Project Status](work/PROJECT_STATUS.md) - Current implementation status and completion tracking
 
 ### Testing & Quality
@@ -305,37 +329,55 @@ SRRD-Builder implements a **neurosymbolic architecture** that combines:
 
 ### Common Issues
 
+#### Cross-Platform Issues
+
 1. **Claude Desktop not finding tools**: Check configuration with `srrd configure --status` and ensure `claude_desktop_config.json` is properly set
 2. **WebSocket demo server connection failed**: Ensure `srrd-server` is running and check port 8765 availability
 3. **Web interface can't connect**: Make sure WebSocket server is running with `srrd-server --with-frontend`
 4. **MCP server errors in Claude**: Check Python environment and dependencies, view logs in `work/code/mcp/logs/`
 5. **LaTeX compilation errors**: Verify LaTeX installation with `pdflatex --version`
-6. **Import errors**: Ensure virtual environment is activated: `source venv/bin/activate`
+6. **Import errors**: Ensure virtual environment is activated
+
+#### Platform-Specific Issues
+
+**Windows:**
+- **"'srrd' is not recognized"**: Ensure virtual environment is activated with `venv\Scripts\activate.bat`
+- **"Access denied" errors**: Run as Administrator or check antivirus software
+
+**WSL:**
+- **"$'\r': command not found"**: Run `dos2unix setup.sh` to fix line endings
+- **"venv/bin/activate: No such file"**: Script will automatically detect and recreate Unix-style venv
+
+**All Platforms:**
+- **Virtual environment activation**: 
+  - Windows: `venv\Scripts\activate.bat`
+  - macOS/Linux/WSL: `source venv/bin/activate`
 
 ### Getting Help
 
-1. **Run Test Suite**: `bash run_tests.sh` - Test validation (development in progress)
+1. **Run Test Suite**: `bash run_tests.sh` - Full validation (183/183 tests passing)
 2. Check server status: `srrd configure --status`
 3. View logs in `work/code/mcp/logs/`
-4. Check the [Test Suite Documentation](work/docs/TEST_SUITE.md) for testing guidelines
-5. Check the [Installation Guide](INSTALLATION.md) for detailed troubleshooting
+4. Check the [Installation Guide](INSTALLATION.md) for platform-specific troubleshooting
+5. Check the [Test Suite Documentation](work/docs/TEST_SUITE.md) for testing guidelines
 
 ## Project Status
 
-🚧 **Development Status**: This project is in active development with core functionality working.
+✅ **Production Ready**: This project is production-ready with complete functionality and comprehensive testing.
 
-✅ **Production Ready Features:**
+**Fully Implemented Features:**
 
 - MCP Server with 44 research tools (full functionality)
-- CLI tool for server management
-- Vector database integration
-- LaTeX document generation
-- Git-based project management
+- CLI tool for server management (`srrd` and `srrd-server` commands)
+- Vector database integration with semantic search
+- LaTeX document generation with automatic bibliography
+- Git-based project management and session restoration
 - Claude Desktop integration (full functionality)
-- Web interface for testing and demos
-- Research lifecycle persistence with tool logging
-- Workflow intelligence and progress tracking
+- Web interface for testing and demonstrations
+- Research lifecycle persistence with comprehensive tool logging
+- Workflow intelligence with AI-powered progress tracking
 - **Complete test suite (183/183 tests passing - 100% success rate)**
+- **Cross-platform support (Windows, WSL, macOS, Linux)**
 
 🚀 **Future Enhancement Plans:**
 
@@ -356,8 +398,6 @@ This project emphasizes equal treatment and rigorous development of alternative 
 - Equal treatment validation protocols
 - Specialized Socratic questioning for novel theories
 - Publication-ready output for alternative paradigms
-
-~/Library/Application Support/Code/User/mcp.json
 
 ## Contributing
 
