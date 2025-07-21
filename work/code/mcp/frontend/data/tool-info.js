@@ -1,6 +1,6 @@
 /**
  * SRRD-Builder Tool Information Database
- * Comprehensive information for all 38 research tools
+ * Comprehensive information for all 46 research tools
  * Used for help modals and user guidance
  */
 
@@ -202,6 +202,34 @@ const TOOL_INFO_DATABASE = {
             'Build targeted bibliography for manuscripts'
         ],
         tags: ['Reference Retrieval', 'Bibliography Search', 'Source Discovery']
+    },
+
+    'switch_project_context': {
+        title: 'Switch Project Context',
+        purpose: 'Switch MCP context to a different SRRD project for focused research work.',
+        context: 'Essential for working on multiple research projects by switching the active project context.',
+        usage: 'Changes the active project context so all subsequent tool calls use the target project\'s database and files.',
+        examples: [
+            'Switch to a specific research project by path',
+            'Change active project for focused research work',
+            'Access project-specific databases and files',
+            'Organize research work by project boundaries'
+        ],
+        tags: ['Project Management', 'Context Switching', 'Project Organization']
+    },
+
+    'reset_project_context': {
+        title: 'Reset Project Context',
+        purpose: 'Reset MCP context to the global home project (neutral state).',
+        context: 'Returns to the default global project context, removing any project-specific scoping.',
+        usage: 'Removes project-specific context and returns to the global default state for general research work.',
+        examples: [
+            'Return to global research mode',
+            'Clear project-specific context',
+            'Access global research tools and databases',
+            'Switch from project mode to general mode'
+        ],
+        tags: ['Project Management', 'Context Reset', 'Global Mode']
     },
 
     // ANALYSIS & SYNTHESIS TOOLS

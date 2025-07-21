@@ -77,7 +77,7 @@ async def test_complete_research_lifecycle_persistence():
         server = ClaudeMCPServer()
         
         print(f"   ✅ Server initialized with {len(server.tools)} tools")
-        assert len(server.tools) == 44, f"Expected 44 tools, got {len(server.tools)}"
+        assert len(server.tools) == 46, f"Expected 46 tools, got {len(server.tools)}"
         
         # 2. Execute Complete Research Workflow through MAIN Server
         print("\n2. Executing Complete Research Workflow...")

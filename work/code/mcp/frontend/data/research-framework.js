@@ -1,6 +1,6 @@
 /**
  * SRRD-Builder Research Framework
- * Maps all 38 tools to research acts and categories
+ * Maps all 46 tools to research acts and categories
  * Provides structured navigation for scientific research workflow
  */
 
@@ -193,7 +193,7 @@ const RESEARCH_FRAMEWORK = {
             description: 'Manage research projects and data',
             icon: '📁',
             act: 'communication',
-            tools: ['initialize_project', 'save_session', 'restore_session', 'search_knowledge', 'version_control', 'backup_project']
+            tools: ['initialize_project', 'save_session', 'restore_session', 'search_knowledge', 'version_control', 'backup_project', 'switch_project_context', 'reset_project_context']
         },
         workflow_tracking: {
             name: 'Workflow Tracking',
@@ -205,7 +205,7 @@ const RESEARCH_FRAMEWORK = {
     }
 };
 
-// Validation: Count all tools to ensure we have all 44
+// Validation: Count all tools to ensure we have all 46
 const allTools = Object.values(RESEARCH_FRAMEWORK.categories)
     .flatMap(category => category.tools);
 
@@ -213,7 +213,7 @@ const uniqueTools = [...new Set(allTools)];
 
 console.log(`Framework includes ${uniqueTools.length} tools:`, uniqueTools.sort());
 
-// Expected 44 tools (as identified from codebase):
+// Expected 46 tools (as identified from codebase):
 const expectedTools = [
     'assess_foundational_assumptions',
     'backup_project', 
@@ -247,6 +247,7 @@ const expectedTools = [
     'initialize_project',
     'initiate_paradigm_challenge',
     'list_latex_templates',
+    'reset_project_context',
     'restore_session',
     'retrieve_bibliography_references',
     'save_session',
@@ -256,6 +257,7 @@ const expectedTools = [
     'start_research_session',
     'store_bibliography_reference',
     'suggest_methodology',
+    'switch_project_context',
     'validate_design',
     'validate_novel_theory',
     'version_control'
@@ -272,7 +274,7 @@ if (extraTools.length > 0) {
     console.error('Extra tools:', extraTools);
 }
 if (missingTools.length === 0 && extraTools.length === 0) {
-    console.log('✅ All 44 tools successfully mapped to framework!');
+    console.log('✅ All 46 tools successfully mapped to framework!');
 }
 
 // Make available for import

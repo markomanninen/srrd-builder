@@ -4,17 +4,18 @@ This directory contains the Model Context Protocol (MCP) server for SRRD-Builder
 
 ## 🎯 Key Features
 
-- **38 Context-Aware Tools** - All tools automatically detect project context
+- **46 Context-Aware Tools** - All tools automatically detect project context
 - **100% Enhancement Coverage** - Complete context-aware functionality
 - **Backward Compatibility** - Existing tool calls work unchanged
 - **Automatic Context Injection** - No manual project_path parameters needed
 - **Graceful Fallback** - Works with or without project context
+- **Project Context Management** - Switch between projects or reset to global context
 
 ## Production Files
 
 - **`mcp_server.py`** - The main MCP server for Claude Desktop
 - **`server.py`** - Alternative MCP server implementation
-- **`tools/`** - Tool modules providing all 38 research assistance tools
+- **`tools/`** - Tool modules providing all 46 research assistance tools
 - **`utils/`** - Context detection and decorator utilities
 - **`storage/`** - Storage management backend
 
@@ -24,14 +25,32 @@ All 38 tools are now enhanced with automatic context detection:
 
 ### Enhanced Tool Categories
 
-- **Storage Management** (5/5) - Project initialization, session management, version control
-- **Document Generation** (6/6) - LaTeX generation, compilation, formatting
-- **Search & Discovery** (3/3) - Semantic search, knowledge base search
-- **Research Planning** (2/2) - Goal clarification, methodology suggestion
+- **Storage Management** (8/8) - Project initialization, session management, version control, context switching
+- **Document Generation** (10/10) - LaTeX generation, compilation, formatting, templates
+- **Search & Discovery** (6/6) - Semantic search, knowledge graphs, pattern discovery
+- **Research Planning** (2/2) - Goal clarification, methodology suggestion  
 - **Quality Assurance** (2/2) - Peer review simulation, quality gates
 - **Methodology Advisory** (4/4) - Methodology explanation, design validation
 - **Novel Theory Development** (8/8) - Paradigm challenge, framework development
-- **Additional Tools** (8/8) - Bibliography management, pattern discovery
+- **Research Continuity** (6/6) - Progress tracking, session management, workflow intelligence
+
+### New Project Context Management
+
+**Switch Between Projects:**
+```python
+# Switch MCP context to a different project
+result = await switch_project_context_tool(
+    target_project_path="/path/to/my-research-project"
+)
+# All subsequent tool calls now use the target project's database
+```
+
+**Reset to Global Context:**
+```python  
+# Reset to global home project (neutral state)
+result = await reset_project_context_tool()
+# All tools now use the global ~/.srrd/globalproject context
+```
 
 ### Usage Examples
 

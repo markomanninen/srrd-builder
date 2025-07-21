@@ -20,6 +20,8 @@ class SRRDFrontendApp {
             'search_knowledge': 'search',
             'version_control': 'storage',
             'backup_project': 'storage',
+            'switch_project_context': 'storage',
+            'reset_project_context': 'storage',
             'generate_latex_document': 'document',
             'compile_latex': 'document',
             'format_research_content': 'document',

@@ -1,6 +1,6 @@
 """
 COMPREHENSIVE Integration Tests for Main MCP Server (mcp_server.py) 
-Tests the ACTUAL working MCP server with ALL 44 tools that's used by the package
+Tests the ACTUAL working MCP server with ALL 46 tools that's used by the package
 """
 
 import pytest
@@ -182,7 +182,7 @@ class TestMainMCPServerComprehensive:
         gc.collect()
     
     def test_server_initialization_complete(self, setup_server_environment):
-        """Test COMPLETE main MCP server initialization - ALL 44 tools"""
+        """Test COMPLETE main MCP server initialization - ALL 46 tools"""
         test_env = setup_server_environment
         server = test_env['server']
         
@@ -190,8 +190,8 @@ class TestMainMCPServerComprehensive:
         assert len(server.tools) > 0
         print(f"✅ Server registered {len(server.tools)} tools")
         
-        # Check we have the expected 44 tools
-        assert len(server.tools) == 44, f"❌ Expected 44 tools, got {len(server.tools)}"
+        # Check we have the expected 46 tools
+        assert len(server.tools) == 46, f"❌ Expected 46 tools, got {len(server.tools)}"
         
         # COMPREHENSIVE tool check - ALL research continuity tools
         research_continuity_tools = [
@@ -256,7 +256,9 @@ class TestMainMCPServerComprehensive:
             'version_control',
             'backup_project',
             'store_bibliography_reference',
-            'retrieve_bibliography_references'
+            'retrieve_bibliography_references',
+            'switch_project_context',
+            'reset_project_context'
         ]
         
         for tool_name in storage_tools:
@@ -301,7 +303,7 @@ class TestMainMCPServerComprehensive:
             assert tool_name in server.tools, f"❌ Quality tool {tool_name} not registered"
             print(f"✅ Quality tool: {tool_name}")
         
-        print(f"🎉 ALL 44 tools successfully registered and verified!")
+        print(f"🎉 ALL 46 tools successfully registered and verified!")
     
     @pytest.mark.asyncio
     async def test_comprehensive_tool_execution(self, setup_server_environment):
@@ -390,7 +392,7 @@ class TestMainMCPServerComprehensive:
             assert callable(server.tools[tool_name]['handler']), f"❌ Tool {tool_name} handler not callable"
             print(f"✅ {tool_name} is properly registered and callable")
         
-        print("🎉 ALL 44 tools verified as registered and callable!")
+        print("🎉 ALL 46 tools verified as registered and callable!")
         print("✅ Tool execution verification completed successfully!")
     
     def test_mcp_protocol_comprehensive(self, setup_server_environment):
@@ -404,8 +406,8 @@ class TestMainMCPServerComprehensive:
         tools_info = server.list_tools_mcp()
         
         assert 'tools' in tools_info
-        assert len(tools_info['tools']) == 44
-        print(f"✅ MCP tools list returns all 44 tools")
+        assert len(tools_info['tools']) == 46
+        print(f"✅ MCP tools list returns all 46 tools")
         
         # Verify EVERY tool has proper MCP format
         required_fields = ['name', 'description', 'inputSchema']
@@ -476,7 +478,7 @@ class TestMainMCPServerComprehensive:
         assert response["id"] == 2
         assert "result" in response
         assert "tools" in response["result"]
-        assert len(response["result"]["tools"]) == 44
+        assert len(response["result"]["tools"]) == 46
         print("✅ Tools list request handled correctly")
         
         # Test 3: Tool execution request
@@ -897,9 +899,9 @@ if __name__ == "__main__":
             server = ClaudeMCPServer()
             print(f"✅ Server initialized with {len(server.tools)} tools")
             
-            # Verify we have all 44 tools
-            assert len(server.tools) == 44, f"❌ Expected 44 tools, got {len(server.tools)}"
-            print("✅ All 44 tools confirmed")
+            # Verify we have all 46 tools
+            assert len(server.tools) == 46, f"❌ Expected 46 tools, got {len(server.tools)}"
+            print("✅ All 46 tools confirmed")
             
             # Test a few key tools
             test_tools = [

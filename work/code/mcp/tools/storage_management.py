@@ -217,6 +217,138 @@ async def restore_session_tool(**kwargs) -> str:
     # This is a placeholder until the session manager is implemented
     return "Session restored"
 
+async def switch_project_context_tool(**kwargs) -> str:
+    """MCP tool to switch MCP context to a different project"""
+    target_project_path = kwargs.get('target_project_path')
+    
+    if not target_project_path:
+        return """Error: Missing required parameter (target_project_path)
+
+Usage: Provide the absolute path to the SRRD project you want to switch to.
+Example: "/path/to/your/research-project"
+
+The target directory must contain a .srrd folder with valid configuration."""
+    
+    target_path = Path(target_project_path).resolve()
+    
+    # Check if target directory exists and is an SRRD project
+    srrd_dir = target_path / '.srrd'
+    if not target_path.exists():
+        return f"❌ Error: Target directory does not exist: {target_path}"
+    
+    if not srrd_dir.exists():
+        return f"""❌ Error: Target directory is not an SRRD project
+   Directory: {target_path}
+   Missing: .srrd folder
+   
+💡 Tip: Use 'initialize_project' tool to create a new SRRD project in this location."""
+    
+    # Check if config exists
+    config_file = srrd_dir / 'config.json'
+    if not config_file.exists():
+        return f"""❌ Error: SRRD configuration not found
+   Expected: {config_file}
+   
+💡 The project appears corrupted. You may need to reinitialize it."""
+    
+    # Import the launcher configuration utility
+    try:
+        # Import from the CLI utils - correct path: tools -> mcp -> code -> work -> root -> srrd_builder
+        import sys
+        srrd_builder_path = Path(__file__).resolve().parent.parent.parent.parent.parent / 'srrd_builder'
+        sys.path.insert(0, str(srrd_builder_path))
+        
+        from utils.launcher_config import configure_global_launcher
+        
+        # Configure global launcher for this project
+        success, error = configure_global_launcher(target_path, srrd_dir)
+        
+        if success:
+            # Read project config to show project info
+            try:
+                with open(config_file, 'r') as f:
+                    config = json.load(f)
+                project_name = config.get('project_name', 'Unknown Project')
+                domain = config.get('domain', 'Unknown Domain')
+            except:
+                project_name = target_path.name
+                domain = 'Unknown'
+            
+            return f"""✅ **MCP Context Switched Successfully!**
+
+📁 **Active Project**: {project_name}
+🏷️  **Domain**: {domain}
+📍 **Path**: {target_path}
+
+🎯 **Ready to Use:**
+• All SRRD tools in Claude Desktop now use this project's database
+• All research data, sessions, and files are scoped to this project
+• Vector database and knowledge base are project-specific
+
+💡 **Next Steps:**
+• Use research tools like 'clarify_research_goals' or 'get_research_progress'
+• All tools will automatically use this project's context
+• Use 'reset_project_context' to return to global home project"""
+            
+        else:
+            return f"""❌ **Failed to switch MCP context**
+   Error: {error}
+   
+💡 This might be due to file permissions or system configuration issues."""
+            
+    except Exception as e:
+        return f"""❌ **Error switching MCP context**
+   Technical details: {str(e)}
+   
+💡 This is likely a system configuration issue. Please check that SRRD-Builder is properly installed."""
+
+async def reset_project_context_tool(**kwargs) -> str:
+    """MCP tool to reset MCP context to global home project"""
+    
+    # Import the launcher configuration utility
+    try:
+        # Import from the CLI utils - correct path: tools -> mcp -> code -> work -> root -> srrd_builder
+        import sys
+        srrd_builder_path = Path(__file__).resolve().parent.parent.parent.parent.parent / 'srrd_builder'
+        sys.path.insert(0, str(srrd_builder_path))
+        
+        from utils.launcher_config import reset_to_global_project
+        
+        # Reset to global project
+        success, error, global_project_path = reset_to_global_project()
+        
+        if success:
+            return f"""✅ **MCP Context Reset to Global Home Project!**
+
+📁 **Global Project Path**: {global_project_path}
+📍 **Config Location**: ~/.srrd/globalproject/.srrd/config.json
+
+🎯 **What This Means:**
+• All SRRD tools now use the global home project database
+• No project-specific context is active
+• This is the default "neutral" state
+
+💡 **Next Steps:**
+• Use 'initialize_project' to create new research projects
+• Use 'switch_project_context' to switch to existing projects  
+• Use project-specific directories and run 'switch_project_context' to work on specific research
+
+🏠 **Global vs Project Mode:**
+• **Global**: General research tools, no specific project scope
+• **Project**: All tools use project-specific databases and files"""
+            
+        else:
+            return f"""❌ **Failed to reset to global project**
+   Error: {error}
+   
+💡 This might be due to file permissions or home directory access issues."""
+            
+    except Exception as e:
+        return f"""❌ **Error resetting to global project**
+   Technical details: {str(e)}
+   
+💡 This is likely a system configuration issue. Please check that SRRD-Builder is properly installed."""
+
 def register_storage_tools(server):
     """Register storage management tools with the MCP server"""
     
@@ -307,4 +439,28 @@ def register_storage_tools(server):
             "required": ["session_id"]
         },
         handler=restore_session_tool
+    )
+    
+    server.register_tool(
+        name="switch_project_context",
+        description="Switch MCP context to a different SRRD project. All subsequent tool calls will use the target project's database and files.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "target_project_path": {"type": "string", "description": "Absolute path to the target SRRD project directory (must contain .srrd folder)"}
+            },
+            "required": ["target_project_path"]
+        },
+        handler=switch_project_context_tool
+    )
+    
+    server.register_tool(
+        name="reset_project_context", 
+        description="Reset MCP context to global home project. This removes any project-specific context and returns to the default neutral state.",
+        parameters={
+            "type": "object",
+            "properties": {},
+            "required": []
+        },
+        handler=reset_project_context_tool
     )

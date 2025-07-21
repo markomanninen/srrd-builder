@@ -100,7 +100,7 @@ frontend/
 ## 🛠️ **Enhanced Testing Features**
 
 ### **🎮 Interactive Tool Testing**
-- **Dynamic Tool Discovery**: Automatically discovers all 38+ MCP tools
+- **Dynamic Tool Discovery**: Automatically discovers all 46+ MCP tools
 - **Category Organization**: Tools grouped by research function
 - **One-Click Testing**: Run tools with default parameters instantly
 - **Custom Parameter Editing**: Full JSON parameter editor with validation
