@@ -2,19 +2,22 @@
 """
 Unit tests for MCP server core functionality
 """
-import sys
-import os
 import pytest
 import asyncio
 import json
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-# Add project paths for imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'code' / 'mcp'))
-
-from server import MCPServer
-from mcp_server import ClaudeMCPServer
+# Import from the MCP modules
+try:
+    from server import MCPServer
+    from mcp_server import ClaudeMCPServer
+except ImportError:
+    # Fallback for when running tests individually
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'code' / 'mcp'))
+    from server import MCPServer
+    from mcp_server import ClaudeMCPServer
 
 class TestMCPServer:
     """Test MCP server core functionality"""

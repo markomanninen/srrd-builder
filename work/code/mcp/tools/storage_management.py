@@ -29,12 +29,108 @@ async def initialize_project_tool(**kwargs) -> str:
     domain = kwargs.get('domain')
     project_path = kwargs.get('project_path')
     
-    if not all([name, description, domain, project_path]):
-        return "Error: Missing required parameters (name, description, domain, project_path)"
+    if not all([name, description, domain]):
+        return "Error: Missing required parameters (name, description, domain)"
     
-    project_manager = ProjectManager(project_path)
+    # Smart project location handling
+    resolved_path = _resolve_project_location(name, project_path)
+    
+    project_manager = ProjectManager(resolved_path)
     result = await project_manager.initialize_project(name, description, domain)
-    return f"Project initialized with status: {result}"
+    
+    # Update the result to include guidance
+    guidance = _get_project_creation_guidance(resolved_path)
+    auto_switched = result.get('auto_switched', False)
+    
+    if auto_switched:
+        switch_status = """✅ **MCP Context Automatically Switched!**
+   Claude Desktop is now using this project for all research tools."""
+        next_steps = """🚀 **Next Steps**:
+1. Start using research tools - they'll automatically work with your new project
+2. All your research data, sessions, and documents will be stored in this project
+3. Use other projects by running 'initialize_project' again or 'srrd switch'"""
+    else:
+        switch_status = """⚠️ **Manual Switch Required**
+   Auto-switch failed. Please run: srrd switch"""
+        next_steps = """🔧 **Next Steps**:
+1. Navigate to your project: cd {resolved_path}
+2. Switch MCP context: srrd switch
+3. Then start using your research tools"""
+    
+    return f"""Project '{name}' initialized successfully!
+
+📁 **Project Location**: {resolved_path}
+📊 **Status**: {result.get('status', 'initialized')}
+🔢 **Project ID**: {result.get('project_id', 'N/A')}
+
+{guidance}
+
+{switch_status}
+
+{next_steps}
+"""
+
+def _resolve_project_location(project_name: str, requested_path: Optional[str] = None) -> str:
+    """Resolve where the new project should be created based on current context"""
+    from pathlib import Path
+    import os
+    
+    # Get current SRRD context
+    current_project_path = os.environ.get('SRRD_PROJECT_PATH')
+    
+    if requested_path:
+        # User specified a path
+        requested = Path(requested_path).resolve()
+        
+        # If it's a relative path and we're in a global context, 
+        # create it in a reasonable location
+        if not requested.is_absolute() and current_project_path:
+            current_dir = Path(current_project_path).parent
+            if current_dir.name == 'globalproject' or '.srrd' in current_dir.name:
+                # We're in global context, create in home directory's Projects folder
+                home_projects = Path.home() / 'Projects'
+                home_projects.mkdir(exist_ok=True)
+                resolved = home_projects / requested.name
+            else:
+                # We're in a specific project context, create relative to it
+                resolved = current_dir.parent / requested.name
+        else:
+            resolved = requested
+            
+        return str(resolved)
+    
+    # No path specified - use intelligent defaults
+    if current_project_path:
+        current_dir = Path(current_project_path)
+        
+        if 'globalproject' in str(current_dir):
+            # In global context - create in user's Projects folder
+            home_projects = Path.home() / 'Projects'
+            home_projects.mkdir(exist_ok=True)
+            return str(home_projects / project_name.lower().replace(' ', '-'))
+        else:
+            # In specific project context - create alongside current project
+            parent_dir = current_dir.parent
+            return str(parent_dir / project_name.lower().replace(' ', '-'))
+    
+    # Fallback - create in user's Projects folder
+    home_projects = Path.home() / 'Projects'
+    home_projects.mkdir(exist_ok=True)
+    return str(home_projects / project_name.lower().replace(' ', '-'))
+
+def _get_project_creation_guidance(project_path: str) -> str:
+    """Provide guidance based on where the project was created"""
+    path = Path(project_path)
+    
+    if 'Projects' in str(path):
+        return """🏠 **Location**: Created in your home Projects directory
+💡 **Context**: This is now your active SRRD project"""
+    elif path.parent.name in ['globalproject', '.srrd']:
+        return """🌐 **Location**: Created in global SRRD context  
+💡 **Context**: This project is now active and ready to use"""
+    else:
+        return """📂 **Location**: Created alongside your current project
+💡 **Context**: Automatically switched to this new project"""
 
 @context_aware()
 async def save_session_tool(**kwargs) -> str:
@@ -123,16 +219,16 @@ def register_storage_tools(server):
     
     server.register_tool(
         name="initialize_project",
-        description="Initialize a new research project with Git-based storage",
+        description="Initialize a new research project with Git-based storage. Creates project in intelligent location based on current context.",
         parameters={
             "type": "object",
             "properties": {
                 "name": {"type": "string", "description": "Project name"},
                 "description": {"type": "string", "description": "Project description"},
                 "domain": {"type": "string", "description": "Research domain"},
-                "project_path": {"type": "string", "description": "Path where project will be created"}
+                "project_path": {"type": "string", "description": "Project path (optional - if not provided, will use intelligent location based on current context)"}
             },
-            "required": ["name", "description", "domain", "project_path"]
+            "required": ["name", "description", "domain"]
         },
         handler=initialize_project_tool
     )
