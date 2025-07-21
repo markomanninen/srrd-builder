@@ -42,7 +42,7 @@ Use these tools to manage research literature:
 
 **Store a bibliography reference:**
 
-```
+```txt
 @mcp_srrd-builder_store_bibliography_reference
 ```
 
@@ -52,7 +52,7 @@ Use these tools to manage research literature:
 
 **Retrieve bibliography references:**
 
-```
+```txt
 @mcp_srrd-builder_retrieve_bibliography_references
 ```
 
@@ -62,7 +62,7 @@ Use these tools to manage research literature:
 
 **Generate bibliography:**
 
-```
+```txt
 @mcp_srrd-builder_generate_bibliography
 ```
 
@@ -75,7 +75,7 @@ Plan and organize your research:
 
 **Clarify research objectives:**
 
-```
+```txt
 @mcp_srrd-builder_clarify_research_goals
 ```
 
@@ -84,7 +84,7 @@ Plan and organize your research:
 
 **Suggest research methodology:**
 
-```
+```txt
 @mcp_srrd-builder_suggest_methodology
 ```
 
@@ -97,7 +97,7 @@ Organize and analyze research data:
 
 **Extract key concepts:**
 
-```
+```txt
 @mcp_srrd-builder_extract_key_concepts
 ```
 
@@ -106,7 +106,7 @@ Organize and analyze research data:
 
 **Discover patterns:**
 
-```
+```txt
 @mcp_srrd-builder_discover_patterns
 ```
 
@@ -115,7 +115,7 @@ Organize and analyze research data:
 
 **Build knowledge graph:**
 
-```
+```txt
 @mcp_srrd-builder_build_knowledge_graph
 ```
 
@@ -128,7 +128,7 @@ Create professional research documents:
 
 **Generate LaTeX document:**
 
-```
+```txt
 @mcp_srrd-builder_generate_latex_document
 ```
 
@@ -137,7 +137,7 @@ Create professional research documents:
 
 **Generate with database bibliography:**
 
-```
+```txt
 @mcp_srrd-builder_generate_document_with_database_bibliography
 ```
 
@@ -146,7 +146,7 @@ Create professional research documents:
 
 **Compile LaTeX to PDF:**
 
-```
+```txt
 @mcp_srrd-builder_compile_latex
 ```
 
@@ -159,7 +159,7 @@ Find and explore research content:
 
 **Semantic search:**
 
-```
+```txt
 @mcp_srrd-builder_semantic_search
 ```
 
@@ -168,7 +168,7 @@ Find and explore research content:
 
 **Search knowledge base:**
 
-```
+```txt
 @mcp_srrd-builder_search_knowledge
 ```
 
@@ -177,7 +177,7 @@ Find and explore research content:
 
 **Find similar documents:**
 
-```
+```txt
 @mcp_srrd-builder_find_similar_documents
 ```
 
@@ -190,7 +190,7 @@ Ensure research quality and standards:
 
 **Check quality gates:**
 
-```
+```txt
 @mcp_srrd-builder_check_quality_gates
 ```
 
@@ -199,7 +199,7 @@ Ensure research quality and standards:
 
 **Simulate peer review:**
 
-```
+```txt
 @mcp_srrd-builder_simulate_peer_review
 ```
 
@@ -212,7 +212,7 @@ Track and manage research versions:
 
 **Version control operations:**
 
-```
+```txt
 @mcp_srrd-builder_version_control
 ```
 
@@ -221,7 +221,7 @@ Track and manage research versions:
 
 **Backup project:**
 
-```
+```txt
 @mcp_srrd-builder_backup_project
 ```
 
@@ -234,7 +234,7 @@ Manage research sessions:
 
 **Save research session:**
 
-```
+```txt
 @mcp_srrd-builder_save_session
 ```
 
@@ -243,7 +243,7 @@ Manage research sessions:
 
 **Restore research session:**
 
-```
+```txt
 @mcp_srrd-builder_restore_session
 ```
 
@@ -254,7 +254,7 @@ Manage research sessions:
 
 ### Example 1: Starting a Research Project
 
-```
+```txt
 You: I want to start researching machine learning algorithms for recommendation systems.
 
 Response: I'll help you start your research project on ML algorithms for recommendation systems. Let me clarify your research objectives and suggest a methodology.
@@ -270,7 +270,7 @@ Domain: "cs"
 
 ### Example 2: Managing Bibliography
 
-```
+```txt
 You: I need to store some research papers about neural networks and then find them later.
 
 Response: I'll help you store and organize your neural network research papers.
@@ -290,7 +290,7 @@ Query: "neural networks attention"
 
 ### Example 3: Creating Documents
 
-```
+```txt
 You: Generate a research paper draft about my findings on recommendation systems.
 
 Response: I'll create a LaTeX research document using your project's bibliography and data.
@@ -327,7 +327,7 @@ Introduction: "This paper presents novel approaches to..."
 - No external tools needed
 - Real-time interaction with your research data
 
-## 🎯 Try It Now!
+## 🎯 Try It Now
 
 1. **Configure Claude Desktop** (if not already done):
 
@@ -337,7 +337,7 @@ Introduction: "This paper presents novel approaches to..."
 
 2. **Restart Claude Desktop** and try this:
 
-   ```
+   ```txt
    @mcp_srrd-builder_clarify_research_goals
    ```
 
@@ -360,7 +360,7 @@ Introduction: "This paper presents novel approaches to..."
 | **Session Management**  | 2 tools | Manage research sessions       |
 | **Project Management**  | 3 tools | Initialize and manage projects |
 
-**Total: 38 Context-Aware MCP Tools**
+## Total: 38 Context-Aware MCP Tools
 
 ## 🚀 Next Steps
 

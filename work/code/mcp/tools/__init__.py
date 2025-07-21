@@ -74,11 +74,17 @@ def register_all_tools(server):
             register_func(server)
             tools_added = len(server.tools) - tools_before
             total_tools += tools_added
-            print(f"Registered {tools_added} tools from {module_name}")
+            # Log to stderr to avoid JSON parsing issues
+            import sys
+            print(f"Registered {tools_added} tools from {module_name}", file=sys.stderr)
         except Exception as e:
-            print(f"Error registering tools from {module_name}: {e}")
+            # Log to stderr to avoid JSON parsing issues
+            import sys
+            print(f"Error registering tools from {module_name}: {e}", file=sys.stderr)
     
-    print(f"Total tools registered: {total_tools}")
+    # Log to stderr to avoid JSON parsing issues
+    import sys
+    print(f"Total tools registered: {total_tools}", file=sys.stderr)
 
 __all__ = [
     "register_all_tools",

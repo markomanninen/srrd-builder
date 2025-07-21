@@ -23,7 +23,9 @@ try:
     from utils.research_framework import ResearchFrameworkService  
     from utils.workflow_intelligence import WorkflowIntelligence
 except ImportError as e:
-    print(f"Warning: Could not import database functionality: {e}")
+    # Log to stderr to avoid JSON parsing issues
+    import sys
+    print(f"Warning: Could not import database functionality: {e}", file=sys.stderr)
     SQLiteManager = None
     ResearchFrameworkService = None
     WorkflowIntelligence = None
@@ -61,10 +63,11 @@ class ClaudeMCPServer:
         """Register MCP tools using the standard registration system"""
         # Use the existing registration system from tools module
         register_all_tools(self)
-        print(f"DEBUG: Registered {len(self.tools)} tools: {list(self.tools.keys())}")
+        # Debug info logged to stderr to avoid JSON parsing issues
+        import sys
+        print(f"DEBUG: Registered {len(self.tools)} tools: {list(self.tools.keys())}", file=sys.stderr)
         
         # Make server instance available globally for tools to access shared database
-        import sys
         sys.modules[__name__].global_server_instance = self
     
     def register_tool(self, name, description, parameters, handler):
@@ -115,10 +118,14 @@ class ClaudeMCPServer:
                         (project_name, "Auto-created default project", "general", "datetime('now')")
                     )
                     await self.sqlite_manager.connection.commit()
-                    print(f"Created default project: {project_name}")
+                    # Log to stderr to avoid JSON parsing issues
+                    import sys
+                    print(f"Created default project: {project_name}", file=sys.stderr)
                     
             except Exception as e:
-                print(f"Warning: Could not ensure default project: {e}")
+                # Log to stderr to avoid JSON parsing issues
+                import sys
+                print(f"Warning: Could not ensure default project: {e}", file=sys.stderr)
 
     async def _get_or_create_session(self, project_id: int) -> int:
         """Get current session or create a new one"""
@@ -415,8 +422,10 @@ class ClaudeMCPServer:
 
     def start(self):
         """Start the MCP server"""
-        print("Starting SRRD-Builder MCP Server...")
-        print(f"Registered {len(self.tools)} tools")
+        # Log to stderr to avoid JSON parsing issues
+        import sys
+        print("Starting SRRD-Builder MCP Server...", file=sys.stderr)
+        print(f"Registered {len(self.tools)} tools", file=sys.stderr)
         asyncio.run(self.run())
 
 if __name__ == "__main__":

@@ -36,6 +36,14 @@ The system features an **MCP (Model Context Protocol) server** that integrates w
 - **Web Frontend Interface** for testing and demonstration
 - **Local Storage Integration** (Git, SQLite, Vector DB)
 
+## Research Methodology Guides
+
+SRRD-Builder provides comprehensive guides for conducting scientific research:
+
+- **[Claude Research Guide](CLAUDE_RESEARCH_GUIDE.md)** - Complete walkthrough of the 6-act research process with all 44 tools, example conversations, and workflow demonstrations
+- **[VS Code Chat Guide](VS_CODE_CHAT_GUIDE.md)** - Technical setup and tool reference for VS Code integration
+- **[AI Agent Guide](AI_AGENT_GUIDE.md)** - Configuration guide for AI agents working in VS Code
+
 ## Quick Start
 
 ### 🚀 Automated Installation
