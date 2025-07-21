@@ -982,6 +982,27 @@ class EnhancedSRRDApp {
                                schema.properties && 
                                Object.keys(schema.properties).length > 0;
 
+        // Check if this is a tool that legitimately takes no parameters
+        const noParameterTools = [
+            'reset_project_context',
+            'assess_foundational_assumptions',
+            'compare_approaches',
+            'compare_paradigms',
+            'cultivate_innovation',
+            'develop_alternative_framework',
+            'ensure_ethics',
+            'evaluate_paradigm_shift_potential',
+            'explain_methodology',
+            'generate_critical_questions',
+            'generate_latex_with_template',
+            'initiate_paradigm_challenge',
+            'list_latex_templates',
+            'validate_design',
+            'validate_novel_theory'
+        ];
+        
+        const isNoParameterTool = noParameterTools.includes(toolName);
+
         if (!hasValidSchema && hasKnownParams) {
             // If we have known verified parameters, create a clean form (no warnings)
             return this.generateCleanParameterForm(knownParams, toolName);
@@ -995,6 +1016,15 @@ class EnhancedSRRDApp {
             });
 
             return fields.join('');
+        }
+        
+        // If this is a tool that takes no parameters, show appropriate message
+        if (isNoParameterTool) {
+            return `
+                <div class="parameter-note">
+                    <p><strong>Info:</strong> This tool requires no parameters and can be executed directly.</p>
+                </div>
+            `;
         }
         
         // Only show fallback form with warnings for truly unknown tools
