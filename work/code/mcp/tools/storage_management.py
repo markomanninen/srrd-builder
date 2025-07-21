@@ -307,12 +307,21 @@ async def reset_project_context_tool(**kwargs) -> str:
     
     # Import the launcher configuration utility
     try:
-        # Import from the CLI utils - correct path: tools -> mcp -> code -> work -> root -> srrd_builder
+        # Import from the CLI utils with absolute path approach
         import sys
-        srrd_builder_path = Path(__file__).resolve().parent.parent.parent.parent.parent / 'srrd_builder'
-        sys.path.insert(0, str(srrd_builder_path))
+        import importlib.util
+        from pathlib import Path
         
-        from utils.launcher_config import reset_to_global_project
+        # Calculate path to launcher_config.py
+        launcher_config_path = Path(__file__).resolve().parent.parent.parent.parent.parent / 'srrd_builder' / 'utils' / 'launcher_config.py'
+        
+        # Load the module directly
+        spec = importlib.util.spec_from_file_location("launcher_config", launcher_config_path)
+        launcher_config = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(launcher_config)
+        
+        # Get the function
+        reset_to_global_project = launcher_config.reset_to_global_project
         
         # Reset to global project
         success, error, global_project_path = reset_to_global_project()
