@@ -141,16 +141,24 @@ class ClaudeMCPServer:
             msg_id = request_data.get("id", 1)
             
             if method == "initialize":
+                # Include project path in server info if available
+                project_path = os.environ.get('SRRD_PROJECT_PATH')
+                server_info = {
+                    "name": "SRRD Builder MCP Server",
+                    "version": "1.0.0"
+                }
+                
+                # Add project path to server info if available
+                if project_path:
+                    server_info["projectPath"] = project_path
+                
                 return {
                     "jsonrpc": "2.0",
                     "id": msg_id,
                     "result": {
                         "protocolVersion": "2024-11-05",
                         "capabilities": {"tools": {}},
-                        "serverInfo": {
-                            "name": "SRRD Builder MCP Server",
-                            "version": "1.0.0"
-                        }
+                        "serverInfo": server_info
                     }
                 }
                 

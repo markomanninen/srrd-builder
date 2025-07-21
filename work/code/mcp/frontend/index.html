@@ -125,10 +125,13 @@
     <div id="modalContainer"></div>
 
     <!-- External Scripts -->
-    <script src="data/research-framework.js?v=6"></script>
-    <script src="data/tool-info.js?v=6"></script>
-    <script src="mcp-client.js?v=6"></script>
-    <script src="enhanced-app.js?v=6"></script>
+    <script>
+        const version = new Date().getTime();
+        document.write(`<script src="data/research-framework.js?v=${version}"><\/script>`);
+        document.write(`<script src="data/tool-info.js?v=${version}"><\/script>`);
+        document.write(`<script src="mcp-client.js?v=${version}"><\/script>`);
+        document.write(`<script src="enhanced-app.js?v=${version}"><\/script>`);
+    </script>
     
     <script>
         // Initialize the enhanced application
