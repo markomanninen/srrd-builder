@@ -268,6 +268,13 @@ def handle_init(args):
     print(f"   Domain: {args.domain}")
     print(f"   Template: {args.template}")
     
+    # Kill any existing MCP server processes before initializing new project
+    from ...utils.process_utils import kill_mcp_processes, restart_message
+    killed_count = kill_mcp_processes(verbose=True)
+    
+    if killed_count > 0:
+        print(f"   ⚡ Stopped {killed_count} MCP server process(es)")
+    
     # Create project structure
     if create_project_structure(git_root, args.domain, args.template, args.force):
         print("\n✅ SRRD-Builder project initialized successfully!")
@@ -279,6 +286,10 @@ def handle_init(args):
         print("   3. srrd status           # Check project health")
         print("\n🔄 To switch to another project:")
         print("   1. cd /other/project && srrd switch")
+        
+        # Show restart instructions
+        restart_message(f"New project {git_root.name} initialized.")
+        
         return 0
     else:
         return 1

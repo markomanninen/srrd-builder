@@ -34,6 +34,13 @@ def handle_switch(args):
     
     print(f"🔄 Switching MCP context to: {current_dir}")
     
+    # Kill any existing MCP server processes before switch
+    from ...utils.process_utils import kill_mcp_processes, restart_message
+    killed_count = kill_mcp_processes(verbose=True)
+    
+    if killed_count > 0:
+        print(f"   ⚡ Stopped {killed_count} MCP server process(es)")
+    
     # Configure global launcher for this project
     if configure_global_launcher(current_dir, srrd_dir):
         print("✅ MCP context switched successfully!")
@@ -42,6 +49,10 @@ def handle_switch(args):
         print("\n🎯 Ready to use:")
         print("   • Claude Desktop - All SRRD tools available")
         print("   • VS Code Chat - All SRRD tools available")
+        
+        # Show restart instructions
+        restart_message(f"Context switched to {current_dir.name}.")
+        
         return 0
     else:
         return 1

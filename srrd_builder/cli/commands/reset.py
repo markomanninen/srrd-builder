@@ -17,6 +17,13 @@ def handle_reset(args):
     """Handle 'srrd reset' command to reset to global home project"""
     print("🔄 Resetting SRRD to global home project...")
     
+    # Kill any existing MCP server processes before reset
+    from ...utils.process_utils import kill_mcp_processes, restart_message
+    killed_count = kill_mcp_processes(verbose=True)
+    
+    if killed_count > 0:
+        print(f"   ⚡ Stopped {killed_count} MCP server process(es)")
+    
     result = reset_global_launcher()
     if result[0]:  # Check if successful
         project_path = result[1]
@@ -25,6 +32,10 @@ def handle_reset(args):
         print(f"   📍 Config: ~/.srrd/globalproject/config.json")
         print("   • Use 'srrd init' in specific directories for local projects") 
         print("   • Use 'srrd switch' to change between projects")
+        
+        # Show restart instructions
+        restart_message("Configuration reset complete.")
+        
         return 0
     else:
         return 1

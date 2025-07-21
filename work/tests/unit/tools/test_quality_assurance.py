@@ -13,8 +13,7 @@ from unittest.mock import Mock, patch
 # Import quality assurance tools with error handling
 try:
     from work.code.mcp.tools.quality_assurance import (
-        simulate_peer_review,
-        check_quality_gates,
+        QualityAssuranceTool,
         register_quality_tools
     )
     QUALITY_TOOLS_AVAILABLE = True
@@ -41,13 +40,15 @@ class TestQualityAssuranceTools:
     async def test_simulate_peer_review(self):
         """Test peer review simulation functionality"""
         try:
+            tool = QualityAssuranceTool()
+            
             test_document = {
                 "title": "Test Research Paper",
                 "abstract": "This is a test abstract for peer review simulation",
                 "content": "Research content for testing peer review functionality"
             }
             
-            result = await simulate_peer_review(
+            result = await tool.simulate_peer_review(
                 document_content=test_document,
                 domain="computer_science",
                 review_type="comprehensive",
@@ -70,6 +71,8 @@ class TestQualityAssuranceTools:
     async def test_check_quality_gates(self):
         """Test quality gates checking functionality"""
         try:
+            tool = QualityAssuranceTool()
+            
             test_research_content = {
                 "methodology": "Experimental design with control groups",
                 "data_analysis": "Statistical analysis using ANOVA",
@@ -77,7 +80,7 @@ class TestQualityAssuranceTools:
                 "literature_review": "Comprehensive review of 50+ papers"
             }
             
-            result = await check_quality_gates(
+            result = await tool.check_quality_gates(
                 research_content=test_research_content,
                 phase="analysis",
                 domain_standards={"statistical_significance": 0.05},
@@ -100,13 +103,15 @@ class TestQualityAssuranceTools:
     async def test_peer_review_with_novel_theory_mode(self):
         """Test peer review simulation with novel theory mode"""
         try:
+            tool = QualityAssuranceTool()
+            
             test_document = {
                 "title": "Novel Theory in Quantum Computing",
                 "abstract": "Proposing a new theoretical framework for quantum algorithms",
                 "content": "Revolutionary approach to quantum state manipulation"
             }
             
-            result = await simulate_peer_review(
+            result = await tool.simulate_peer_review(
                 document_content=test_document,
                 domain="physics",
                 review_type="novel_theory",
@@ -128,6 +133,8 @@ class TestQualityAssuranceTools:
     async def test_quality_gates_different_phases(self):
         """Test quality gates for different research phases"""
         try:
+            tool = QualityAssuranceTool()
+            
             test_content = {
                 "research_question": "How does X affect Y?",
                 "hypothesis": "X positively correlates with Y",
@@ -137,14 +144,14 @@ class TestQualityAssuranceTools:
             phases = ["planning", "execution", "analysis", "writing"]
             
             for phase in phases:
-                result = await check_quality_gates(
+                result = await tool.check_quality_gates(
                     research_content=test_content,
                     phase=phase
                 )
                 
                 assert result is not None
                 assert isinstance(result, dict)
-            assert "gate_results" in result or "overall_score" in result
+                assert "gate_results" in result or "overall_score" in result
                 
         except ImportError:
             pytest.skip("Quality gates phase testing dependencies not available")
@@ -178,13 +185,15 @@ class TestQualityToolParameters:
     async def test_peer_review_parameter_validation(self):
         """Test peer review parameter validation"""
         try:
+            tool = QualityAssuranceTool()
+            
             # Test missing required parameters
             with pytest.raises((TypeError, ValueError)):
-                await simulate_peer_review()  # Missing required parameters
+                await tool.simulate_peer_review()  # Missing required parameters
             
             # Test with minimal required parameters
             test_doc = {"title": "Test", "content": "Test content"}
-            result = await simulate_peer_review(
+            result = await tool.simulate_peer_review(
                 document_content=test_doc,
                 domain="general"
             )
@@ -197,13 +206,15 @@ class TestQualityToolParameters:
     async def test_quality_gates_parameter_validation(self):
         """Test quality gates parameter validation"""
         try:
+            tool = QualityAssuranceTool()
+            
             # Test missing required parameters
             with pytest.raises((TypeError, ValueError)):
-                await check_quality_gates()  # Missing required parameters
+                await tool.check_quality_gates()  # Missing required parameters
             
             # Test with minimal required parameters
             test_content = {"methodology": "Test methodology"}
-            result = await check_quality_gates(
+            result = await tool.check_quality_gates(
                 research_content=test_content,
                 phase="planning"
             )
@@ -221,13 +232,15 @@ class TestQualityAssuranceWorkflow:
     async def test_complete_quality_workflow(self):
         """Test complete quality assurance workflow"""
         try:
+            tool = QualityAssuranceTool()
+            
             # Step 1: Check quality gates during planning
             planning_content = {
                 "research_question": "How does machine learning impact productivity?",
                 "methodology": "Mixed methods approach with surveys and experiments"
             }
             
-            planning_result = await check_quality_gates(
+            planning_result = await tool.check_quality_gates(
                 research_content=planning_content,
                 phase="planning"
             )
@@ -242,7 +255,7 @@ class TestQualityAssuranceWorkflow:
                 "conclusions": "ML tools increase productivity by 25%"
             }
             
-            peer_review_result = await simulate_peer_review(
+            peer_review_result = await tool.simulate_peer_review(
                 document_content=research_document,
                 domain="computer_science",
                 review_type="comprehensive"
@@ -251,7 +264,7 @@ class TestQualityAssuranceWorkflow:
             
             # Step 3: Final quality gates check
             final_content = {**planning_content, **research_document}
-            final_result = await check_quality_gates(
+            final_result = await tool.check_quality_gates(
                 research_content=final_content,
                 phase="writing"
             )
