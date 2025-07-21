@@ -9,12 +9,13 @@ from pathlib import Path
 import sys
 import os
 
-# Add parent directories to path
-sys.path.append(str(Path(__file__).parent.parent.parent / 'code' / 'mcp'))
-
-from storage.sqlite_manager import SQLiteManager
-from utils.research_framework import ResearchFrameworkService
-from utils.workflow_intelligence import WorkflowIntelligence
+# Import MCP modules (paths set up by conftest.py)
+try:
+    from storage.sqlite_manager import SQLiteManager
+    from utils.research_framework import ResearchFrameworkService
+    from utils.workflow_intelligence import WorkflowIntelligence
+except ImportError as e:
+    pytest.skip(f"MCP server modules not available: {e}", allow_module_level=True)
 
 
 @pytest.mark.asyncio

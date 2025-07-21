@@ -59,76 +59,74 @@ def cleanup_pid_file():
 def is_server_running():
     """Check if server is running"""
     pid_data = load_server_pid()
-    if not pid_data:
-        return False
     
-    pid = pid_data.get('pid')
-    if not pid:
-        return False
+    # First check PID file if it exists
+    if pid_data:
+        pid = pid_data.get('pid')
+        if pid:
+            try:
+                # Check if process exists (doesn't kill it)
+                os.kill(pid, 0)
+                return True
+            except OSError:
+                pass
     
+    # Fallback: Check if ports are in use
+    import subprocess
     try:
-        # Check if process exists (doesn't kill it)
-        os.kill(pid, 0)
-        return True
-    except OSError:
-        return False
+        # Check if port 8765 is in use (WebSocket server)
+        result = subprocess.run(['lsof', '-i', ':8765'], capture_output=True, text=True)
+        if result.stdout.strip():
+            return True
+        
+        # Also check for SRRD-related processes
+        result = subprocess.run(['pgrep', '-f', 'srrd_builder'], capture_output=True)
+        if result.returncode == 0:
+            return True
+            
+        result = subprocess.run(['pgrep', '-f', 'mcp_server'], capture_output=True)
+        if result.returncode == 0:
+            return True
+            
+    except Exception:
+        pass
+    
+    return False
 
 def stop_server():
     """Stop the running server"""
     pid_data = load_server_pid()
-    if not pid_data:
-        print("❌ No server PID found - server may not be running")
-        return False
-    
-    main_pid = pid_data.get('pid')
-    frontend_pid = pid_data.get('frontend_pid')
-    
-    if not main_pid:
-        print("❌ Invalid PID data")
-        return False
-    
     success = True
     
-    try:
-        # Stop main server
-        if not is_server_running():
-            print("❌ Main server is not running")
-            success = False
-        else:
-            print(f"🛑 Stopping main server (PID: {main_pid})...")
-            os.kill(main_pid, signal.SIGTERM)
-            
-            # Wait for graceful shutdown
-            for _ in range(50):  # Wait up to 5 seconds
+    # First try to stop using PID file if it exists
+    if pid_data:
+        main_pid = pid_data.get('pid')
+        frontend_pid = pid_data.get('frontend_pid')
+        
+        if main_pid:
+            try:
+                print(f"🛑 Stopping main server (PID: {main_pid})...")
+                os.kill(main_pid, signal.SIGTERM)
+                time.sleep(2)
+                
+                # Force kill if still running
                 try:
                     os.kill(main_pid, 0)
-                    time.sleep(0.1)
+                    print("⚠️  Main server didn't stop gracefully, force killing...")
+                    os.kill(main_pid, signal.SIGKILL)
+                    time.sleep(0.5)
                 except OSError:
-                    break
-            
-            # Force kill if still running
-            try:
-                os.kill(main_pid, 0)
-                print("⚠️  Main server didn't stop gracefully, force killing...")
-                os.kill(main_pid, signal.SIGKILL)
-                time.sleep(0.5)
+                    pass
+                    
             except OSError:
-                pass
+                print("ℹ️  Main server was not running")
         
         # Stop frontend server if it exists
         if frontend_pid:
             try:
-                os.kill(frontend_pid, 0)  # Check if frontend is running
                 print(f"🛑 Stopping frontend server (PID: {frontend_pid})...")
                 os.kill(frontend_pid, signal.SIGTERM)
-                
-                # Wait for graceful shutdown
-                for _ in range(30):  # Wait up to 3 seconds
-                    try:
-                        os.kill(frontend_pid, 0)
-                        time.sleep(0.1)
-                    except OSError:
-                        break
+                time.sleep(1)
                 
                 # Force kill if still running
                 try:
@@ -141,15 +139,36 @@ def stop_server():
                     
             except OSError:
                 print("ℹ️  Frontend server was not running")
+    else:
+        print("ℹ️  No PID file found, searching for running processes...")
+    
+    # Always kill any processes by name as fallback (more aggressive)
+    print("🧹 Cleaning up any remaining SRRD processes...")
+    import subprocess
+    try:
+        # Kill processes using ports
+        print("🔌 Killing processes using ports 8765 and 8080...")
+        subprocess.run(['bash', '-c', 'lsof -ti:8765 | xargs -r kill -TERM'], capture_output=True)
+        subprocess.run(['bash', '-c', 'lsof -ti:8080 | xargs -r kill -TERM'], capture_output=True)
+        time.sleep(2)
         
-        cleanup_pid_file()
-        print("✅ Server stopped successfully")
-        return success
+        # Force kill if still there
+        subprocess.run(['bash', '-c', 'lsof -ti:8765 | xargs -r kill -KILL'], capture_output=True)
+        subprocess.run(['bash', '-c', 'lsof -ti:8080 | xargs -r kill -KILL'], capture_output=True)
         
-    except OSError as e:
-        print(f"❌ Error stopping server: {e}")
-        cleanup_pid_file()
-        return False
+        # Kill SRRD-related processes
+        subprocess.run(['pkill', '-f', 'srrd_builder'], capture_output=True)
+        subprocess.run(['pkill', '-f', 'mcp_server'], capture_output=True)
+        subprocess.run(['pkill', '-f', 'run_server.py'], capture_output=True)
+        subprocess.run(['pkill', '-f', 'SimpleHTTPRequestHandler'], capture_output=True)
+        subprocess.run(['pkill', '-f', 'frontend.*8080'], capture_output=True)
+        time.sleep(1)
+    except Exception as e:
+        print(f"⚠️  Warning during cleanup: {e}")
+    
+    cleanup_pid_file()
+    print("✅ Server stopped successfully")
+    return success
 
 def find_frontend_dir(mcp_dir):
     """Find the frontend directory"""
@@ -343,7 +362,8 @@ For more information, visit: https://github.com/markomanninen/srrd-builder
             if not stop_server():
                 print("❌ Failed to stop existing server")
                 sys.exit(1)
-            time.sleep(1)
+            print("⏳ Waiting for ports to be released...")
+            time.sleep(3)  # Wait longer for ports to be released
         # Continue to start the server
     
     # Check if server is already running for start action

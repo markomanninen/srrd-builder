@@ -1,6 +1,6 @@
 """
 Research Continuity Tools
-MCP tools for research lifecycle persistence and workflow guidance
+Research lifecycle persistence and workflow guidance
 """
 
 import json
@@ -8,8 +8,15 @@ import sys
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
+# Fix import path issues by adding utils directory to sys.path
+current_dir = Path(__file__).parent.parent
+utils_dir = current_dir / "utils"
+if str(utils_dir) not in sys.path:
+    sys.path.insert(0, str(utils_dir))
+
 # Add parent directory to path to access storage modules
-sys.path.append(str(Path(__file__).parent.parent))
+if str(current_dir) not in sys.path:
+    sys.path.insert(0, str(current_dir))
 
 try:
     from storage.sqlite_manager import SQLiteManager
@@ -18,19 +25,18 @@ except ImportError as e:
     SQLiteManager = None
 
 try:
-    from utils.research_framework import ResearchFrameworkService
+    from research_framework import ResearchFrameworkService
 except ImportError as e:
     print(f"Warning: Could not import ResearchFrameworkService: {e}")
     ResearchFrameworkService = None
 
 try:
-    from utils.workflow_intelligence import WorkflowIntelligence
+    from workflow_intelligence import WorkflowIntelligence
 except ImportError as e:
     print(f"Warning: Could not import WorkflowIntelligence: {e}")
     WorkflowIntelligence = None
 
-# Add context-aware decorator
-sys.path.append(str(Path(__file__).parent.parent / 'utils'))
+# Context-aware decorator imports
 try:
     from context_decorator import context_aware, project_required
 except ImportError as e:

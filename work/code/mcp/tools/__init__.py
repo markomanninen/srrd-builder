@@ -1,4 +1,19 @@
 # Import tool modules with error handling
+
+# Fix import path issues for all tools
+import sys
+from pathlib import Path
+
+current_dir = Path(__file__).parent.parent
+
+if str(current_dir) not in sys.path:
+    sys.path.insert(0, str(current_dir))
+
+# Also add utils directory directly
+utils_dir = current_dir / 'utils'
+if str(utils_dir) not in sys.path:
+    sys.path.insert(0, str(utils_dir))
+
 available_modules = {}
 
 try:

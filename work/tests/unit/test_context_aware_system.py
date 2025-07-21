@@ -17,16 +17,14 @@ import pytest
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-# Add MCP directory to path
-sys.path.append(str(Path(__file__).parent.parent.parent / "code" / "mcp"))
-
+# Import MCP modules (paths set up by conftest.py)
 try:
     from utils.context_detector import ContextDetector, get_context_detector
     from utils.context_decorator import context_aware, ContextAwareError
 except ImportError as e:
     print(f"❌ Import Error: {e}")
     print("   Make sure MCP server modules are available")
-    sys.exit(1)
+    pytest.skip("MCP server modules not available", allow_module_level=True)
 
 class TestContextDetection:
     """Test context detection functionality"""

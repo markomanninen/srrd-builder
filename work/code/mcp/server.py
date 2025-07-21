@@ -10,6 +10,16 @@ from pathlib import Path
 current_dir = Path(__file__).parent
 sys.path.insert(0, str(current_dir))
 
+# CRITICAL: Add path for utils modules BEFORE importing tools
+# This ensures tools can find utils.context_decorator
+utils_path = current_dir / 'utils'
+if str(utils_path) not in sys.path:
+    sys.path.insert(0, str(utils_path))
+    
+# Also add the parent mcp directory to path
+if str(current_dir) not in sys.path:
+    sys.path.insert(0, str(current_dir))
+
 # Import PROJECT_PATH from the launcher module
 try:
     sys.path.insert(0, str(current_dir.parent.parent.parent / 'srrd_builder'))

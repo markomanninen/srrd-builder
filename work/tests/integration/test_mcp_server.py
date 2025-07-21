@@ -19,9 +19,112 @@ from mcp_server import ClaudeMCPServer
 class TestMainMCPServerComprehensive:
     """COMPREHENSIVE integration tests for main MCP server with ALL functionality"""
     
+    @pytest.fixture(autouse=True)
+    def test_isolation(self):
+        """Ensure COMPLETE test isolation by aggressively clearing all possible state pollution"""
+        import os
+        import gc
+        
+        # Store original environment
+        original_env = os.environ.get('SRRD_PROJECT_PATH')
+        
+        # AGGRESSIVE PRE-TEST CLEANUP - Clear everything BEFORE test runs
+        self._aggressive_module_cleanup()
+        
+        # Force garbage collection to ensure cleanup
+        gc.collect()
+        
+        yield
+        
+        # POST-TEST CLEANUP - Clean up after test
+        # Restore original environment
+        if original_env:
+            os.environ['SRRD_PROJECT_PATH'] = original_env
+        elif 'SRRD_PROJECT_PATH' in os.environ:
+            del os.environ['SRRD_PROJECT_PATH']
+        
+        # Clear modules again after test
+        self._aggressive_module_cleanup()
+        
+        # Force garbage collection again
+        gc.collect()
+    
+    def _aggressive_module_cleanup(self):
+        """Aggressively clear all modules that could cause test pollution"""
+        import sys
+        
+        # Define all possible module prefixes that could cause pollution
+        pollution_prefixes = [
+            'mcp_server',
+            'tools',
+            'storage', 
+            'utils',
+            'models',
+            'config',
+            'research_continuity',
+            'storage_management',
+            'ClaudeMCPServer',
+            'sqlite_manager',
+            'workflow_intelligence',
+            'enhanced_mcp_server'
+        ]
+        
+        # Safe modules to never clear
+        safe_modules = {
+            'sys', 'os', 'pathlib', 'tempfile', 'json', 'pytest', 
+            'asyncio', 'gc', 'typing', 'collections', 'functools',
+            'inspect', 'importlib', '__builtin__', '__main__'
+        }
+        
+        # Find all modules to clear - be very aggressive
+        modules_to_clear = []
+        for module_name in list(sys.modules.keys()):
+            # Skip safe modules
+            if module_name in safe_modules:
+                continue
+                
+            # Clear if module name contains any pollution prefix
+            if any(prefix in module_name for prefix in pollution_prefixes):
+                modules_to_clear.append(module_name)
+                continue
+                
+            # Also clear if module is from our work directory
+            try:
+                module_obj = sys.modules[module_name]
+                if hasattr(module_obj, '__file__') and module_obj.__file__:
+                    if '/work/' in module_obj.__file__ or '/mcp/' in module_obj.__file__:
+                        modules_to_clear.append(module_name)
+            except (AttributeError, KeyError):
+                pass
+        
+        # Actually remove the modules
+        for module_name in modules_to_clear:
+            if module_name in sys.modules:
+                try:
+                    del sys.modules[module_name]
+                except KeyError:
+                    pass  # Already removed
+        
+        # Clear any cached instances - look for common singleton patterns
+        for module_name in list(sys.modules.keys()):
+            try:
+                module_obj = sys.modules[module_name]
+                # Clear any _instance, _instances, or similar cached attributes
+                for attr_name in dir(module_obj):
+                    if attr_name.startswith('_instance'):
+                        try:
+                            delattr(module_obj, attr_name)
+                        except:
+                            pass
+            except:
+                pass
+    
     @pytest.fixture
     def setup_server_environment(self):
         """Setup test environment with temporary project and server"""
+        import os
+        import gc
+        
         # Create temporary directory and project
         temp_dir = tempfile.mkdtemp()
         project_path = Path(temp_dir) / 'test_project'
@@ -36,11 +139,25 @@ class TestMainMCPServerComprehensive:
         (project_path / 'config.json').write_text('{"name": "test_project", "domain": "computer_science"}')
         
         # Set environment variable for project path
-        import os
         original_path = os.environ.get('SRRD_PROJECT_PATH')
         os.environ['SRRD_PROJECT_PATH'] = str(project_path)
         
-        # Initialize main server
+        # Force aggressive cleanup before importing
+        self._aggressive_module_cleanup()
+        gc.collect()
+        
+        # Re-import after clearing cache - use try/except for robustness
+        try:
+            from mcp_server import ClaudeMCPServer
+        except ImportError:
+            # If import fails, add path and try again
+            import sys
+            mcp_path = str(Path(__file__).parent.parent.parent / 'code' / 'mcp')
+            if mcp_path not in sys.path:
+                sys.path.insert(0, mcp_path)
+            from mcp_server import ClaudeMCPServer
+        
+        # Initialize main server with fresh state
         server = ClaudeMCPServer()
         
         yield {
@@ -50,14 +167,19 @@ class TestMainMCPServerComprehensive:
             'srrd_dir': str(srrd_dir)
         }
         
-        # Restore environment
+        # Cleanup
         if original_path:
             os.environ['SRRD_PROJECT_PATH'] = original_path
         elif 'SRRD_PROJECT_PATH' in os.environ:
             del os.environ['SRRD_PROJECT_PATH']
         
+        # Clean up temporary directory
         import shutil
-        shutil.rmtree(temp_dir)
+        shutil.rmtree(temp_dir, ignore_errors=True)
+        
+        # Final aggressive cleanup
+        self._aggressive_module_cleanup()
+        gc.collect()
     
     def test_server_initialization_complete(self, setup_server_environment):
         """Test COMPLETE main MCP server initialization - ALL 44 tools"""

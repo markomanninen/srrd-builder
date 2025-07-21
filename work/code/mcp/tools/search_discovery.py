@@ -11,15 +11,20 @@ import re
 from pathlib import Path
 from datetime import datetime
 
-# Add parent directory to path to access storage modules
-sys.path.append(str(Path(__file__).parent.parent))
-
 from storage.project_manager import ProjectManager
 from storage.vector_manager import VectorManager
 from storage import get_srrd_db_path
 
-# Add context-aware decorator
-sys.path.append(str(Path(__file__).parent.parent / 'utils'))
+# Import context-aware decorator
+import sys
+from pathlib import Path
+
+# Fix import path issues by adding utils directory to sys.path
+current_dir = Path(__file__).parent.parent
+utils_dir = current_dir / "utils"
+if str(utils_dir) not in sys.path:
+    sys.path.insert(0, str(utils_dir))
+
 from context_decorator import context_aware, project_required
 
 @context_aware()
