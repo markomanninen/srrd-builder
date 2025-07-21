@@ -199,6 +199,9 @@ def start_frontend_process(frontend_dir, port):
     import subprocess
     import sys
     
+    # Convert Path object to string and escape backslashes for Windows
+    frontend_dir_str = str(frontend_dir).replace('\\', '\\\\')
+    
     # Create a simple HTTP server script
     script_content = f"""
 import socketserver
@@ -208,7 +211,7 @@ import sys
 
 class FrontendHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory='{frontend_dir}', **kwargs)
+        super().__init__(*args, directory='{frontend_dir_str}', **kwargs)
     
     def log_message(self, format, *args):
         pass
@@ -238,7 +241,7 @@ def find_mcp_server():
         package_path = Path(srrd_builder.__file__).parent
         mcp_server_path = package_path / "work" / "code" / "mcp" / "server.py"
         
-        if mcp_server_path.exists():
+        if (mcp_server_path.exists()):
             return mcp_server_path
         
         # Alternative path structure
