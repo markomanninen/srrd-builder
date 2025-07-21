@@ -27,6 +27,46 @@ try:
 except ImportError:
     PROJECT_PATH = None
 
+def get_effective_project_path():
+    """Get the effective project path, using default global path if PROJECT_PATH is None"""
+    if PROJECT_PATH:
+        return PROJECT_PATH
+    
+    # Use ~/.srrd/globalproject/ as default for both Windows and Unix
+    home = Path.home()
+    default_project_path = home / ".srrd" / "globalproject"
+    
+    # Ensure the directory exists
+    try:
+        default_project_path.mkdir(parents=True, exist_ok=True)
+        
+        # Create a basic README if it doesn't exist
+        readme_path = default_project_path / "README.md"
+        if not readme_path.exists():
+            readme_content = """# SRRD Global Project Directory
+
+This is the default global project directory for SRRD-Builder when no specific project is configured.
+
+To configure a specific project:
+- Run `srrd init` in your project directory
+- Or run `srrd switch` in an existing project directory
+
+This directory will store:
+- Research sessions and data
+- Generated documents and outputs
+- Tool usage history and context
+"""
+            readme_path.write_text(readme_content)
+            
+    except Exception as e:
+        # Fallback to current working directory if we can't create the default
+        return os.getcwd()
+    
+    return str(default_project_path)
+
+# Set the effective project path
+EFFECTIVE_PROJECT_PATH = get_effective_project_path()
+
 # Import tools and utilities with fallback error handling
 try:
     from tools import register_all_tools
@@ -115,7 +155,9 @@ class MCPServer:
         if self.logger:
             self.logger.info(f"MCP Server initialized on port {self.port}")
             self.logger.info(f"Registered {len(self.tools)} tools")
-            self.logger.info(f"PROJECT_PATH: {PROJECT_PATH}")
+            self.logger.info(f"PROJECT_PATH: {EFFECTIVE_PROJECT_PATH}")
+            if PROJECT_PATH is None:
+                self.logger.info(f"Using default global project directory: {EFFECTIVE_PROJECT_PATH}")
 
     async def start_stdio_server(self):
         """Start MCP server using stdio for Claude Desktop"""
@@ -158,7 +200,7 @@ class MCPServer:
                     "serverInfo": {
                         "name": "SRRD Builder MCP Server",
                         "version": "1.0.0",
-                        "projectPath": PROJECT_PATH or os.getcwd()
+                        "projectPath": EFFECTIVE_PROJECT_PATH
                     }
                 }
             }
@@ -269,7 +311,7 @@ class MCPServer:
                                 "serverInfo": {
                                     "name": "SRRD Builder MCP Server",
                                     "version": "1.0.0",
-                                    "projectPath": PROJECT_PATH or os.getcwd()
+                                    "projectPath": EFFECTIVE_PROJECT_PATH
                                 }
                             }
                         }
