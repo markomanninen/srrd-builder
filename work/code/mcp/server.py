@@ -309,8 +309,7 @@ class MCPServer:
             ping_interval=20,          # Send ping every 20 seconds
             ping_timeout=10,           # Wait 10 seconds for pong
             close_timeout=10,          # Wait 10 seconds for close handshake
-            origins=None,              # Allow all origins (for CORS)
-            extra_headers=None         # Custom headers can be added here if needed
+            origins=None               # Allow all origins (for CORS)
         ):
             self.logger.info(f"SRRD Builder MCP Server running on ws://{config.server.host}:{self.port}")
             await asyncio.Future()  # run forever
