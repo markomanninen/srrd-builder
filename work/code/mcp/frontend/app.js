@@ -202,14 +202,31 @@ class SRRDFrontendApp {
             statusIndicator.className = 'status-indicator connecting';
             statusText.textContent = 'Connecting...';
             
-            this.log('Connecting to MCP server on localhost:8765...');
+            this.log('Connecting to MCP server...');
             
             // Check if MCPClient is available
             if (typeof MCPClient === 'undefined') {
                 throw new Error('MCPClient not loaded. Make sure mcp-client.js is included.');
             }
             
-            this.mcpClient = new MCPClient('ws://localhost:8765');
+            // Automatically detect WebSocket URL based on current page
+            let wsUrl;
+            const currentUrl = new URL(window.location);
+            
+            if (currentUrl.protocol === 'file:') {
+                // When opened as a file, default to localhost:8765
+                wsUrl = 'ws://localhost:8765';
+                this.log('Detected file:// protocol, using default ws://localhost:8765');
+            } else {
+                // When served from a web server, use the same host and port
+                const wsProtocol = currentUrl.protocol === 'https:' ? 'wss:' : 'ws:';
+                const port = currentUrl.port || (currentUrl.protocol === 'https:' ? 443 : 80);
+                wsUrl = `${wsProtocol}//${currentUrl.hostname}:${port}`;
+            }
+            
+            this.log(`Using WebSocket URL: ${wsUrl}`);
+            
+            this.mcpClient = new MCPClient(wsUrl);
             this.mcpClient.onStatusChange = (connected, message) => {
                 if (connected) {
                     statusIndicator.className = 'status-indicator connected';

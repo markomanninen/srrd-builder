@@ -21,12 +21,20 @@ class MCPClient {
             try {
                 this.log('Attempting to connect to MCP server...', 'info');
                 
-                // Create WebSocket with proper protocol
-                this.ws = new WebSocket(this.serverUrl, ['mcp']);
+                // Create WebSocket with fallback for browser compatibility
+                try {
+                    // Try with MCP subprotocol first (standard)
+                    this.ws = new WebSocket(this.serverUrl, ['mcp']);
+                } catch (e) {
+                    this.log('MCP subprotocol not supported, trying without...', 'warning');
+                    // Fallback for browsers that don't support subprotocols properly
+                    this.ws = new WebSocket(this.serverUrl);
+                }
                 
                 this.ws.onopen = () => {
                     this.isConnected = true;
                     this.reconnectAttempts = 0;
+                    clearTimeout(connectionTimeout); // Clear the timeout
                     this.notifyStatusChange(true, 'Connected to MCP Server');
                     this.log('WebSocket connection established', 'success');
                     
@@ -57,10 +65,38 @@ class MCPClient {
                 this.ws.onerror = (error) => {
                     this.isConnected = false;
                     this.notifyStatusChange(false, 'Connection error');
-                    this.log(`WebSocket error: ${error}`, 'error');
+                    
+                    // Provide more detailed error information for debugging
+                    let errorMsg = 'WebSocket connection failed';
+                    if (error.target && error.target.readyState !== undefined) {
+                        switch (error.target.readyState) {
+                            case WebSocket.CONNECTING:
+                                errorMsg += ' - Connection in progress';
+                                break;
+                            case WebSocket.OPEN:
+                                errorMsg += ' - Connection was open';
+                                break;
+                            case WebSocket.CLOSING:
+                                errorMsg += ' - Connection closing';
+                                break;
+                            case WebSocket.CLOSED:
+                                errorMsg += ' - Connection closed';
+                                break;
+                        }
+                    }
+                    
+                    // Add browser-specific debugging info
+                    const userAgent = navigator.userAgent;
+                    if (userAgent.includes('Chrome') && !userAgent.includes('Edge')) {
+                        errorMsg += ' (Chrome detected - ensure server supports CORS)';
+                    } else if (userAgent.includes('Edg')) {
+                        errorMsg += ' (Edge detected - check security settings)';
+                    }
+                    
+                    this.log(errorMsg, 'error');
                     
                     if (!this.isConnected) {
-                        reject(new Error('Failed to connect to MCP server'));
+                        reject(new Error(errorMsg));
                     }
                 };
 
@@ -68,11 +104,20 @@ class MCPClient {
                     this.handleMessage(event.data);
                 };
 
-                // Connection timeout
-                setTimeout(() => {
+                // Connection timeout with more detailed message
+                const connectionTimeout = setTimeout(() => {
                     if (!this.isConnected) {
                         this.ws.close();
-                        reject(new Error('Connection timeout - make sure MCP server is running on localhost:8765'));
+                        const currentUrl = new URL(this.serverUrl);
+                        const port = currentUrl.port || 80;
+                        reject(new Error(
+                            `Connection timeout after 5 seconds.\n\n` +
+                            `Troubleshooting:\n` +
+                            `• Make sure MCP server is running on port ${port}\n` +
+                            `• Check if your browser blocks WebSocket connections\n` +
+                            `• Try Firefox if Chrome/Edge don't work\n` +
+                            `• Verify the server URL: ${this.serverUrl}`
+                        ));
                     }
                 }, 5000);
 

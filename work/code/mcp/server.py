@@ -271,26 +271,46 @@ class MCPServer:
         if self.logger:
             self.logger.info(f"Starting MCP server on {config.server.host}:{self.port}")
         
-        # Create a proper handler function
         async def websocket_handler(websocket, path=None):
+            # Handle WebSocket subprotocol selection for browser compatibility
+            client_info = f"{websocket.remote_address}"
+            
+            if hasattr(websocket, 'subprotocol') and websocket.subprotocol:
+                if self.logger:
+                    self.logger.info(f"WebSocket using subprotocol: {websocket.subprotocol} from {client_info}")
+            else:
+                if self.logger:
+                    self.logger.info(f"WebSocket connection without subprotocol from {client_info}")
+                    
+            # Log request headers for debugging browser differences
+            if hasattr(websocket, 'request_headers') and self.logger:
+                user_agent = websocket.request_headers.get('User-Agent', 'Unknown')
+                origin = websocket.request_headers.get('Origin', 'None')
+                self.logger.info(f"Client User-Agent: {user_agent}")
+                self.logger.info(f"Client Origin: {origin}")
+                    
             if self.logger:
-                self.logger.info(f"New WebSocket connection from {websocket.remote_address}")
+                self.logger.info(f"New WebSocket connection from {client_info}")
             try:
                 return await self.handle_mcp_message(websocket, path or "/")
             except Exception as e:
                 if self.logger:
-                    self.logger.error(f"WebSocket handler error: {str(e)}")
+                    self.logger.error(f"WebSocket handler error from {client_info}: {str(e)}")
             finally:
                 if self.logger:
-                    self.logger.info(f"WebSocket connection closed for {websocket.remote_address}")
+                    self.logger.info(f"WebSocket connection closed for {client_info}")
         
+        # Create WebSocket server with browser compatibility options
         async with websockets.serve(
             websocket_handler,
             config.server.host, 
             self.port,
-            ping_interval=20,  # Send ping every 20 seconds
-            ping_timeout=10,   # Wait 10 seconds for pong
-            close_timeout=10   # Wait 10 seconds for close handshake
+            subprotocols=['mcp'],      # Support MCP subprotocol for browser clients
+            ping_interval=20,          # Send ping every 20 seconds
+            ping_timeout=10,           # Wait 10 seconds for pong
+            close_timeout=10,          # Wait 10 seconds for close handshake
+            origins=None,              # Allow all origins (for CORS)
+            extra_headers=None         # Custom headers can be added here if needed
         ):
             self.logger.info(f"SRRD Builder MCP Server running on ws://{config.server.host}:{self.port}")
             await asyncio.Future()  # run forever
