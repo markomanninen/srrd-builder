@@ -268,18 +268,23 @@ def handle_init(args):
     print(f"   Domain: {args.domain}")
     print(f"   Template: {args.template}")
     
-    # Kill any existing MCP server processes before initializing new project
-    from ...utils.process_utils import kill_mcp_processes, restart_message
-    killed_count = kill_mcp_processes(verbose=True)
-    
-    if killed_count > 0:
-        print(f"   ⚡ Stopped {killed_count} MCP server process(es)")
+    # Kill any existing Claude Desktop and MCP server processes before initializing
+    from ...utils.process_cleanup import cleanup_claude_and_mcp_processes
+    print("\n🔧 Preparing environment...")
+    cleanup_claude_and_mcp_processes()
     
     # Create project structure
     if create_project_structure(git_root, args.domain, args.template, args.force):
         print("\n✅ SRRD-Builder project initialized successfully!")
         print(f"   Configuration: {git_root}/.srrd/config.json")
         print(f"   Global MCP launcher: Configured for THIS project")
+        
+        # Show configuration instructions using existing commands
+        print("\n📋 Configuration:")
+        print("   Use 'srrd configure --status' to see configuration blocks")
+        print("   Use 'srrd configure --claude' to auto-configure Claude Desktop")
+        print("   Use 'srrd configure --vscode' to auto-configure VS Code")
+        
         print("\n🎯 Ready to use:")
         print("   1. Open Claude Desktop    # All SRRD tools ready")
         print("   2. Open VS Code Chat      # All SRRD tools ready") 
@@ -287,8 +292,8 @@ def handle_init(args):
         print("\n🔄 To switch to another project:")
         print("   1. cd /other/project && srrd switch")
         
-        # Show restart instructions
-        restart_message(f"New project {git_root.name} initialized.")
+        # Suggest restarting Claude Desktop for new project
+        print(f"\n💡 Tip: Restart Claude Desktop to ensure it uses the new project configuration.")
         
         return 0
     else:

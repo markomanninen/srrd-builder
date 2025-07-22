@@ -43,28 +43,28 @@ async def initialize_project_tool(**kwargs) -> str:
     auto_switched = result.get('auto_switched', False)
     
     if auto_switched:
-        switch_status = """✅ **MCP Context Automatically Switched!**
-   Claude Desktop is now using this project for all research tools."""
-        next_steps = """🚀 **Your project is ready!**
+        switch_status = """**MCP Context Automatically Switched!**
+Claude Desktop is now using this project for all research tools."""
+        next_steps = """**Your project is ready!**
 
 What would you like to work on next?
-• Use **clarify_research_goals** if you want to refine your research objectives
-• Use **suggest_methodology** if you want research methodology recommendations  
-• Use **start_research_session** if you want to begin a formal research session
-• Or simply tell me what aspect of your research you'd like to focus on"""
+- Use **clarify_research_goals** if you want to refine your research objectives
+- Use **suggest_methodology** if you want research methodology recommendations  
+- Use **start_research_session** if you want to begin a formal research session
+- Or simply tell me what aspect of your research you'd like to focus on"""
     else:
-        switch_status = """⚠️ **Manual Switch Required**
-   Auto-switch failed. Please run: srrd switch"""
-        next_steps = """🔧 **Setup Required**:
+        switch_status = """**Manual Switch Required**
+Auto-switch failed. Please run: srrd switch"""
+        next_steps = """**Setup Required**:
 1. Navigate to your project: cd {resolved_path}
 2. Switch MCP context: srrd switch
 3. Then tell me what you'd like to work on!"""
     
     return f"""Project '{name}' initialized successfully!
 
-📁 **Project Location**: {resolved_path}
-📊 **Status**: {result.get('status', 'initialized')}
-🔢 **Project ID**: {result.get('project_id', 'N/A')}
+**Project Location**: {resolved_path}
+**Status**: {result.get('status', 'initialized')}
+**Project ID**: {result.get('project_id', 'N/A')}
 
 {guidance}
 
@@ -126,14 +126,14 @@ def _get_project_creation_guidance(project_path: str) -> str:
     path = Path(project_path)
     
     if 'Projects' in str(path):
-        return """🏠 **Location**: Created in your home Projects directory
-💡 **Context**: This is now your active SRRD project"""
+        return """**Location**: Created in your home Projects directory
+**Context**: This is now your active SRRD project"""
     elif path.parent.name in ['globalproject', '.srrd']:
-        return """🌐 **Location**: Created in global SRRD context  
-💡 **Context**: This project is now active and ready to use"""
+        return """**Location**: Created in global SRRD context
+**Context**: This project is now active and ready to use"""
     else:
-        return """📂 **Location**: Created alongside your current project
-💡 **Context**: Automatically switched to this new project"""
+        return """**Location**: Created alongside your current project
+**Context**: Automatically switched to this new project"""
 
 @context_aware()
 async def save_session_tool(**kwargs) -> str:
@@ -234,22 +234,22 @@ The target directory must contain a .srrd folder with valid configuration."""
     # Check if target directory exists and is an SRRD project
     srrd_dir = target_path / '.srrd'
     if not target_path.exists():
-        return f"❌ Error: Target directory does not exist: {target_path}"
+        return f"Error: Target directory does not exist: {target_path}"
     
     if not srrd_dir.exists():
-        return f"""❌ Error: Target directory is not an SRRD project
+        return f"""Error: Target directory is not an SRRD project
    Directory: {target_path}
    Missing: .srrd folder
    
-💡 Tip: Use 'initialize_project' tool to create a new SRRD project in this location."""
+Tip: Use 'initialize_project' tool to create a new SRRD project in this location."""
     
     # Check if config exists
     config_file = srrd_dir / 'config.json'
     if not config_file.exists():
-        return f"""❌ Error: SRRD configuration not found
+        return f"""Error: SRRD configuration not found
    Expected: {config_file}
    
-💡 The project appears corrupted. You may need to reinitialize it."""
+The project appears corrupted. You may need to reinitialize it."""
     
     # Import the launcher configuration utility
     try:
@@ -274,33 +274,33 @@ The target directory must contain a .srrd folder with valid configuration."""
                 project_name = target_path.name
                 domain = 'Unknown'
             
-            return f"""✅ **MCP Context Switched Successfully!**
+            return f"""**MCP Context Switched Successfully!**
 
-📁 **Active Project**: {project_name}
-🏷️  **Domain**: {domain}
-📍 **Path**: {target_path}
+**Active Project**: {project_name}
+**Domain**: {domain}
+**Path**: {target_path}
 
-🎯 **Ready to Use:**
-• All SRRD tools in Claude Desktop now use this project's database
-• All research data, sessions, and files are scoped to this project
-• Vector database and knowledge base are project-specific
+**Ready to Use:**
+- All SRRD tools in Claude Desktop now use this project's database
+- All research data, sessions, and files are scoped to this project
+- Vector database and knowledge base are project-specific
 
-💡 **Next Steps:**
-• Use research tools like 'clarify_research_goals' or 'get_research_progress'
-• All tools will automatically use this project's context
-• Use 'reset_project_context' to return to global home project"""
+**Next Steps:**
+- Use research tools like 'clarify_research_goals' or 'get_research_progress'
+- All tools will automatically use this project's context
+- Use 'reset_project_context' to return to global home project"""
             
         else:
-            return f"""❌ **Failed to switch MCP context**
+            return f"""**Failed to switch MCP context**
    Error: {error}
    
-💡 This might be due to file permissions or system configuration issues."""
+This might be due to file permissions or system configuration issues."""
             
     except Exception as e:
-        return f"""❌ **Error switching MCP context**
+        return f"""**Error switching MCP context**
    Technical details: {str(e)}
    
-💡 This is likely a system configuration issue. Please check that SRRD-Builder is properly installed."""
+This is likely a system configuration issue. Please check that SRRD-Builder is properly installed."""
 
 async def reset_project_context_tool(**kwargs) -> str:
     """MCP tool to reset MCP context to global home project"""
@@ -327,36 +327,36 @@ async def reset_project_context_tool(**kwargs) -> str:
         success, error, global_project_path = reset_to_global_project()
         
         if success:
-            return f"""✅ **MCP Context Reset to Global Home Project!**
+            return f"""**MCP Context Reset to Global Home Project!**
 
-📁 **Global Project Path**: {global_project_path}
-📍 **Config Location**: ~/.srrd/globalproject/.srrd/config.json
+**Global Project Path**: {global_project_path}
+**Config Location**: ~/.srrd/globalproject/.srrd/config.json
 
-🎯 **What This Means:**
-• All SRRD tools now use the global home project database
-• No project-specific context is active
-• This is the default "neutral" state
+**What This Means:**
+- All SRRD tools now use the global home project database
+- No project-specific context is active
+- This is the default "neutral" state
 
-💡 **Next Steps:**
-• Use 'initialize_project' to create new research projects
-• Use 'switch_project_context' to switch to existing projects  
-• Use project-specific directories and run 'switch_project_context' to work on specific research
+**Next Steps:**
+- Use 'initialize_project' to create new research projects
+- Use 'switch_project_context' to switch to existing projects  
+- Use project-specific directories and run 'switch_project_context' to work on specific research
 
-🏠 **Global vs Project Mode:**
-• **Global**: General research tools, no specific project scope
-• **Project**: All tools use project-specific databases and files"""
+**Global vs Project Mode:**
+- **Global**: General research tools, no specific project scope
+- **Project**: All tools use project-specific databases and files"""
             
         else:
-            return f"""❌ **Failed to reset to global project**
+            return f"""**Failed to reset to global project**
    Error: {error}
    
-💡 This might be due to file permissions or home directory access issues."""
+This might be due to file permissions or home directory access issues."""
             
     except Exception as e:
-        return f"""❌ **Error resetting to global project**
+        return f"""**Error resetting to global project**
    Technical details: {str(e)}
    
-💡 This is likely a system configuration issue. Please check that SRRD-Builder is properly installed."""
+This is likely a system configuration issue. Please check that SRRD-Builder is properly installed."""
 
 def register_storage_tools(server):
     """Register storage management tools with the MCP server"""

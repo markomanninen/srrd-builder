@@ -59,7 +59,7 @@ class NovelTheoryDevelopmentTool:
                 "foundational_assumptions": [
                     "Random mutation",
                     "Natural selection",
-                    "DNA → RNA → Protein",
+                    "DNA -> RNA -> Protein",
                     "Gene-centric evolution"
                 ],
                 "validation_criteria": [
@@ -188,7 +188,7 @@ async def initiate_paradigm_challenge(**kwargs) -> str:
     
     # Generate comprehensive challenge report
     challenge_report = f"""
-🎯 PARADIGM CHALLENGE INITIATED: {domain}
+PARADIGM CHALLENGE INITIATED: {domain}
 
 **Current Paradigm**: {current_paradigm}
 **Challenge Area**: {challenge_area}
@@ -216,10 +216,10 @@ async def initiate_paradigm_challenge(**kwargs) -> str:
     challenge_report += f"""
 **Challenge Status**: Initiated - Ready for framework development
 
-🤝 **USER INTERACTION REQUIRED**
+**USER INTERACTION REQUIRED**
 Please review this paradigm challenge analysis. Which aspect would you like to focus on developing next?
 
-📋 **NEXT STEP OPTIONS**:
+**NEXT STEP OPTIONS**:
 1. Develop alternative theoretical framework based on identified opportunities
 2. Design specific experiments to test paradigm differences  
 3. Analyze foundational assumptions in more depth

@@ -2,6 +2,7 @@
 import asyncio
 import json
 import websockets
+import websockets.exceptions
 import sys
 import os
 from pathlib import Path
@@ -271,176 +272,219 @@ class MCPServer:
             self.logger.info(f"Starting MCP server on {config.server.host}:{self.port}")
         
         # Create a proper handler function
-        async def websocket_handler(websocket):
-            return await self.handle_mcp_message(websocket, "/")
+        async def websocket_handler(websocket, path=None):
+            if self.logger:
+                self.logger.info(f"New WebSocket connection from {websocket.remote_address}")
+            try:
+                return await self.handle_mcp_message(websocket, path or "/")
+            except Exception as e:
+                if self.logger:
+                    self.logger.error(f"WebSocket handler error: {str(e)}")
+            finally:
+                if self.logger:
+                    self.logger.info(f"WebSocket connection closed for {websocket.remote_address}")
         
         async with websockets.serve(
             websocket_handler,
             config.server.host, 
-            self.port
+            self.port,
+            ping_interval=20,  # Send ping every 20 seconds
+            ping_timeout=10,   # Wait 10 seconds for pong
+            close_timeout=10   # Wait 10 seconds for close handshake
         ):
             self.logger.info(f"SRRD Builder MCP Server running on ws://{config.server.host}:{self.port}")
             await asyncio.Future()  # run forever
 
     async def handle_mcp_message(self, websocket, path):
         """Handle incoming WebSocket messages using MCP JSON-RPC protocol"""
-        async for message in websocket:
-            try:
-                data = json.loads(message)
-                
-                # Handle JSON-RPC format
-                if "method" in data:
-                    method = data.get("method")
-                    params = data.get("params", {})
-                    msg_id = data.get("id")
+        try:
+            async for message in websocket:
+                try:
+                    data = json.loads(message)
                     
-                    if method == "initialize":
-                        if self.log_adapter:
-                            self.log_adapter.log_tool_call("initialize", params, "Server initialized")
+                    # Handle JSON-RPC format
+                    if "method" in data:
+                        method = data.get("method")
+                        params = data.get("params", {})
+                        msg_id = data.get("id")
                         
-                        response = {
-                            "jsonrpc": "2.0",
-                            "id": msg_id,
-                            "result": {
-                                "protocolVersion": "2024-11-05",
-                                "capabilities": {
-                                    "tools": {
-                                        "listChanged": False
+                        if method == "initialize":
+                            if self.log_adapter:
+                                self.log_adapter.log_tool_call("initialize", params, "Server initialized")
+                            
+                            response = {
+                                "jsonrpc": "2.0",
+                                "id": msg_id,
+                                "result": {
+                                    "protocolVersion": "2024-11-05",
+                                    "capabilities": {
+                                        "tools": {
+                                            "listChanged": False
+                                        }
+                                    },
+                                    "serverInfo": {
+                                        "name": "SRRD Builder MCP Server",
+                                        "version": "1.0.0",
+                                        "projectPath": EFFECTIVE_PROJECT_PATH
                                     }
-                                },
-                                "serverInfo": {
-                                    "name": "SRRD Builder MCP Server",
-                                    "version": "1.0.0",
-                                    "projectPath": EFFECTIVE_PROJECT_PATH
                                 }
                             }
-                        }
-                        
-                        await websocket.send(json.dumps(response))
-                        
-                    elif method == "tools/list":
-                        tools_info = await self.list_tools_mcp()
-                        response = {
-                            "jsonrpc": "2.0",
-                            "id": msg_id,
-                            "result": tools_info
-                        }
-                        await websocket.send(json.dumps(response))
-                        
-                    elif method == "tools/call":
-                        tool_name = params.get("name")
-                        tool_args = params.get("arguments", {})
-                        
-                        if self.log_adapter:
-                            self.log_adapter.log_tool_call(tool_name, tool_args)
-                        
-                        if tool_name in self.tools:
-                            try:
-                                result = await self.tools[tool_name]['handler'](**tool_args)
-                                if self.log_adapter:
-                                    self.log_adapter.log_tool_call(tool_name, tool_args, result)
-                                
-                                response = {
-                                    "jsonrpc": "2.0",
-                                    "id": msg_id,
-                                    "result": {
-                                        "content": [
-                                            {
-                                                "type": "text",
-                                                "text": str(result)
-                                            }
-                                        ]
+                            
+                            await websocket.send(json.dumps(response))
+                            
+                        elif method == "tools/list":
+                            tools_info = await self.list_tools_mcp()
+                            response = {
+                                "jsonrpc": "2.0",
+                                "id": msg_id,
+                                "result": tools_info
+                            }
+                            await websocket.send(json.dumps(response))
+                            
+                        elif method == "tools/call":
+                            tool_name = params.get("name")
+                            tool_args = params.get("arguments", {})
+                            
+                            if self.log_adapter:
+                                self.log_adapter.log_tool_call(tool_name, tool_args)
+                            
+                            if tool_name in self.tools:
+                                try:
+                                    result = await self.tools[tool_name]['handler'](**tool_args)
+                                    if self.log_adapter:
+                                        self.log_adapter.log_tool_call(tool_name, tool_args, result)
+                                    
+                                    response = {
+                                        "jsonrpc": "2.0",
+                                        "id": msg_id,
+                                        "result": {
+                                            "content": [
+                                                {
+                                                    "type": "text",
+                                                    "text": str(result)
+                                                }
+                                            ]
+                                        }
                                     }
-                                }
-                                await websocket.send(json.dumps(response))
-                            except Exception as e:
-                                error_msg = f"Tool execution error: {str(e)}"
-                                if self.log_adapter:
-                                    self.log_adapter.log_tool_call(tool_name, tool_args, error=error_msg)
-                                
+                                    await websocket.send(json.dumps(response))
+                                except Exception as e:
+                                    error_msg = f"Tool execution error: {str(e)}"
+                                    if self.log_adapter:
+                                        self.log_adapter.log_tool_call(tool_name, tool_args, error=error_msg)
+                                    
+                                    response = {
+                                        "jsonrpc": "2.0",
+                                        "id": msg_id,
+                                        "error": {
+                                            "code": -32000,
+                                            "message": error_msg
+                                        }
+                                    }
+                                    await websocket.send(json.dumps(response))
+                            else:
+                                error_msg = f"Tool '{tool_name}' not found"
                                 response = {
                                     "jsonrpc": "2.0",
                                     "id": msg_id,
                                     "error": {
-                                        "code": -32000,
+                                        "code": -32601,
                                         "message": error_msg
                                     }
                                 }
                                 await websocket.send(json.dumps(response))
                         else:
-                            error_msg = f"Tool '{tool_name}' not found"
+                            # Unknown method
                             response = {
                                 "jsonrpc": "2.0",
                                 "id": msg_id,
                                 "error": {
                                     "code": -32601,
-                                    "message": error_msg
+                                    "message": f"Method not found: {method}"
                                 }
                             }
                             await websocket.send(json.dumps(response))
+                    
+                    # Handle legacy format for backward compatibility
                     else:
-                        # Unknown method
-                        response = {
-                            "jsonrpc": "2.0",
-                            "id": msg_id,
-                            "error": {
-                                "code": -32601,
-                                "message": f"Method not found: {method}"
-                            }
-                        }
-                        await websocket.send(json.dumps(response))
-                
-                # Handle legacy format for backward compatibility
-                else:
-                    command = data.get("command")
-                    payload = data.get("payload")
+                        command = data.get("command")
+                        payload = data.get("payload")
 
-                    if command == "initialize":
-                        if self.log_adapter:
-                            self.log_adapter.log_tool_call("initialize", {}, "Server initialized")
-                        await websocket.send(json.dumps({
-                            "status": "initialized", 
-                            "capabilities": ["tools", "resources"],
-                            "server_info": {
-                                "name": "SRRD Builder MCP Server",
-                                "version": "1.0.0",
-                                "tools_count": len(self.tools)
-                            }
-                        }))
-                    elif command == "list_tools":
-                        tools_info = await self.list_tools()
-                        await websocket.send(json.dumps(tools_info))
-                    elif command == "call_tool":
-                        tool_name = payload.get("tool_name")
-                        tool_args = payload.get("tool_args", {})
-                        
-                        if self.log_adapter:
-                            self.log_adapter.log_tool_call(tool_name, tool_args)
-                        
-                        if tool_name in self.tools:
-                            try:
-                                result = await self.tools[tool_name](**tool_args)
-                                if self.log_adapter:
-                                    self.log_adapter.log_tool_call(tool_name, tool_args, result)
-                                await websocket.send(json.dumps({"result": result}))
-                            except Exception as e:
-                                error_msg = f"Tool execution error: {str(e)}"
+                        if command == "initialize":
+                            if self.log_adapter:
+                                self.log_adapter.log_tool_call("initialize", {}, "Server initialized")
+                            await websocket.send(json.dumps({
+                                "status": "initialized", 
+                                "capabilities": ["tools", "resources"],
+                                "server_info": {
+                                    "name": "SRRD Builder MCP Server",
+                                    "version": "1.0.0",
+                                    "tools_count": len(self.tools)
+                                }
+                            }))
+                        elif command == "list_tools":
+                            tools_info = await self.list_tools()
+                            await websocket.send(json.dumps(tools_info))
+                        elif command == "call_tool":
+                            tool_name = payload.get("tool_name")
+                            tool_args = payload.get("tool_args", {})
+                            
+                            if self.log_adapter:
+                                self.log_adapter.log_tool_call(tool_name, tool_args)
+                            
+                            if tool_name in self.tools:
+                                try:
+                                    result = await self.tools[tool_name](**tool_args)
+                                    if self.log_adapter:
+                                        self.log_adapter.log_tool_call(tool_name, tool_args, result)
+                                    await websocket.send(json.dumps({"result": result}))
+                                except Exception as e:
+                                    error_msg = f"Tool execution error: {str(e)}"
+                                    if self.log_adapter:
+                                        self.log_adapter.log_tool_call(tool_name, tool_args, error=error_msg)
+                                    await websocket.send(json.dumps({"error": error_msg}))
+                            else:
+                                error_msg = f"Tool '{tool_name}' not found"
                                 if self.log_adapter:
                                     self.log_adapter.log_tool_call(tool_name, tool_args, error=error_msg)
                                 await websocket.send(json.dumps({"error": error_msg}))
                         else:
-                            error_msg = f"Tool '{tool_name}' not found"
-                            if self.log_adapter:
-                                self.log_adapter.log_tool_call(tool_name, tool_args, error=error_msg)
-                            await websocket.send(json.dumps({"error": error_msg}))
-                    else:
-                        await websocket.send(json.dumps({"error": "Unknown command"}))
+                            await websocket.send(json.dumps({"error": "Unknown command"}))
+                            
+                except json.JSONDecodeError as e:
+                    error_msg = f"JSON decode error: {str(e)}"
+                    if self.logger:
+                        self.logger.error(error_msg)
+                    try:
+                        await websocket.send(json.dumps({"error": error_msg}))
+                    except:
+                        pass  # Connection may be closed
                         
-            except Exception as e:
-                error_msg = f"Message handling error: {str(e)}"
-                if self.logger:
-                    self.logger.error(error_msg)
-                await websocket.send(json.dumps({"error": error_msg}))
+                except Exception as e:
+                    error_msg = f"Message handling error: {str(e)}"
+                    if self.logger:
+                        self.logger.error(error_msg)
+                    try:
+                        await websocket.send(json.dumps({"error": error_msg}))
+                    except:
+                        pass  # Connection may be closed
+                        
+        except websockets.exceptions.ConnectionClosed:
+            # Client disconnected normally
+            if self.logger:
+                self.logger.info("WebSocket connection closed by client")
+        except websockets.exceptions.ConnectionClosedError:
+            # Connection closed abruptly 
+            if self.logger:
+                self.logger.info("WebSocket connection closed abruptly")
+        except ConnectionResetError:
+            # Network connection reset
+            if self.logger:
+                self.logger.info("WebSocket connection reset by peer")
+        except Exception as e:
+            # Any other websocket or connection error
+            if self.logger:
+                self.logger.error(f"WebSocket connection error: {str(e)}")
+            # Don't re-raise, just let the connection close
 
     def _register_tools(self):
         """Register MCP tools"""

@@ -63,9 +63,6 @@ class ClaudeMCPServer:
         """Register MCP tools using the standard registration system"""
         # Use the existing registration system from tools module
         register_all_tools(self)
-        # Debug info logged to stderr to avoid JSON parsing issues
-        import sys
-        print(f"DEBUG: Registered {len(self.tools)} tools: {list(self.tools.keys())}", file=sys.stderr)
         
         # Make server instance available globally for tools to access shared database
         sys.modules[__name__].global_server_instance = self
@@ -163,7 +160,7 @@ class ClaudeMCPServer:
                     "jsonrpc": "2.0",
                     "id": msg_id,
                     "result": {
-                        "protocolVersion": "2024-11-05",
+                        "protocolVersion": "2025-06-18",
                         "capabilities": {"tools": {}},
                         "serverInfo": server_info
                     }
@@ -389,7 +386,8 @@ class ClaudeMCPServer:
                     response = await self.handle_request(request_data)
                     
                     if response is not None:
-                        sys.stdout.write(json.dumps(response) + '\n')
+                        response_json = json.dumps(response, ensure_ascii=False) + '\n'
+                        sys.stdout.write(response_json)
                         sys.stdout.flush()
                     
                 except EOFError:
@@ -403,9 +401,12 @@ class ClaudeMCPServer:
                             "message": f"Parse error: {str(e)}"
                         }
                     }
-                    sys.stdout.write(json.dumps(error_response) + '\n')
+                    response_json = json.dumps(error_response, ensure_ascii=False) + '\n'
+                    sys.stdout.write(response_json)
                     sys.stdout.flush()
                 except Exception as e:
+                    # Log errors to stderr for debugging
+                    print(f"MCP Server Error: {e}", file=sys.stderr)
                     error_response = {
                         "jsonrpc": "2.0",
                         "id": None,
@@ -414,11 +415,14 @@ class ClaudeMCPServer:
                             "message": f"Internal error: {str(e)}"
                         }
                     }
-                    sys.stdout.write(json.dumps(error_response) + '\n')
+                    response_json = json.dumps(error_response, ensure_ascii=False) + '\n'
+                    sys.stdout.write(response_json)
                     sys.stdout.flush()
                     
         except KeyboardInterrupt:
             pass
+        except Exception as e:
+            print(f"MCP Server Fatal Error: {e}", file=sys.stderr)
 
     def start(self):
         """Start the MCP server"""

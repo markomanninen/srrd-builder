@@ -18,23 +18,44 @@ def find_mcp_processes() -> List[Tuple[str, str]]:
     processes = []
     
     try:
-        # Use ps to find python processes with mcp_global_launcher or mcp_server
-        cmd = ["ps", "aux"]
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        
-        if result.returncode == 0:
-            lines = result.stdout.split('\n')
-            for line in lines:
-                if ('python' in line and 
-                    ('mcp_global_launcher' in line or 'mcp_server' in line or 'srrd_builder.server.launcher' in line)):
-                    # Extract PID (second column in ps aux output)
-                    parts = line.split()
-                    if len(parts) >= 11:
-                        pid = parts[1]
-                        command = ' '.join(parts[10:])  # Command starts from 11th column
-                        processes.append((pid, command))
+        import platform
+        if platform.system() == "Windows":
+            # Use tasklist on Windows
+            cmd = ["tasklist", "/FO", "CSV", "/V"]
+            result = subprocess.run(cmd, capture_output=True, text=True, encoding='utf-8', errors='ignore')
+            
+            if result.returncode == 0:
+                lines = result.stdout.split('\n')
+                for line in lines[1:]:  # Skip header
+                    if ('python' in line.lower() and 
+                        ('mcp_global_launcher' in line or 'mcp_server' in line or 'srrd_builder.server.launcher' in line)):
+                        # Parse CSV format
+                        parts = line.split('","')
+                        if len(parts) >= 2:
+                            pid = parts[1].strip('"')
+                            command = line
+                            processes.append((pid, command))
+        else:
+            # Use ps on Unix-like systems
+            cmd = ["ps", "aux"]
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode == 0:
+                lines = result.stdout.split('\n')
+                for line in lines:
+                    if ('python' in line and 
+                        ('mcp_global_launcher' in line or 'mcp_server' in line or 'srrd_builder.server.launcher' in line)):
+                        # Extract PID (second column in ps aux output)
+                        parts = line.split()
+                        if len(parts) >= 11:
+                            pid = parts[1]
+                            command = ' '.join(parts[10:])  # Command starts from 11th column
+                            processes.append((pid, command))
     except Exception as e:
-        print(f"Warning: Could not list processes: {e}")
+        # Silently handle on Windows - this is expected behavior
+        import platform
+        if platform.system() != "Windows":
+            print(f"Warning: Could not list processes: {e}")
     
     return processes
 

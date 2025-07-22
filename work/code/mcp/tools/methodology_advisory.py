@@ -328,23 +328,23 @@ async def validate_design(**kwargs) -> str:
     
     # Internal validity
     if "control_group" in research_design or "randomization" in research_design:
-        validity_checks.append("✓ Internal validity: Control measures present")
+        validity_checks.append("PASS Internal validity: Control measures present")
     else:
-        validity_checks.append("⚠ Internal validity: Consider adding control measures")
+        validity_checks.append("WARNING Internal validity: Consider adding control measures")
     
     # External validity
     if "sample" in research_design:
         sample_info = research_design["sample"]
         if isinstance(sample_info, dict) and sample_info.get("representative"):
-            validity_checks.append("✓ External validity: Representative sampling planned")
+            validity_checks.append("PASS External validity: Representative sampling planned")
         else:
-            validity_checks.append("⚠ External validity: Ensure representative sampling")
+            validity_checks.append("WARNING External validity: Ensure representative sampling")
     
     # Construct validity
     if "measurement" in research_design:
-        validity_checks.append("✓ Construct validity: Measurement plan specified")
+        validity_checks.append("PASS Construct validity: Measurement plan specified")
     else:
-        validity_checks.append("⚠ Construct validity: Define measurement instruments")
+        validity_checks.append("WARNING Construct validity: Define measurement instruments")
     
     validation_results["validation_results"]["validity_checks"] = validity_checks
     
@@ -380,9 +380,9 @@ async def validate_design(**kwargs) -> str:
         ethical_issues.append("Risk assessment not included")
     
     if ethical_issues:
-        validation_results["validation_results"]["ethical_assessment"] = "⚠ Issues: " + ", ".join(ethical_issues)
+        validation_results["validation_results"]["ethical_assessment"] = "WARNING Issues: " + ", ".join(ethical_issues)
     else:
-        validation_results["validation_results"]["ethical_assessment"] = "✓ Ethical considerations addressed"
+        validation_results["validation_results"]["ethical_assessment"] = "PASS Ethical considerations addressed"
     
     # Feasibility analysis
     feasibility_concerns = []
@@ -393,8 +393,8 @@ async def validate_design(**kwargs) -> str:
             feasibility_concerns.append("Budget constraints may limit large sample recruitment")
     
     validation_results["validation_results"]["feasibility_analysis"] = (
-        "✓ Design appears feasible" if not feasibility_concerns 
-        else "⚠ Concerns: " + ", ".join(feasibility_concerns)
+        "PASS Design appears feasible" if not feasibility_concerns 
+        else "WARNING Concerns: " + ", ".join(feasibility_concerns)
     )
     
     # Generate improvement suggestions
@@ -411,11 +411,11 @@ async def validate_design(**kwargs) -> str:
     # Overall approval status
     critical_count = len(validation_results["critical_issues"])
     if critical_count == 0 and rigor_score >= 5:
-        validation_results["approval_status"] = "✓ Ready for implementation with minor refinements"
+        validation_results["approval_status"] = "PASS Ready for implementation with minor refinements"
     elif critical_count <= 2:
-        validation_results["approval_status"] = "⚠ Needs revision before implementation"
+        validation_results["approval_status"] = "WARNING Needs revision before implementation"
     else:
-        validation_results["approval_status"] = "❌ Major revisions required"
+        validation_results["approval_status"] = "FAIL Major revisions required"
     
     # Add user interaction requirement
     validation_results["user_interaction_required"] = "Please review this design validation. What aspect would you like to focus on addressing or improving?"
@@ -472,7 +472,7 @@ async def ensure_ethics(**kwargs) -> str:
         autonomy_issues.append("Special consent procedures needed for vulnerable populations")
     
     ethics_review["ethical_framework_analysis"]["analysis"]["autonomy"] = {
-        "status": "✓ Adequate" if not autonomy_issues else "⚠ Needs attention",
+        "status": "PASS Adequate" if not autonomy_issues else "WARNING Needs attention",
         "issues": autonomy_issues
     }
     
@@ -484,7 +484,7 @@ async def ensure_ethics(**kwargs) -> str:
         benefit_risk_issues.append("Potential benefits not specified")
     
     ethics_review["ethical_framework_analysis"]["analysis"]["beneficence"] = {
-        "status": "✓ Adequate" if not benefit_risk_issues else "⚠ Needs attention",
+        "status": "PASS Adequate" if not benefit_risk_issues else "WARNING Needs attention",
         "issues": benefit_risk_issues
     }
     
@@ -496,7 +496,7 @@ async def ensure_ethics(**kwargs) -> str:
         justice_issues.append("Data sharing and benefit distribution not addressed")
     
     ethics_review["ethical_framework_analysis"]["analysis"]["justice"] = {
-        "status": "✓ Adequate" if not justice_issues else "⚠ Needs attention",
+        "status": "PASS Adequate" if not justice_issues else "WARNING Needs attention",
         "issues": justice_issues
     }
     
@@ -511,7 +511,7 @@ async def ensure_ethics(**kwargs) -> str:
     }
     
     ethics_review["compliance_checklist"] = {
-        item: "✓ Complete" if status else "❌ Missing"
+        item: "PASS Complete" if status else "FAIL Missing"
         for item, status in compliance_items.items()
     }
     

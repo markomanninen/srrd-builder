@@ -35,7 +35,10 @@ def configure_global_launcher(project_root: Path, srrd_dir: Path) -> Tuple[bool,
         if not global_launcher_script.parent.exists():
             return False, f"Could not find srrd_builder package directory: {global_launcher_dir}"
         
-        # Create launcher content with this project's path
+        # Create launcher content with this project's path (properly escaped for Windows)
+        project_path_escaped = str(project_root).replace('\\', '\\\\')
+        config_path_escaped = str(srrd_dir / "config.json").replace('\\', '\\\\')
+        
         launcher_content = f'''#!/usr/bin/env python3
 """
 SRRD MCP Launcher - Auto-configured Project Context
@@ -47,8 +50,8 @@ import os
 from pathlib import Path
 
 # Project context (auto-configured)
-PROJECT_PATH = '{project_root}'
-CONFIG_PATH = '{srrd_dir / "config.json"}'
+PROJECT_PATH = r'{project_root}'
+CONFIG_PATH = r'{srrd_dir / "config.json"}'
 
 def main():
     """Main launcher - uses the configured project"""

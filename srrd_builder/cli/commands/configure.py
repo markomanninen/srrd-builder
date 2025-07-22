@@ -86,12 +86,24 @@ def get_vscode_config_path():
 
 def get_srrd_mcp_config():
     """Get SRRD MCP server configuration"""
+    import platform
+    
     # Get the path to the MCP server
     package_root = Path(__file__).parent.parent.parent.parent
     mcp_server_path = package_root / 'srrd_builder' / 'mcp_global_launcher.py'
     
+    # Use the full path to the virtual environment's Python on Windows
+    if platform.system() == "Windows":
+        venv_python = package_root / 'venv' / 'Scripts' / 'python.exe'
+        if venv_python.exists():
+            python_cmd = str(venv_python)
+        else:
+            python_cmd = "python"
+    else:
+        python_cmd = "python3"
+    
     return {
-        "command": "python3",
+        "command": python_cmd,
         "args": [str(mcp_server_path)],
         "env": {},
         "type": "stdio"

@@ -404,7 +404,7 @@ async def compile_latex_tool(**kwargs) -> str:
             # Check if pdflatex is available
             import shutil
             if not shutil.which("pdflatex"):
-                return f"Error: pdflatex not found. Please install LaTeX distribution:\n• macOS: 'brew install --cask mactex'\n• Ubuntu: 'sudo apt-get install texlive-full'\n• Windows: Install MiKTeX from https://miktex.org/\n\nSee INSTALLATION.md for complete setup guide. The LaTeX source file is available at: {tex_file_path}"
+                return f"Error: pdflatex not found. Please install LaTeX distribution:\n- macOS: 'brew install --cask mactex'\n- Ubuntu: 'sudo apt-get install texlive-full'\n- Windows: Install MiKTeX from https://miktex.org/\n\nSee INSTALLATION.md for complete setup guide. The LaTeX source file is available at: {tex_file_path}"
             
             # Compile with pdflatex
             result = subprocess.run(
@@ -883,7 +883,7 @@ async def list_latex_templates_tool(**kwargs) -> str:
         result = "Available LaTeX Templates:\n\n"
         
         for template_id, info in templates.items():
-            result += f"• **{template_id}**: {info['name']}\n"
+            result += f"- **{template_id}**: {info['name']}\n"
             result += f"  {info['description']}\n\n"
         
         return result

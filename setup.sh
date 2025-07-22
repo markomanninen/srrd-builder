@@ -56,6 +56,11 @@ source venv/bin/activate
 echo "📦 Upgrading pip..."
 python -m pip install --upgrade pip
 
+# Clean previous installation
+echo "🧹 Cleaning previous SRRD-Builder installation..."
+pip uninstall -y srrd-builder >/dev/null 2>&1 || true
+echo "✅ Previous installation cleaned"
+
 # Install Python dependencies
 echo "📥 Installing Python dependencies..."
 if pip install -r requirements.txt; then

@@ -193,7 +193,7 @@ async def get_tool_usage_history_tool(**kwargs) -> str:
             timestamp = entry['timestamp']
             tool_name = entry['tool_name']
             research_act = entry['research_act']
-            success = "✅" if entry['success'] else "❌"
+            success = "PASS" if entry['success'] else "FAIL"
             
             # Safely get act name
             if research_framework and hasattr(research_framework, 'acts') and research_act in research_framework.acts:
@@ -339,7 +339,7 @@ async def get_research_milestones_tool(**kwargs) -> str:
         if milestones:
             response += "## Achieved Milestones\n"
             for milestone in milestones:
-                impact_stars = "⭐" * milestone['impact_score']
+                impact_stars = "*" * milestone['impact_score']
                 response += f"- **{milestone['milestone_name']}** {impact_stars}\n"
                 response += f"  - Type: {milestone['milestone_type']}\n"
                 response += f"  - Achieved: {milestone['achieved_at']}\n"
@@ -350,7 +350,7 @@ async def get_research_milestones_tool(**kwargs) -> str:
         if new_milestones:
             response += "## Recently Detected Milestones\n"
             for milestone in new_milestones:
-                impact_stars = "⭐" * milestone['impact_score']
+                impact_stars = "*" * milestone['impact_score']
                 response += f"- **{milestone['name']}** {impact_stars}\n"
                 response += f"  - Type: {milestone['type']}\n"
                 response += f"  - Description: {milestone['description']}\n"
