@@ -424,6 +424,9 @@ For more information, visit: https://github.com/markomanninen/srrd-builder
     elif args.action == "start":
         if is_server_running():
             pid_data = load_server_pid()
+            if pid_data is None:
+                print("Server appears to be running but PID file not found. Use 'srrd-server stop' to clean up.")
+                return
             pid = pid_data.get('pid')
             frontend_pid = pid_data.get('frontend_pid')
             host = pid_data.get('host', 'localhost')
