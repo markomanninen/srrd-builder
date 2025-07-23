@@ -371,3 +371,13 @@ Introduction: "This paper presents novel approaches to..."
 5. Maintain quality with review tools
 
 All tools work automatically with your project context - no manual configuration needed!
+
+----
+
+echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": "initialize_project", "arguments": {"name": "Database Test Project 2", "description": "Testing database population", "domain": "Computer Science", "project_path": ""}}}' | python3 work/code/mcp/server.py --stdio
+
+echo '{"jsonrpc": "2.0", "id": 4, "method": "tools/call", "params": {"name": "get_research_progress", "arguments": {}}}' | python3 work/code/mcp/mcp_server.py --stdio
+
+echo '{"jsonrpc": "2.0", "id": 4, "method": "tools/call", "params": {"name": "get_research_milestones", "arguments": {"jsonrpc": "2.0", "id": 2,"method": "tools/call","params": {"name": "get_research_milestones","arguments": {}}}}}' | python3 work/code/mcp/mcp_server.py --stdio
+
+echo '{"jsonrpc": "2.0", "id": 4, "method": "tools/call", "params": {"name": "switch_project_context", "arguments": {"target_project_path": "/Users/markomanninen/Desktop/test_git_init"}}}' | python3 work/code/mcp/mcp_server.py --stdio
