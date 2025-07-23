@@ -75,6 +75,58 @@ These guidelines are written for you—the AI-powered chat agent in VS Code—so
 - Only claim test completion when these standards are met
 - **CRITICAL: Test the real functionality, not mock implementations**
 
+#### Mandatory Pytest Command for Maximum Verbosity
+
+**ALWAYS use this exact command format for pytest debugging - NO EXCEPTIONS:**
+
+```bash
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTEST_ADDOPTS="" \
+python -m pytest -c /dev/null \
+-p pytest_asyncio.plugin \
+"path/to/test_file.py::TestClass::test_method" \
+-vv --tb=long --showlocals --full-trace -s --maxfail=1 --log-cli-level=DEBUG
+```
+
+**CRITICAL TESTING RULES:**
+- **DO NOT cycle through useless test runs hoping for more information**
+- **USE ONLY the above command for maximum verbosity - nothing else**
+- **If tests fail after a couple attempts, ADD DEBUG LINES to the code**
+- **RESOLVE the actual issue - do not finish prematurely**
+- **NEVER claim task is ready until 100% success achieved**
+- **NO shortcuts, fallbacks, simplifications, or mockups in tests**
+- **DO NOT write new core logic files to test instead of real files**
+- **Agents violating these rules will be reported as "Unhelpful"**
+
+#### Debugging Methodology (MANDATORY)
+
+When tests fail, follow this EXACT debugging process:
+
+1. **First Attempt**: Use the maximum verbosity pytest command
+2. **Second Attempt**: Re-run with the same command, analyze output carefully
+3. **Third Attempt and Beyond**: ADD DEBUG LINES to the actual code being tested
+   - Add `print()` statements to show variable values
+   - Add `logging.debug()` statements for flow tracking
+   - Add `assert` statements to validate assumptions
+   - Add temporary debug output to understand execution path
+
+**CRITICAL DEBUGGING RULES:**
+
+- **NEVER give up after just a couple test runs**
+- **ALWAYS add debug lines if initial attempts fail**
+- **RESOLVE the actual root cause - do not work around it**
+- **DO NOT finish prematurely claiming "task ready"**
+- **CONTINUE until 100% test success is achieved**
+- **NO shortcuts, workarounds, or "good enough" solutions**
+
+**Debug Line Examples:**
+
+```python
+print(f"DEBUG: Variable value = {variable}")
+print(f"DEBUG: Function called with args: {args}")
+logging.debug(f"Execution reached point X with state: {state}")
+assert isinstance(result, expected_type), f"Expected {expected_type}, got {type(result)}"
+```
+
 ### 5. Production Readiness Criteria
 
 **⚠️ CRITICAL: AI AGENTS MUST NEVER CLAIM "PRODUCTION READY" STATUS**
@@ -142,6 +194,17 @@ Note: If ANY of these criteria are not met, the system is in DEVELOPMENT state -
    - **NO warnings allowed** - fix all warnings before proceeding
    - **NO skipped tests** - every test must execute and pass
    - **NO failures tolerated** - continue problem solving until 100% pass
+   - **USE ONLY the mandatory pytest command for debugging:**
+
+     ```bash
+     PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTEST_ADDOPTS="" \
+     python -m pytest -c /dev/null \
+     -p pytest_asyncio.plugin \
+     "test_file.py::TestClass::test_method" \
+     -vv --tb=long --showlocals --full-trace -s --maxfail=1 --log-cli-level=DEBUG
+     ```
+
+   - **ADD DEBUG LINES if tests fail after couple attempts**
    - Create unit tests for individual components
    - Develop integration tests for neurosymbolic interaction (symbolic-neural integration)
    - Test with various research scenarios
