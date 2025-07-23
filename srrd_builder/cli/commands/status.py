@@ -21,20 +21,79 @@ def handle_status(args):
     current_dir = Path.cwd()
     home = Path.home()
     
+    print(f"📋 SRRD Status")
+    print("=" * 50)
+    
+    # Check current project pointer
+    try:
+        # Add the work/code/mcp directory to Python path so we can import current_project
+        import sys
+        # Try to find the srrd-builder root directory
+        possible_roots = [
+            Path(__file__).parent.parent.parent.parent,  # From CLI commands
+            Path.cwd(),  # Current directory
+            Path.cwd().parent,  # Parent directory
+            home / 'Documents' / 'GitHub' / 'srrd-builder' / 'srrd-builder'  # Common development location
+        ]
+        
+        current_project_path = None
+        for root in possible_roots:
+            mcp_path = root / 'work' / 'code' / 'mcp'
+            if mcp_path.exists():
+                if str(mcp_path) not in sys.path:
+                    sys.path.insert(0, str(mcp_path))
+                try:
+                    from utils.current_project import get_current_project
+                    current_project_path = get_current_project()
+                    break
+                except ImportError:
+                    continue
+        
+        if current_project_path:
+            # Load project config if available
+            project_name = Path(current_project_path).name
+            config_file = Path(current_project_path) / '.srrd' / 'config.json'
+            if config_file.exists():
+                try:
+                    with open(config_file, 'r') as f:
+                        config = json.load(f)
+                    project_name = config.get('project_name', project_name)
+                    domain = config.get('domain', 'Unknown')
+                    print(f"🎯 Current Project: {project_name}")
+                    print(f"   📁 Path: {current_project_path}")
+                    print(f"   🏷️  Domain: {domain}")
+                    if current_project_path == str(current_dir):
+                        print(f"   📍 Status: Active (you are here)")
+                    else:
+                        print(f"   � Status: Set globally (use 'cd {current_project_path}' to navigate)")
+                except Exception:
+                    print(f"🎯 Current Project: {current_project_path}")
+                    print(f"   ⚠️  Config file exists but couldn't be read")
+            else:
+                print(f"🎯 Current Project: {current_project_path}")
+                print(f"   ⚠️  No config file found")
+        else:
+            print("🎯 Current Project: None set")
+            print("   💡 Use 'srrd init' to create a project or 'srrd switch <path>' to set one")
+    except Exception as e:
+        print(f"🎯 Current Project: Could not determine ({e})")
+    
+    print()
+    print(f"📂 Current Directory: {current_dir}")
+    
     # Check if SRRD is initialized in current directory
     srrd_dir = current_dir / '.srrd'
     local_initialized = srrd_dir.exists()
     
-    print(f"📋 SRRD Status for: {current_dir}")
-    print("=" * 50)
-    
-    # Check local initialization
-    print(f"✅ Local SRRD initialized: {local_initialized}")
+    print(f"   ✅ Local SRRD initialized: {local_initialized}")
     
     # Check global server status (new global server system)
     global_pid_file = home / '.srrd' / 'server.pid'
     server_running = False
     server_info = None
+    
+    print()
+    print("🌐 Global SRRD Servers:")
     
     if global_pid_file.exists():
         try:

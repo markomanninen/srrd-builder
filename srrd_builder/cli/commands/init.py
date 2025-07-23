@@ -99,7 +99,14 @@ def create_project_structure(project_root: Path, domain: str, template: str, for
     
     # Set current project pointer using current_project.py
     try:
-        from ...utils.current_project import set_current_project
+        # Add the work/code/mcp directory to Python path so we can import current_project
+        import sys
+        current_dir = Path(__file__).parent.parent.parent.parent  # Go up to srrd-builder root
+        mcp_path = current_dir / 'work' / 'code' / 'mcp'
+        if str(mcp_path) not in sys.path:
+            sys.path.insert(0, str(mcp_path))
+        
+        from utils.current_project import set_current_project
         if set_current_project(str(project_root)):
             print(f"   🚀 Current project pointer set to: {project_root}")
             print(f"      Claude Desktop and VS Code Chat will use: {project_root}")
@@ -108,6 +115,7 @@ def create_project_structure(project_root: Path, domain: str, template: str, for
             print(f"      MCP tools may not work until configured manually")
     except Exception as e:
         print(f"   ⚠️  Warning: Could not set current project pointer: {e}")
+        print(f"      MCP tools may not work until configured manually")
         print(f"      MCP tools may not work until configured manually")
     return True
 
@@ -243,30 +251,11 @@ def handle_init(args):
     """Handle 'srrd init' command"""
     current_dir = Path.cwd()
     
-    # Auto-initialize Git if not already a repository
-    if not is_git_repository(current_dir):
-        print("🔧 Not in a Git repository - auto-initializing...")
-        try:
-            import subprocess
-            subprocess.run(['git', 'init'], 
-                         cwd=current_dir, 
-                         check=True, 
-                         capture_output=True)
-            print("   ✅ Git repository initialized")
-        except subprocess.CalledProcessError as e:
-            print(f"   ❌ Failed to initialize Git: {e}")
-            print("   Please install Git and try again")
-            return 1
-        except FileNotFoundError:
-            print("   ❌ Git not found. Please install Git first.")
-            return 1
+    # Always use current directory for SRRD initialization
+    # Don't try to find Git root - initialize where the user is
+    project_root = current_dir
     
-    # Get Git repository root
-    git_root = get_git_root(current_dir)
-    if not git_root:
-        git_root = current_dir  # Use current directory if can't determine git root
-    
-    print(f"🚀 Initializing SRRD project in: {git_root}")
+    print(f"🚀 Initializing SRRD project in: {project_root}")
     print(f"   Domain: {args.domain}")
     print(f"   Template: {args.template}")
     
@@ -275,10 +264,59 @@ def handle_init(args):
     print("\n🔧 Preparing environment...")
     cleanup_claude_and_mcp_processes()
     
+    # Auto-initialize Git if not already a repository in THIS directory
+    git_was_initialized = False
+    git_dir = current_dir / '.git'
+    if not git_dir.exists():
+        print("🔧 No Git repository in current directory - initializing...")
+        try:
+            import subprocess
+            subprocess.run(['git', 'init'], 
+                         cwd=current_dir, 
+                         check=True, 
+                         capture_output=True)
+            print("   ✅ Git repository initialized")
+            git_was_initialized = True
+        except subprocess.CalledProcessError as e:
+            print(f"   ❌ Failed to initialize Git: {e}")
+            print("   Please install Git and try again")
+            return 1
+        except FileNotFoundError:
+            print("   ❌ Git not found. Please install Git first.")
+            return 1
+    
     # Create project structure
-    if create_project_structure(git_root, args.domain, args.template, args.force):
+    if create_project_structure(project_root, args.domain, args.template, args.force):
+        
+        # Make initial Git commit for the new SRRD project
+        if (project_root / '.git').exists():
+            print("🔧 Making initial Git commit...")
+            try:
+                import subprocess
+                # Add all files
+                subprocess.run(['git', 'add', '.'], 
+                             cwd=current_dir, 
+                             check=True, 
+                             capture_output=True)
+                
+                # Make initial commit
+                commit_message = f"Initial SRRD-Builder project setup for {args.domain} research"
+                subprocess.run(['git', 'commit', '-m', commit_message], 
+                             cwd=current_dir, 
+                             check=True, 
+                             capture_output=True)
+                print("   ✅ Initial commit created")
+                
+            except subprocess.CalledProcessError as e:
+                # Check if it's because there are no changes to commit
+                if "nothing to commit" in str(e):
+                    print("   ℹ️  No changes to commit (files may already be tracked)")
+                else:
+                    print(f"   ⚠️  Warning: Could not create initial commit: {e}")
+                    print("   You can manually commit files later with: git add . && git commit -m 'Initial setup'")
+        
         print("\n✅ SRRD-Builder project initialized successfully!")
-        print(f"   Configuration: {git_root}/.srrd/config.json")
+        print(f"   Configuration: {project_root}/.srrd/config.json")
         print(f"   Global MCP launcher: Configured for THIS project")
         
         # Show configuration instructions using existing commands

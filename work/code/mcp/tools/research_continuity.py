@@ -43,20 +43,62 @@ async def get_research_progress_tool(**kwargs) -> str:
         return "Error: Project context not available. Please ensure you are in an SRRD project."
     
     try:
+        # Get project information
+        project_dir = Path(project_path)
+        config_file = project_dir / '.srrd' / 'config.json'
+        
+        # Load project config
+        project_config = {}
+        if config_file.exists():
+            try:
+                with open(config_file, 'r') as f:
+                    project_config = json.load(f)
+            except Exception:
+                project_config = {}
+        
+        project_name = project_config.get('project_name', project_dir.name)
+        project_domain = project_config.get('domain', 'Unknown')
+        project_description = project_config.get('description', 'No description available')
+        
         # Initialize database
         db_path = str(Path(project_path) / '.srrd' / 'sessions.db')
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
         
-        # Get project ID
+        # Get project ID and stats from database
         async with sqlite_manager.connection.execute(
-            "SELECT id FROM projects ORDER BY created_at DESC LIMIT 1"
+            "SELECT id, name, created_at FROM projects ORDER BY created_at DESC LIMIT 1"
         ) as cursor:
             project_row = await cursor.fetchone()
             if not project_row:
-                return "No project found in database. Please initialize a project first."
+                return f"""# Research Progress Analysis
+
+## Project Information
+- **Name**: {project_name}
+- **Directory**: {project_path}
+- **Domain**: {project_domain}
+- **Description**: {project_description}
+- **Status**: Not initialized - No project found in database
+
+Please initialize the project by running research tools first."""
         
         project_id = project_row[0]
+        db_project_name = project_row[1]
+        created_at = project_row[2]
+        
+        # Check for recent activity
+        async with sqlite_manager.connection.execute(
+            "SELECT COUNT(*) FROM tool_usage WHERE project_id = ? AND timestamp > datetime('now', '-7 days')",
+            (project_id,)
+        ) as cursor:
+            recent_activity = await cursor.fetchone()
+            recent_count = recent_activity[0] if recent_activity else 0
+        
+        # Determine project status
+        if recent_count > 0:
+            status = f"Active ({recent_count} tools used in last 7 days)"
+        else:
+            status = "Inactive (no recent activity)"
         
         # Initialize workflow intelligence and research framework
         research_framework = _get_research_framework()
@@ -65,8 +107,16 @@ async def get_research_progress_tool(**kwargs) -> str:
         # Analyze research progress
         analysis = await workflow_intelligence.analyze_research_progress(project_id)
         
-        # Format response
+        # Format response with project information
         response = f"""# Research Progress Analysis
+
+## Project Information
+- **Name**: {project_name}
+- **Directory**: {project_path}
+- **Domain**: {project_domain}
+- **Description**: {project_description}
+- **Status**: {status}
+- **Created**: {created_at}
 
 ## Overall Progress
 - **Completion**: {analysis['overall_progress']['completion_percentage']:.1f}%

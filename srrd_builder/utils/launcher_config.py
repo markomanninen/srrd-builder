@@ -45,10 +45,19 @@ def reset_to_global_project() -> Tuple[bool, Optional[str], Optional[Path]]:
 
         # Set the current project pointer to the global project
         try:
-            from work.code.mcp.utils.current_project import set_current_project
+            # Add the work/code/mcp directory to Python path so we can import current_project
+            import os
+            current_dir = Path(__file__).parent.parent.parent  # Go up to srrd-builder root
+            mcp_path = current_dir / 'work' / 'code' / 'mcp'
+            if str(mcp_path) not in sys.path:
+                sys.path.insert(0, str(mcp_path))
+            
+            from utils.current_project import set_current_project
             set_current_project(str(global_project_path))
         except Exception as e:
-            logger.error(f"Failed to set current project pointer: {e}")
+            logger.warning(f"Failed to set current project pointer: {e}")
+            # Don't fail the entire operation, just log the warning
+            # The reset still succeeded in creating the global project
 
         return True, None, global_project_path
 
