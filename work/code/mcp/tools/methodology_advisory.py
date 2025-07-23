@@ -111,7 +111,7 @@ class MethodologyAdvisoryTool:
             }
         }
 
-@context_aware()
+@context_aware(require_context=True)
 async def explain_methodology(**kwargs) -> str:
     """Explain methodology for research question"""
     
@@ -198,7 +198,7 @@ def _calculate_suitability(research_question: str, methodology_info: Dict) -> fl
     
     return min(score, 1.0)
 
-@context_aware()
+@context_aware(require_context=True)
 async def compare_approaches(**kwargs) -> str:
     """Compare different research approaches"""
     
@@ -288,7 +288,7 @@ async def compare_approaches(**kwargs) -> str:
     
     return json.dumps(comparison, indent=2)
 
-@context_aware()
+@context_aware(require_context=True)
 async def validate_design(**kwargs) -> str:
     """Validate research design and provide improvement suggestions"""
     
@@ -429,7 +429,7 @@ async def validate_design(**kwargs) -> str:
     
     return json.dumps(validation_results, indent=2)
 
-@context_aware()
+@context_aware(require_context=True)
 async def ensure_ethics(**kwargs) -> str:
     """Provide ethical review and compliance checking"""
     

@@ -27,7 +27,7 @@ if str(utils_dir) not in sys.path:
 
 from context_decorator import context_aware, project_required
 
-@context_aware()
+@context_aware(require_context=True)
 async def semantic_search_tool(**kwargs) -> str:
     """Perform semantic search across research documents"""
     
@@ -83,7 +83,7 @@ async def semantic_search_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error performing semantic search: {str(e)}"
 
-@context_aware()
+@context_aware(require_context=True)
 async def discover_patterns_tool(**kwargs) -> str:
     """Discover patterns and themes in research content"""
     
@@ -143,7 +143,7 @@ async def discover_patterns_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error discovering patterns: {str(e)}"
 
-@context_aware()
+@context_aware(require_context=True)
 async def build_knowledge_graph_tool(**kwargs) -> str:
     """Build knowledge graph from research documents"""
     
@@ -214,7 +214,7 @@ async def build_knowledge_graph_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error building knowledge graph: {str(e)}"
 
-@context_aware()
+@context_aware(require_context=True)
 async def find_similar_documents_tool(**kwargs) -> str:
     """Find documents similar to the target document"""
     
@@ -272,7 +272,7 @@ async def find_similar_documents_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error finding similar documents: {str(e)}"
 
-@context_aware()
+@context_aware(require_context=True)
 async def extract_key_concepts_tool(**kwargs) -> str:
     """Extract key concepts from research text"""
     
@@ -327,7 +327,7 @@ async def extract_key_concepts_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error extracting key concepts: {str(e)}"
 
-@context_aware()
+@context_aware(require_context=True)
 async def generate_research_summary_tool(**kwargs) -> str:
     """Generate summary of research documents"""
     

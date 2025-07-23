@@ -290,7 +290,7 @@ class ResearchPlanningTool:
         return framework
 
 # MCP tool registration
-@context_aware()
+@context_aware(require_context=True)
 async def clarify_research_goals(**kwargs) -> Dict[str, Any]:
     """MCP tool wrapper for research goal clarification"""
     # Filter out context parameters
@@ -298,7 +298,7 @@ async def clarify_research_goals(**kwargs) -> Dict[str, Any]:
     tool = ResearchPlanningTool()
     return await tool.clarify_research_goals(**filtered_kwargs)
 
-@context_aware()
+@context_aware(require_context=True)
 async def suggest_methodology(**kwargs) -> Dict[str, Any]:
     """MCP tool wrapper for methodology suggestion"""
     # Filter out context parameters

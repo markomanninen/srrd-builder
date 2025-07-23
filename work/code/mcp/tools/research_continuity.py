@@ -18,37 +18,14 @@ if str(utils_dir) not in sys.path:
 if str(current_dir) not in sys.path:
     sys.path.insert(0, str(current_dir))
 
-try:
-    from storage.sqlite_manager import SQLiteManager
-except ImportError as e:
-    print(f"Warning: Could not import SQLiteManager: {e}")
-    SQLiteManager = None
-
-try:
-    from research_framework import ResearchFrameworkService
-except ImportError as e:
-    print(f"Warning: Could not import ResearchFrameworkService: {e}")
-    ResearchFrameworkService = None
-
-try:
-    from workflow_intelligence import WorkflowIntelligence
-except ImportError as e:
-    print(f"Warning: Could not import WorkflowIntelligence: {e}")
-    WorkflowIntelligence = None
+from storage.sqlite_manager import SQLiteManager
+from utils.research_framework import ResearchFrameworkService
+from utils.workflow_intelligence import WorkflowIntelligence
 
 # Context-aware decorator imports
-try:
-    from context_decorator import context_aware, project_required
-except ImportError as e:
-    print(f"Warning: Could not import context decorators: {e}")
-    # Fallback decorators
-    def context_aware():
-        def decorator(func):
-            return func
-        return decorator
-    
-    def project_required(func):
-        return func
+sys.path.insert(0, str(current_dir / "utils"))
+from context_decorator import context_aware
+from current_project import get_current_project
 
 # Function to safely initialize services when needed
 def _get_research_framework():
@@ -57,33 +34,19 @@ def _get_research_framework():
         return ResearchFrameworkService()
     return None
 
-@context_aware()
+@context_aware(require_context=True)
 async def get_research_progress_tool(**kwargs) -> str:
     """Get current research progress across all acts and categories"""
-    project_path = kwargs.get('project_path')
+    project_path = get_current_project()
     
     if not project_path:
-        return "Error: Project context not available. Please ensure you are in an SRRD project or provide project_path parameter."
-    
-    # Check if required services are available
-    if not SQLiteManager:
-        return "Error: Database functionality not available. Please check if SQLiteManager is properly installed."
-    
-    if not WorkflowIntelligence:
-        return "Error: Workflow intelligence functionality not available. Please check if WorkflowIntelligence is properly installed."
-    
-    if not ResearchFrameworkService:
-        return "Error: Research framework functionality not available. Please check if ResearchFrameworkService is properly installed."
+        return "Error: Project context not available. Please ensure you are in an SRRD project."
     
     try:
         # Initialize database
         db_path = str(Path(project_path) / '.srrd' / 'sessions.db')
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
-        
-        # Initialize services
-        research_framework = _get_research_framework()
-        workflow_intelligence = WorkflowIntelligence(sqlite_manager, research_framework)
         
         # Get project ID
         async with sqlite_manager.connection.execute(
@@ -94,6 +57,10 @@ async def get_research_progress_tool(**kwargs) -> str:
                 return "No project found in database. Please initialize a project first."
         
         project_id = project_row[0]
+        
+        # Initialize workflow intelligence and research framework
+        research_framework = _get_research_framework()
+        workflow_intelligence = WorkflowIntelligence(sqlite_manager, research_framework)
         
         # Analyze research progress
         analysis = await workflow_intelligence.analyze_research_progress(project_id)
@@ -143,19 +110,15 @@ async def get_research_progress_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error analyzing research progress: {str(e)}"
 
-@context_aware()
+@context_aware(require_context=True)
 async def get_tool_usage_history_tool(**kwargs) -> str:
     """Get chronological tool usage history for session/project"""
-    project_path = kwargs.get('project_path')
+    project_path = get_current_project()
     session_id = kwargs.get('session_id')  # Optional
     limit = kwargs.get('limit', 20)
     
     if not project_path:
-        return "Error: Project context not available. Please ensure you are in an SRRD project or provide project_path parameter."
-    
-    # Check if required services are available
-    if not SQLiteManager:
-        return "Error: Database functionality not available. Please check if SQLiteManager is properly installed."
+        return "Error: Project context not available. Please ensure you are in an SRRD project."
     
     try:
         # Initialize database
@@ -222,31 +185,21 @@ async def get_tool_usage_history_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error retrieving tool usage history: {str(e)}"
 
-@context_aware()
+@context_aware(require_context=True)
 async def get_workflow_recommendations_tool(**kwargs) -> str:
     """Get AI-generated recommendations for next research steps"""
-    project_path = kwargs.get('project_path')
+    project_path = get_current_project()
     
     if not project_path:
-        return "Error: Project context not available. Please ensure you are in an SRRD project or provide project_path parameter."
-    
-    # Check if required services are available
-    if not SQLiteManager:
-        return "Error: Database functionality not available. Please check if SQLiteManager is properly installed."
-    
-    if not WorkflowIntelligence:
-        return "Error: Workflow intelligence functionality not available. Please check if WorkflowIntelligence is properly installed."
+        return "Error: Project context not available. Please ensure you are in an SRRD project."
     
     try:
-        # Initialize database and services
+        # Initialize database
         db_path = str(Path(project_path) / '.srrd' / 'sessions.db')
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
         
-        research_framework = _get_research_framework()
-        workflow_intelligence = WorkflowIntelligence(sqlite_manager, research_framework)
-        
-        # Get project ID and session ID
+        # Get project ID
         async with sqlite_manager.connection.execute(
             "SELECT id FROM projects ORDER BY created_at DESC LIMIT 1"
         ) as cursor:
@@ -255,6 +208,10 @@ async def get_workflow_recommendations_tool(**kwargs) -> str:
                 return "No project found in database."
         
         project_id = project_row[0]
+        
+        # Initialize workflow intelligence and research framework
+        research_framework = _get_research_framework()
+        workflow_intelligence = WorkflowIntelligence(sqlite_manager, research_framework)
         
         # Get or create session
         async with sqlite_manager.connection.execute(
@@ -292,30 +249,20 @@ async def get_workflow_recommendations_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error generating workflow recommendations: {str(e)}"
 
-@context_aware()
+@context_aware(require_context=True)
 async def get_research_milestones_tool(**kwargs) -> str:
     """Get achieved research milestones and upcoming targets"""
-    project_path = kwargs.get('project_path')
+    project_path = get_current_project()
     limit = kwargs.get('limit', 10)
     
     if not project_path:
-        return "Error: Project context not available. Please ensure you are in an SRRD project or provide project_path parameter."
-    
-    # Check if required services are available
-    if not SQLiteManager:
-        return "Error: Database functionality not available. Please check if SQLiteManager is properly installed."
-    
-    if not WorkflowIntelligence:
-        return "Error: Workflow intelligence functionality not available. Please check if WorkflowIntelligence is properly installed."
+        return "Error: Project context not available. Please ensure you are in an SRRD project."
     
     try:
         # Initialize database
         db_path = str(Path(project_path) / '.srrd' / 'sessions.db')
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
-        
-        research_framework = _get_research_framework()
-        workflow_intelligence = WorkflowIntelligence(sqlite_manager, research_framework)
         
         # Get project ID
         async with sqlite_manager.connection.execute(
@@ -326,6 +273,10 @@ async def get_research_milestones_tool(**kwargs) -> str:
                 return "No project found in database."
         
         project_id = project_row[0]
+        
+        # Initialize workflow intelligence and research framework
+        research_framework = _get_research_framework()
+        workflow_intelligence = WorkflowIntelligence(sqlite_manager, research_framework)
         
         # Get milestones from database
         milestones = await sqlite_manager.get_research_milestones(project_id, limit)
@@ -365,20 +316,16 @@ async def get_research_milestones_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error retrieving research milestones: {str(e)}"
 
-@context_aware()
+@context_aware(require_context=True)
 async def start_research_session_tool(**kwargs) -> str:
     """Start a new research session with act-specific goals"""
-    project_path = kwargs.get('project_path')
+    project_path = get_current_project()
     research_act = kwargs.get('research_act')  # Optional
     session_goals = kwargs.get('session_goals', [])  # Optional list of goals
     research_focus = kwargs.get('research_focus')  # Optional description
     
     if not project_path:
-        return "Error: Project context not available. Please ensure you are in an SRRD project or provide project_path parameter."
-    
-    # Check if required services are available
-    if not SQLiteManager:
-        return "Error: Database functionality not available. Please check if SQLiteManager is properly installed."
+        return "Error: Project context not available. Please ensure you are in an SRRD project."
     
     try:
         # Initialize database
@@ -453,30 +400,20 @@ async def start_research_session_tool(**kwargs) -> str:
     except Exception as e:
         return f"Error starting research session: {str(e)}"
 
-@context_aware()
+@context_aware(require_context=True)
 async def get_session_summary_tool(**kwargs) -> str:
     """Get comprehensive summary of current session progress"""
-    project_path = kwargs.get('project_path')
+    project_path = get_current_project()
     session_id = kwargs.get('session_id')  # Optional, uses latest if not provided
     
     if not project_path:
-        return "Error: Project context not available. Please ensure you are in an SRRD project or provide project_path parameter."
-    
-    # Check if required services are available
-    if not SQLiteManager:
-        return "Error: Database functionality not available. Please check if SQLiteManager is properly installed."
-    
-    if not WorkflowIntelligence:
-        return "Error: Workflow intelligence functionality not available. Please check if WorkflowIntelligence is properly installed."
+        return "Error: Project context not available. Please ensure you are in an SRRD project."
     
     try:
         # Initialize database
         db_path = str(Path(project_path) / '.srrd' / 'sessions.db')
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
-        
-        research_framework = _get_research_framework()
-        workflow_intelligence = WorkflowIntelligence(sqlite_manager, research_framework)
         
         # Get session ID if not provided
         if not session_id:
@@ -493,6 +430,10 @@ async def get_session_summary_tool(**kwargs) -> str:
                 if not session_row:
                     return "No active sessions found."
                 session_id = session_row[0]
+        
+        # Initialize workflow intelligence and research framework
+        research_framework = _get_research_framework()
+        workflow_intelligence = WorkflowIntelligence(sqlite_manager, research_framework)
         
         # Generate session summary
         summary = await workflow_intelligence.generate_session_summary(session_id)

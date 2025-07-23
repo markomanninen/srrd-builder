@@ -146,4 +146,8 @@ echo    - srrd configure      Configure and check status
 echo    - srrd-server         Start WebSocket demo server
 echo.
 echo Press any key to exit...
+echo.
+echo Initializing global SRRD project context...
+python -c "import sys; sys.path.insert(0, r'%cd%\srrd_builder\utils'); import launcher_config; launcher_config.reset_to_global_project()"
+echo Global SRRD project context initialized (if not already present)
 pause >nul

@@ -332,7 +332,7 @@ class QualityAssuranceTool:
         return recommendations
 
 # MCP tool registration
-@context_aware()
+@context_aware(require_context=True)
 async def simulate_peer_review(**kwargs) -> Dict[str, Any]:
     """MCP tool wrapper for peer review simulation"""
     # Filter out context parameters
@@ -352,7 +352,7 @@ async def simulate_peer_review(**kwargs) -> Dict[str, Any]:
     
     return json.dumps(result, indent=2)
 
-@context_aware()
+@context_aware(require_context=True)
 async def check_quality_gates(**kwargs) -> Dict[str, Any]:
     """MCP tool wrapper for quality gate checking"""
     # Filter out context parameters

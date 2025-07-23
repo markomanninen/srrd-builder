@@ -18,6 +18,7 @@ When operating in a chat/assistant mode, AI agents should incorporate these prac
 - Offer alternative solutions when relevant, highlighting trade-offs.
 - Define clear acceptance criteria and confirm them before proceeding to the next phase.
 - Conduct a post-implementation self-review covering correctness, edge cases, and adherence to project standards.
+- **NEVER USE UNICODE ICONS OR EMOJIS** in tool responses, code output, or documentation. Icons cause display issues on different systems, especially Windows. Use plain text formatting only.
 
 These guidelines are written for you—the AI-powered chat agent in VS Code—so you can autonomously ingest context, plan and validate your actions step-by-step, manage uncertainty, integrate natively with the editor, reflect on your reasoning, and enforce safety guardrails.
 

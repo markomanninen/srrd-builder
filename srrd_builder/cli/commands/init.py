@@ -97,16 +97,18 @@ def create_project_structure(project_root: Path, domain: str, template: str, for
         f.write(create_work_readme_content())
     print(f"   📖 {work_readme.relative_to(project_root)}")
     
-    # Configure global MCP launcher for this project
-    from ...utils.launcher_config import configure_global_launcher
-    success, error = configure_global_launcher(project_root, srrd_dir)
-    if success:
-        print(f"   🚀 Global MCP launcher configured for this project")
-        print(f"      Claude Desktop and VS Code Chat will use: {project_root}")
-    else:
-        print(f"   ⚠️  Warning: Could not configure global launcher: {error}")
+    # Set current project pointer using current_project.py
+    try:
+        from ...utils.current_project import set_current_project
+        if set_current_project(str(project_root)):
+            print(f"   🚀 Current project pointer set to: {project_root}")
+            print(f"      Claude Desktop and VS Code Chat will use: {project_root}")
+        else:
+            print(f"   ⚠️  Warning: Could not set current project pointer!")
+            print(f"      MCP tools may not work until configured manually")
+    except Exception as e:
+        print(f"   ⚠️  Warning: Could not set current project pointer: {e}")
         print(f"      MCP tools may not work until configured manually")
-    
     return True
 
 def create_gitignore_content():

@@ -319,14 +319,36 @@ def test_new_tool_functionality(self):
 - **Reliability:** Maintain 100% test pass rate
 - **Quality:** Zero flaky tests tolerance
 
-## ✅ **SUMMARY**
+LONG DEBUG DETAILS TEST:
 
-The SRRD-Builder test suite is **production ready** with:
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTEST_ADDOPTS="" \
+python -m pytest -c /dev/null \
+-p pytest_asyncio.plugin \
+"work/tests/unit/test_research_continuity_working.py::TestResearchContinuityComplete::test_get_research_progress_complete" \
+-vv --tb=long --showlocals --full-trace -s --maxfail=1 --log-cli-level=DEBUG
 
-- **158 comprehensive tests** covering all components
-- **100% pass rate** with timeout protection
-- **Professional organization** following industry standards
-- **Clear development guidelines** for future contributions
-- **Complete documentation** for maintainers
 
-**Status: COMPLETE AND MAINTAINABLE** 🎉
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTEST_ADDOPTS="" \
+python -m pytest -c /dev/null \
+-p pytest_asyncio.plugin \
+"work/tests/unit/test_methodology_advisory_enhanced.py::TestExplainMethodology::test_without_project_path" \
+-vv --tb=long --showlocals --full-trace -s --maxfail=1 --log-cli-level=DEBUG
+
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTEST_ADDOPTS="" \
+python -m pytest -c /dev/null \
+-p pytest_asyncio.plugin \
+"work/tests/validation/test_production_validation.py::test_production_validation" \
+-vv --tb=long --showlocals --full-trace -s --maxfail=1 --log-cli-level=DEBUG
+
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTEST_ADDOPTS="" \
+python -m pytest -c /dev/null \
+-p pytest_asyncio.plugin \
+"work/tests/integration/test_workflow.py::TestContextAwareErrorHandling::test_context_required_tool_without_context" \
+-vv --tb=long --showlocals --full-trace -s --maxfail=1 --log-cli-level=DEBUG
+
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTEST_ADDOPTS="" \
+python -m pytest -c /dev/null \
+-p pytest_asyncio.plugin \
+"work/tests/unit/test_research_continuity_tools.py::T
+estResearchContinuityIntegration::test_tool_context_awareness" \
+-vv --tb=long --showlocals --full-trace -s --maxfail=1 --log-cli-level=DEBUG

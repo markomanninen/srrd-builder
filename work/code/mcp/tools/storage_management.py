@@ -21,27 +21,44 @@ if str(utils_dir) not in sys.path:
 
 from context_decorator import context_aware, project_required
 
-@context_aware()
+@context_aware(allow_explicit_project_path=True)
 async def initialize_project_tool(**kwargs) -> str:
     """MCP tool to initialize Git-based project storage"""
     name = kwargs.get('name')
     description = kwargs.get('description') 
     domain = kwargs.get('domain')
     project_path = kwargs.get('project_path')
-    
+
     if not all([name, description, domain]):
         return "Error: Missing required parameters (name, description, domain)"
-    
-    # Smart project location handling
-    resolved_path = _resolve_project_location(name, project_path)
-    
+
+    # Project location handling and validation
+    try:
+        resolved_path, error = _resolve_project_location(name, project_path)
+        if error:
+            return error
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+    # Strict check: if project_path is absolute, resolved_path must match exactly
+    if project_path:
+        from pathlib import Path
+        requested = Path(project_path)
+        if requested.is_absolute() and str(requested) != resolved_path:
+            return f"Error: Internal path resolution bug: requested {requested} but got {resolved_path}"
+
+    # Check if project already exists
+    if os.path.exists(resolved_path):
+        return f"Error: Project already exists at {resolved_path}"
+
+    # Only create project if all checks pass
     project_manager = ProjectManager(resolved_path)
     result = await project_manager.initialize_project(name, description, domain)
-    
+
     # Update the result to include guidance
     guidance = _get_project_creation_guidance(resolved_path)
     auto_switched = result.get('auto_switched', False)
-    
+
     if auto_switched:
         switch_status = """**MCP Context Automatically Switched!**
 Claude Desktop is now using this project for all research tools."""
@@ -55,11 +72,11 @@ What would you like to work on next?
     else:
         switch_status = """**Manual Switch Required**
 Auto-switch failed. Please run: srrd switch"""
-        next_steps = """**Setup Required**:
+        next_steps = f"""**Setup Required**:
 1. Navigate to your project: cd {resolved_path}
 2. Switch MCP context: srrd switch
 3. Then tell me what you'd like to work on!"""
-    
+
     return f"""Project '{name}' initialized successfully!
 
 **Project Location**: {resolved_path}
@@ -73,53 +90,39 @@ Auto-switch failed. Please run: srrd switch"""
 {next_steps}
 """
 
-def _resolve_project_location(project_name: str, requested_path: Optional[str] = None) -> str:
-    """Resolve where the new project should be created based on current context"""
+def _resolve_project_location(project_name: str, requested_path: Optional[str] = None) -> (str, Optional[str]):
+    """Resolve where the new project should be created based on current context, with strict validation.
+    Returns (resolved_path, error_message)"""
     from pathlib import Path
     import os
-    
-    # Get current SRRD context
-    current_project_path = os.environ.get('SRRD_PROJECT_PATH')
-    
-    if requested_path:
-        # User specified a path
-        requested = Path(requested_path).resolve()
-        
-        # If it's a relative path and we're in a global context, 
-        # create it in a reasonable location
-        if not requested.is_absolute() and current_project_path:
-            current_dir = Path(current_project_path).parent
-            if current_dir.name == 'globalproject' or '.srrd' in current_dir.name:
-                # We're in global context, create in home directory's Projects folder
-                home_projects = Path.home() / 'Projects'
-                home_projects.mkdir(exist_ok=True)
-                resolved = home_projects / requested.name
-            else:
-                # We're in a specific project context, create relative to it
-                resolved = current_dir.parent / requested.name
-        else:
-            resolved = requested
-            
-        return str(resolved)
-    
-    # No path specified - use intelligent defaults
-    if current_project_path:
-        current_dir = Path(current_project_path)
-        
-        if 'globalproject' in str(current_dir):
-            # In global context - create in user's Projects folder
-            home_projects = Path.home() / 'Projects'
-            home_projects.mkdir(exist_ok=True)
-            return str(home_projects / project_name.lower().replace(' ', '-'))
-        else:
-            # In specific project context - create alongside current project
-            parent_dir = current_dir.parent
-            return str(parent_dir / project_name.lower().replace(' ', '-'))
-    
-    # Fallback - create in user's Projects folder
+
     home_projects = Path.home() / 'Projects'
-    home_projects.mkdir(exist_ok=True)
-    return str(home_projects / project_name.lower().replace(' ', '-'))
+
+    # If no path specified, always use ~/Projects/<project-name>
+    if not requested_path:
+        if not home_projects.exists():
+            try:
+                home_projects.mkdir(exist_ok=True)
+            except Exception as e:
+                return '', f"Error: Could not create ~/Projects directory: {str(e)}"
+        resolved = home_projects / project_name.lower().replace(' ', '-')
+        return str(resolved), None
+
+    requested = Path(requested_path)
+    # If absolute path, use as is, but parent must exist. Do not fallback.
+    if requested.is_absolute():
+        if not requested.parent.exists():
+            return '', f"Error: Parent directory of specified absolute path does not exist: {requested.parent}"
+        return str(requested), None
+
+    # If relative path, treat as ~/Projects/<relative>
+    if not home_projects.exists():
+        try:
+            home_projects.mkdir(exist_ok=True)
+        except Exception as e:
+            return '', f"Error: Could not create ~/Projects directory: {str(e)}"
+    resolved = home_projects / requested_path
+    return str(resolved), None
 
 def _get_project_creation_guidance(project_path: str) -> str:
     """Provide guidance based on where the project was created"""
@@ -135,7 +138,7 @@ def _get_project_creation_guidance(project_path: str) -> str:
         return """**Location**: Created alongside your current project
 **Context**: Automatically switched to this new project"""
 
-@context_aware()
+@context_aware(require_context=True)
 async def save_session_tool(**kwargs) -> str:
     """MCP tool to save research session data"""
     session_data = kwargs.get('session_data')
@@ -151,7 +154,7 @@ async def save_session_tool(**kwargs) -> str:
     # This is a placeholder until the session manager is implemented
     return "Session saved"
 
-@context_aware()
+@context_aware(require_context=True)
 async def search_knowledge_tool(**kwargs) -> str:
     """MCP tool for vector database search"""
     query = kwargs.get('query')
@@ -168,7 +171,7 @@ async def search_knowledge_tool(**kwargs) -> str:
     results = await project_manager.vector_manager.search_knowledge(query, collection)
     return f"Search results: {results}"
 
-@context_aware()
+@context_aware(require_context=True)
 async def version_control_tool(**kwargs) -> str:
     """MCP tool for Git operations"""
     action = kwargs.get('action')
@@ -188,7 +191,7 @@ async def version_control_tool(**kwargs) -> str:
         return f"Committed changes with hash: {commit_hash}"
     return "Unknown action"
 
-@context_aware()
+@context_aware(require_context=True)
 async def backup_project_tool(**kwargs) -> str:
     """MCP tool to backup project"""
     project_path = kwargs.get('project_path')
@@ -201,7 +204,7 @@ async def backup_project_tool(**kwargs) -> str:
     result = project_manager.backup_project(backup_location)
     return f"Project backed up with status: {result}"
 
-@context_aware()
+@context_aware(require_context=True)
 async def restore_session_tool(**kwargs) -> str:
     """MCP tool to restore previous session"""
     session_id = kwargs.get('session_id')
@@ -217,6 +220,7 @@ async def restore_session_tool(**kwargs) -> str:
     # This is a placeholder until the session manager is implemented
     return "Session restored"
 
+@context_aware(require_context=True)
 async def switch_project_context_tool(**kwargs) -> str:
     """MCP tool to switch MCP context to a different project"""
     target_project_path = kwargs.get('target_project_path')
@@ -251,30 +255,28 @@ Tip: Use 'initialize_project' tool to create a new SRRD project in this location
    
 The project appears corrupted. You may need to reinitialize it."""
     
-    # Import the launcher configuration utility
+    # Use current_project.py utilities to set the current project pointer
     try:
-        # Import from the CLI utils - correct path: tools -> mcp -> code -> work -> root -> srrd_builder
-        import sys
-        srrd_builder_path = Path(__file__).resolve().parent.parent.parent.parent.parent / 'srrd_builder'
-        sys.path.insert(0, str(srrd_builder_path))
-        
-        from utils.launcher_config import configure_global_launcher
-        
-        # Configure global launcher for this project
-        success, error = configure_global_launcher(target_path, srrd_dir)
-        
-        if success:
-            # Read project config to show project info
-            try:
-                with open(config_file, 'r') as f:
-                    config = json.load(f)
-                project_name = config.get('project_name', 'Unknown Project')
-                domain = config.get('domain', 'Unknown Domain')
-            except:
-                project_name = target_path.name
-                domain = 'Unknown'
-            
-            return f"""**MCP Context Switched Successfully!**
+        import importlib.util
+        from pathlib import Path
+        # Calculate path to current_project.py
+        current_project_path = Path(__file__).resolve().parent.parent.parent.parent.parent / 'srrd_builder' / 'utils' / 'current_project.py'
+        spec = importlib.util.spec_from_file_location("current_project", current_project_path)
+        current_project = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(current_project)
+        set_current_project = current_project.set_current_project
+        # Set the current project pointer
+        set_current_project(str(target_path))
+        # Read project config to show project info
+        try:
+            with open(config_file, 'r') as f:
+                config = json.load(f)
+            project_name = config.get('project_name', 'Unknown Project')
+            domain = config.get('domain', 'Unknown Domain')
+        except:
+            project_name = target_path.name
+            domain = 'Unknown'
+        return f"""**MCP Context Switched Successfully!**
 
 **Active Project**: {project_name}
 **Domain**: {domain}
@@ -289,19 +291,13 @@ The project appears corrupted. You may need to reinitialize it."""
 - Use research tools like 'clarify_research_goals' or 'get_research_progress'
 - All tools will automatically use this project's context
 - Use 'reset_project_context' to return to global home project"""
-            
-        else:
-            return f"""**Failed to switch MCP context**
-   Error: {error}
-   
-This might be due to file permissions or system configuration issues."""
-            
     except Exception as e:
         return f"""**Error switching MCP context**
    Technical details: {str(e)}
    
 This is likely a system configuration issue. Please check that SRRD-Builder is properly installed."""
 
+@context_aware(require_context=True)
 async def reset_project_context_tool(**kwargs) -> str:
     """MCP tool to reset MCP context to global home project"""
     

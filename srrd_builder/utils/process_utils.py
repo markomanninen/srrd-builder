@@ -28,7 +28,7 @@ def find_mcp_processes() -> List[Tuple[str, str]]:
                 lines = result.stdout.split('\n')
                 for line in lines[1:]:  # Skip header
                     if ('python' in line.lower() and 
-                        ('mcp_global_launcher' in line or 'mcp_server' in line or 'srrd_builder.server.launcher' in line)):
+                        ('mcp_server' in line or 'srrd_builder.server.launcher' in line)):
                         # Parse CSV format
                         parts = line.split('","')
                         if len(parts) >= 2:
@@ -44,7 +44,7 @@ def find_mcp_processes() -> List[Tuple[str, str]]:
                 lines = result.stdout.split('\n')
                 for line in lines:
                     if ('python' in line and 
-                        ('mcp_global_launcher' in line or 'mcp_server' in line or 'srrd_builder.server.launcher' in line)):
+                        ('mcp_server' in line or 'srrd_builder.server.launcher' in line)):
                         # Extract PID (second column in ps aux output)
                         parts = line.split()
                         if len(parts) >= 11:

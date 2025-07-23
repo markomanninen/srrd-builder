@@ -3,6 +3,7 @@
 SRRD-Builder MCP Server for Claude Desktop
 Model Context Protocol server providing 44 research assistance tools
 """
+
 import asyncio
 import json
 import sys
@@ -11,6 +12,17 @@ import signal
 import time
 from pathlib import Path
 from typing import Optional
+
+# Ensure SRRD_PROJECT_PATH is set using current_project.py utilities
+try:
+    sys.path.append(str(Path(__file__).parent / 'utils'))
+    from current_project import get_current_project
+    if 'SRRD_PROJECT_PATH' not in os.environ or not os.environ['SRRD_PROJECT_PATH']:
+        current_project = get_current_project()
+        if current_project:
+            os.environ['SRRD_PROJECT_PATH'] = current_project
+except Exception as e:
+    print(f"Warning: Could not set SRRD_PROJECT_PATH from current_project.py: {e}", file=sys.stderr)
 
 # Add current directory to path for imports
 sys.path.append(str(Path(__file__).parent))

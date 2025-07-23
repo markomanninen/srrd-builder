@@ -42,18 +42,29 @@ class ProjectManager:
         project_id = await self.sqlite_manager.create_project(name, description, domain)
         
         logger.debug("Automatically switching MCP context to new project...")
-        switch_success, switch_error = self._configure_global_launcher()
-        if not switch_success:
+        # Use current_project.py setter to store the current project path
+        try:
+            import importlib.util
+            from pathlib import Path
+            current_project_path = Path(__file__).resolve().parent.parent / 'utils' / 'current_project.py'
+            spec = importlib.util.spec_from_file_location("current_project", current_project_path)
+            current_project = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(current_project)
+            set_current_project = current_project.set_current_project
+            set_current_project(str(self.project_path))
+            switch_success = True
+            switch_error = None
+        except Exception as e:
+            switch_success = False
+            switch_error = str(e)
             logger.warning(f"Project created successfully, but MCP context switch failed: {switch_error}")
             logger.warning("You may need to run 'srrd switch' manually.")
-        
         logger.info(f"Project '{name}' initialized successfully! (ID: {project_id})")
         if switch_success:
             logger.info(f"MCP context automatically switched to: {self.project_path}")
-            
         return {
-            "project_id": project_id, 
-            "status": "initialized", 
+            "project_id": project_id,
+            "status": "initialized",
             "project_path": str(self.project_path),
             "auto_switched": switch_success
         }
@@ -111,38 +122,6 @@ class ProjectManager:
         with open(config_file, 'w') as f:
             json.dump(full_config, f, indent=2)
         return True
-
-    def _configure_global_launcher(self) -> tuple[bool, Optional[str]]:
-        """Configure the global MCP launcher for this project using shared utility"""
-        try:
-            # Import the shared launcher configuration utility
-            import sys
-            import os
-            
-            # Find and add the srrd_builder package to path
-            current_dir = Path(__file__).resolve().parent
-            while current_dir != current_dir.parent:
-                srrd_builder_dir = current_dir / 'srrd_builder'
-                if srrd_builder_dir.exists() and (srrd_builder_dir / 'utils' / 'launcher_config.py').exists():
-                    if str(current_dir) not in sys.path:
-                        sys.path.insert(0, str(current_dir))
-                    break
-                current_dir = current_dir.parent
-            
-            from srrd_builder.utils.launcher_config import configure_global_launcher
-            
-            srrd_dir = self.project_path / '.srrd'
-            success, error = configure_global_launcher(self.project_path, srrd_dir)
-            return success, error
-            
-        except ImportError as e:
-            error_msg = f"Could not import launcher configuration utility: {e}"
-            logger.warning(error_msg)
-            return False, error_msg
-        except Exception as e:
-            error_msg = f"Unexpected error configuring launcher: {e}"
-            logger.warning(error_msg)
-            return False, error_msg
 
     def backup_project(self, backup_location: Optional[str] = None) -> bool:
         """Create complete project backup"""

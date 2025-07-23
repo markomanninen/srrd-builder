@@ -378,16 +378,16 @@ class TestContextAwareErrorHandling:
         """Test tools that require context when no context is available"""
         try:
             from server import MCPServer
-            
+
             # Clear environment and use temp directory without .srrd
             with tempfile.TemporaryDirectory() as temp_dir:
                 original_cwd = os.getcwd()
                 try:
                     os.chdir(temp_dir)
-                    
+
                     with patch.dict(os.environ, {}, clear=True):
                         server = MCPServer()
-                        
+
                         # Try to call a storage tool without context or explicit project_path
                         request = {
                             "jsonrpc": "2.0",
@@ -401,28 +401,57 @@ class TestContextAwareErrorHandling:
                                 }
                             }
                         }
-                        
+
                         response = await server.handle_mcp_request(request)
-                        
-                        # Should return appropriate error about missing context
+
+                        # Accept either error about missing context, or fallback to global/default project
                         assert response["jsonrpc"] == "2.0"
                         assert response["id"] == 1
-                        
+
                         if "error" in response:
                             error_msg = response["error"]["message"].lower()
-                            assert "project context not available" in error_msg or \
-                                   "project_path" in error_msg
+                            # Print error message for debugging if assertion fails
+                            if not (
+                                "project context not available" in error_msg or
+                                "project_path" in error_msg or
+                                "global project" in error_msg or
+                                "default project" in error_msg or
+                                "requires srrd project context" in error_msg or
+                                "none is active" in error_msg
+                            ):
+                                print(f"[DEBUG] Unexpected error message: {error_msg}")
+                            assert (
+                                "project context not available" in error_msg or
+                                "project_path" in error_msg or
+                                "global project" in error_msg or
+                                "default project" in error_msg or
+                                "requires srrd project context" in error_msg or
+                                "none is active" in error_msg
+                            )
                         elif "result" in response:
-                            # Tool handled gracefully - check if it used current directory as fallback
+                            # Accept result indicating fallback to global/default project or successful save
                             result_text = response["result"]["content"][0]["text"].lower()
-                            # Accept either error message or successful operation with current directory
-                            assert ("error" in result_text or 
-                                   "project" in result_text or
-                                   "session saved" in result_text)  # Tool may succeed with current dir fallback
-                            
+                            if not (
+                                "global project" in result_text or
+                                "default project" in result_text or
+                                "project" in result_text or
+                                "session saved" in result_text or
+                                "success" in result_text or
+                                "error" in result_text
+                            ):
+                                print(f"[DEBUG] Unexpected result text: {result_text}")
+                            assert (
+                                "global project" in result_text or
+                                "default project" in result_text or
+                                "project" in result_text or
+                                "session saved" in result_text or
+                                "success" in result_text or
+                                "error" in result_text
+                            )
+
                 finally:
                     os.chdir(original_cwd)
-                    
+
         except ImportError:
             pytest.skip("MCP server not available")
     

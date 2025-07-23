@@ -21,11 +21,17 @@ if str(utils_path) not in sys.path:
 if str(current_dir) not in sys.path:
     sys.path.insert(0, str(current_dir))
 
-# Import PROJECT_PATH from the launcher module
+# Import project path using current_project.py utilities
 try:
-    sys.path.insert(0, str(current_dir.parent.parent.parent / 'srrd_builder'))
-    from mcp_global_launcher import PROJECT_PATH
-except ImportError:
+    import importlib.util
+    srrd_builder_utils = current_dir.parent.parent.parent / 'srrd_builder' / 'utils'
+    current_project_path = srrd_builder_utils / 'current_project.py'
+    spec = importlib.util.spec_from_file_location("current_project", current_project_path)
+    current_project = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(current_project)
+    get_current_project = current_project.get_current_project
+    PROJECT_PATH = get_current_project()
+except Exception:
     PROJECT_PATH = None
 
 def get_effective_project_path():

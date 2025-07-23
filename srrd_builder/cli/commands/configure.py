@@ -90,7 +90,7 @@ def get_srrd_mcp_config():
     
     # Get the path to the MCP server
     package_root = Path(__file__).parent.parent.parent.parent
-    mcp_server_path = package_root / 'srrd_builder' / 'mcp_global_launcher.py'
+    mcp_server_path = package_root / 'work' / 'code' / 'mcp' / 'mcp_server.py'
     
     # Use the full path to the virtual environment's Python on Windows
     if platform.system() == "Windows":

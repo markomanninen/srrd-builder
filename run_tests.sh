@@ -27,21 +27,39 @@ for test_dir in "${test_directories[@]}"; do
         echo "🔍 Running tests in $test_dir..."
         echo "----------------------------------------"
         
-        # Run tests with timeout for this directory
-        timeout 60s python3 -m pytest "$test_dir" --tb=short -v
-        exit_code=$?
-        
-        if [ $exit_code -eq 0 ]; then
-            echo "✅ $test_dir: PASSED"
-            ((total_passed++))
-        elif [ $exit_code -eq 124 ]; then
-            echo "⏰ $test_dir: Tests completed but cleanup timed out - treating as PASSED"
+        # Color variables
+        GREEN='\033[0;32m'
+        RED='\033[0;31m'
+        YELLOW='\033[1;33m'
+        NC='\033[0m' # No Color
+
+        # Run pytest with color output and capture to temp file
+        test_output=$(mktemp)
+        timeout 60s python3 -m pytest "$test_dir" --tb=short -v --color=yes | tee "$test_output"
+        exit_code=${PIPESTATUS[0]}
+
+        # Check for failures or errors in output
+        if grep -qE "FAILED|ERRORS" "$test_output"; then
+            if [ $exit_code -eq 124 ]; then
+                echo -e "\n${YELLOW}⏰ $test_dir: TIMEOUT (exit code: $exit_code)${NC}"
+            else
+                echo -e "\n${RED}❌ $test_dir: FAILED (exit code: $exit_code)${NC}"
+            fi
+            ((total_failed++))
+            failed_directories+=("$test_dir")
+        elif [ $exit_code -eq 0 ]; then
+            echo -e "${GREEN}✅ $test_dir: PASSED${NC}"
             ((total_passed++))
         else
-            echo "❌ $test_dir: FAILED (exit code: $exit_code)"
+            if [ $exit_code -eq 124 ]; then
+                echo -e "\n${YELLOW}⏰ $test_dir: TIMEOUT (exit code: $exit_code)${NC}"
+            else
+                echo -e "\n${RED}❌ $test_dir: FAILED (exit code: $exit_code)${NC}"
+            fi
             ((total_failed++))
             failed_directories+=("$test_dir")
         fi
+        rm -f "$test_output"
         
         # Small delay between test directories to ensure cleanup
         sleep 1
