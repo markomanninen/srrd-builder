@@ -38,7 +38,7 @@ class SQLiteManager:
             await self.connection.executescript(schema_content)
             await self.connection.commit()
         else:
-            # Fallback: create basic schema
+            # Fallback: create basic schema with tool_usage table
             basic_schema = """
             CREATE TABLE IF NOT EXISTS projects (
                 id INTEGER PRIMARY KEY,
@@ -53,6 +53,35 @@ class SQLiteManager:
                 project_id INTEGER,
                 session_type TEXT,
                 user_id TEXT,
+                started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (project_id) REFERENCES projects (id)
+            );
+            
+            CREATE TABLE IF NOT EXISTS tool_usage (
+                id INTEGER PRIMARY KEY,
+                session_id INTEGER,
+                tool_name TEXT NOT NULL,
+                research_act TEXT NOT NULL,
+                research_category TEXT NOT NULL,
+                arguments TEXT,
+                result_summary TEXT,
+                execution_time_ms INTEGER,
+                success BOOLEAN DEFAULT TRUE,
+                error_message TEXT,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (session_id) REFERENCES sessions (id)
+            );
+            
+            CREATE TABLE IF NOT EXISTS research_progress (
+                id INTEGER PRIMARY KEY,
+                project_id INTEGER,
+                research_act TEXT NOT NULL,
+                research_category TEXT NOT NULL,
+                status TEXT DEFAULT 'not_started',
+                completion_percentage INTEGER DEFAULT 0,
+                tools_used TEXT,
+                notes TEXT,
+                last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (project_id) REFERENCES projects (id)
             );
@@ -85,6 +114,19 @@ class SQLiteManager:
                 result TEXT,
                 comments TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (project_id) REFERENCES projects (id)
+            );
+            
+            CREATE TABLE IF NOT EXISTS research_milestones (
+                id INTEGER PRIMARY KEY,
+                project_id INTEGER,
+                milestone_type TEXT NOT NULL,
+                milestone_name TEXT NOT NULL,
+                description TEXT,
+                research_act TEXT,
+                research_category TEXT,
+                achieved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                impact_score INTEGER DEFAULT 1,
                 FOREIGN KEY (project_id) REFERENCES projects (id)
             );
             """

@@ -88,7 +88,9 @@ Please initialize the project by running research tools first."""
         
         # Check for recent activity
         async with sqlite_manager.connection.execute(
-            "SELECT COUNT(*) FROM tool_usage WHERE project_id = ? AND timestamp > datetime('now', '-7 days')",
+            """SELECT COUNT(*) FROM tool_usage tu 
+               JOIN sessions s ON tu.session_id = s.id 
+               WHERE s.project_id = ? AND tu.timestamp > datetime('now', '-7 days')""",
             (project_id,)
         ) as cursor:
             recent_activity = await cursor.fetchone()
