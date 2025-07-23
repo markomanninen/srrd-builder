@@ -23,22 +23,27 @@ if str(current_dir) not in sys.path:
 
 # Import project path using current_project.py utilities
 try:
-    import importlib.util
-    srrd_builder_utils = current_dir.parent.parent.parent / 'srrd_builder' / 'utils'
-    current_project_path = srrd_builder_utils / 'current_project.py'
-    spec = importlib.util.spec_from_file_location("current_project", current_project_path)
-    current_project = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(current_project)
-    get_current_project = current_project.get_current_project
-    PROJECT_PATH = get_current_project()
-except Exception:
-    PROJECT_PATH = None
+    # Use the MCP directory's current_project module which has the correct implementation
+    from utils.current_project import get_current_project
+    current_project_path = get_current_project()
+except Exception as e:
+    # Fallback: try the srrd_builder package version
+    try:
+        import importlib.util
+        srrd_builder_utils = current_dir.parent.parent.parent / 'srrd_builder' / 'utils'
+        current_project_path_file = srrd_builder_utils / 'current_project.py'
+        spec = importlib.util.spec_from_file_location("current_project", current_project_path_file)
+        current_project = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(current_project)
+        get_current_project = current_project.get_current_project
+        current_project_path = get_current_project()
+    except Exception:
+        current_project_path = None
 
-def get_effective_project_path():
-    """Get the effective project path, using default global path if PROJECT_PATH is None"""
-    if PROJECT_PATH:
-        return PROJECT_PATH
-    
+# If no current project is set, use the global project directory
+if current_project_path:
+    PROJECT_PATH = current_project_path
+else:
     # Use ~/.srrd/globalproject/ as default for both Windows and Unix
     home = Path.home()
     default_project_path = home / ".srrd" / "globalproject"
@@ -67,12 +72,9 @@ This directory will store:
             
     except Exception as e:
         # Fallback to current working directory if we can't create the default
-        return os.getcwd()
+        default_project_path = Path(os.getcwd())
     
-    return str(default_project_path)
-
-# Set the effective project path
-EFFECTIVE_PROJECT_PATH = get_effective_project_path()
+PROJECT_PATH = str(default_project_path)
 
 # Import tools and utilities with fallback error handling
 try:
@@ -162,9 +164,11 @@ class MCPServer:
         if self.logger:
             self.logger.info(f"MCP Server initialized on port {self.port}")
             self.logger.info(f"Registered {len(self.tools)} tools")
-            self.logger.info(f"PROJECT_PATH: {EFFECTIVE_PROJECT_PATH}")
-            if PROJECT_PATH is None:
-                self.logger.info(f"Using default global project directory: {EFFECTIVE_PROJECT_PATH}")
+            self.logger.info(f"PROJECT_PATH: {PROJECT_PATH}")
+            if current_project_path:
+                self.logger.info(f"Using project-specific context: {current_project_path}")
+            else:
+                self.logger.info(f"Using global project context: {PROJECT_PATH}")
 
     async def start_stdio_server(self):
         """Start MCP server using stdio for Claude Desktop"""
@@ -207,7 +211,7 @@ class MCPServer:
                     "serverInfo": {
                         "name": "SRRD Builder MCP Server",
                         "version": "1.0.0",
-                        "projectPath": EFFECTIVE_PROJECT_PATH
+                        "projectPath": PROJECT_PATH
                     }
                 }
             }
@@ -350,7 +354,7 @@ class MCPServer:
                                     "serverInfo": {
                                         "name": "SRRD Builder MCP Server",
                                         "version": "1.0.0",
-                                        "projectPath": EFFECTIVE_PROJECT_PATH
+                                        "projectPath": PROJECT_PATH
                                     }
                                 }
                             }

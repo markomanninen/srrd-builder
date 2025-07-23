@@ -196,7 +196,7 @@ class ClaudeMCPServer:
                 if tool_name in self.tools:
                     try:
                         # Enhanced tool execution with comprehensive logging
-                        result = await self._execute_tool_with_logging(tool_name, tool_args)
+                        result = await self._execute_tool(tool_name, tool_args)
                         
                         return {
                             "jsonrpc": "2.0",
@@ -243,7 +243,7 @@ class ClaudeMCPServer:
                 }
             }
 
-    async def _execute_tool_with_logging(self, tool_name: str, tool_args: dict):
+    async def _execute_tool(self, tool_name: str, tool_args: dict):
         """Execute tool with comprehensive logging and research act tracking"""
         start_time = time.time()
         
@@ -270,18 +270,6 @@ class ClaudeMCPServer:
                     # Get or create session
                     session_id = await self._get_or_create_session(project_id)
                     
-                    # Log tool usage
-                    await self.sqlite_manager.log_tool_usage(
-                        session_id=session_id,
-                        tool_name=tool_name,
-                        research_act=research_context['act'],
-                        research_category=research_context['category'],
-                        arguments=tool_args,
-                        result_summary=str(result)[:500],  # Truncate long results
-                        execution_time_ms=execution_time_ms,
-                        success=True
-                    )
-                    
                     # Update research progress
                     await self._update_research_progress(project_id, research_context, tool_name)
                     
@@ -291,23 +279,7 @@ class ClaudeMCPServer:
             
             return result
             
-        except Exception as e:
-            # Log error if database is available
-            if self.sqlite_manager and research_context:
-                project_id = await self._get_project_id_from_args(tool_args)
-                if project_id:
-                    session_id = await self._get_or_create_session(project_id)
-                    
-                    await self.sqlite_manager.log_tool_usage(
-                        session_id=session_id,
-                        tool_name=tool_name,
-                        research_act=research_context['act'],
-                        research_category=research_context['category'],
-                        arguments=tool_args,
-                        success=False,
-                        error_message=str(e)
-                    )
-            
+        except Exception as e:            
             raise e
 
     async def _get_project_id_from_args(self, tool_args: dict) -> Optional[int]:

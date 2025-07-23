@@ -34,6 +34,7 @@ async def log_tool_usage(tool_name: str, parameters: Dict[str, Any], project_pat
             return
         
         db_path = get_current_database_path()
+            
         if not db_path:
             logger.debug(f"No database path for logging {tool_name}")
             return
@@ -53,30 +54,50 @@ async def log_tool_usage(tool_name: str, parameters: Dict[str, Any], project_pat
         # Get or create a session for logging
         session_id = 1  # Default session for now - TODO: implement proper session management
         
-        # Map tool names to research categories (simplified for now)
+        # Map tool names to research categories (using MCP tool names, not function names)
         research_category_map = {
             'explain_methodology': 'methodology_advisory',
             'compare_approaches': 'methodology_advisory', 
             'validate_design': 'methodology_advisory',
             'ensure_ethics': 'methodology_advisory',
+            'get_research_progress': 'research_continuity',
+            'get_tool_usage_history': 'research_continuity',
+            'get_workflow_recommendations': 'research_continuity',
+            'get_research_milestones': 'research_continuity',
+            'start_research_session': 'research_continuity',
+            'get_session_summary': 'research_continuity',
+            'initialize_project': 'project_management',
+            'switch_project_context': 'project_management',
+            'reset_project_context': 'project_management',
+            # LEGACY: Function names that need mapping to MCP tool names
             'get_research_progress_tool': 'research_continuity',
             'get_tool_usage_history_tool': 'research_continuity',
             'get_workflow_recommendations_tool': 'research_continuity',
             'get_research_milestones_tool': 'research_continuity',
             'start_research_session_tool': 'research_continuity',
-            'get_session_summary_tool': 'research_continuity',
-            'initialize_project': 'project_management',
-            'switch_project_context': 'project_management',
-            'reset_project_context': 'project_management'
+            'get_session_summary_tool': 'research_continuity'
         }
         
         research_category = research_category_map.get(tool_name, 'unknown')
         research_act = 'planning'  # Default act - TODO: implement proper act detection
         
+        # Map function names to MCP tool names for consistent logging
+        function_to_mcp_tool_map = {
+            'get_research_progress_tool': 'get_research_progress',
+            'get_tool_usage_history_tool': 'get_tool_usage_history',
+            'get_workflow_recommendations_tool': 'get_workflow_recommendations',
+            'get_research_milestones_tool': 'get_research_milestones',
+            'start_research_session_tool': 'start_research_session',
+            'get_session_summary_tool': 'get_session_summary'
+        }
+        
+        # Use MCP tool name for logging consistency
+        mcp_tool_name = function_to_mcp_tool_map.get(tool_name, tool_name)
+        
         # Log the tool usage with correct parameters
         await sqlite_manager.log_tool_usage(
             session_id=session_id,
-            tool_name=tool_name,
+            tool_name=mcp_tool_name,  # Use MCP tool name, not function name
             research_act=research_act,
             research_category=research_category,
             arguments=parameters,
@@ -87,10 +108,11 @@ async def log_tool_usage(tool_name: str, parameters: Dict[str, Any], project_pat
         )
         
         await sqlite_manager.close()
+        
         logger.debug(f"Successfully logged usage for {tool_name}")
         
     except Exception as e:
-        logger.debug(f"Failed to log tool usage for {tool_name}: {e}")
+        logger.error(f"CONTEXT DECORATOR LOGGING FAILED for {tool_name}: {e}")  # Changed to ERROR level
         # Don't let logging failures break the tool
 
 def context_aware(
