@@ -2,6 +2,26 @@
 
 This guide covers all the dependencies and components needed to use the SRRD-Builder MCP server with Claude Desktop on Windows, WSL, macOS, and Linux.
 
+## System Requirements
+
+### **Essential Prerequisites:**
+
+- **Python 3.8+** - Core runtime environment with pip package manager
+- **Git** - Version control system for project management
+- **Claude Desktop** - Required for MCP server integration and AI tools
+- **2GB+ free disk space** - For LaTeX distributions, ML models, and dependencies
+- **4GB+ RAM** - For running machine learning models and vector databases
+- **Internet connection** - For downloading dependencies, models, and packages
+
+### **Optional but Recommended:**
+
+- **LaTeX Distribution** - For PDF document generation
+  - Windows: MiKTeX (1-3GB) or TeX Live
+  - macOS: MacTeX (4-5GB) via Homebrew
+  - Linux: TeXLive (1-4GB depending on package selection)
+- **VS Code with MCP Extension** - Alternative interface to Claude Desktop
+- **Additional RAM** - 8GB+ recommended for large document processing
+
 ## Quick Installation (Recommended)
 
 The fastest way to get started is using the automated setup script:

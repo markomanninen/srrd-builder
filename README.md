@@ -17,6 +17,25 @@ The system features an **MCP (Model Context Protocol) server** that integrates w
 
 ## ⚠️ Production Ready**: This project is production-ready with complete functionality and comprehensive testing. Core features are fully implemented with 100% test success rate
 
+## System Requirements
+
+### **Essential Prerequisites:**
+
+- **Python 3.8+** - Core runtime environment
+- **Git** - Version control and project management
+- **Claude Desktop** - Required for MCP server integration
+- **2GB+ free disk space** - For LaTeX, ML models, and dependencies
+- **4GB+ RAM** - For running ML models and vector databases
+- **Internet connection** - For downloading dependencies and models
+
+### **Optional but Recommended:**
+
+- **LaTeX Distribution** - For document generation (PDF output)
+  - Windows: MiKTeX (1-3GB)
+  - macOS: MacTeX (4-5GB)
+  - Linux: TeXLive (1-4GB depending on packages)
+- **VS Code with MCP Extension** - Alternative to Claude Desktop
+
 ## Key Features
 
 - **MCP Server Integration** with Claude Desktop (automatic stdio mode)
