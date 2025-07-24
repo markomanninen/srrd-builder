@@ -326,18 +326,6 @@ async def handle_tool_call(self, tool_name, tool_args, session_id):
         result = await self.execute_tool(tool_name, tool_args)
         execution_time = int((time.time() - start_time) * 1000)
 
-        # Log usage
-        await self.sqlite_manager.log_tool_usage(
-            session_id=session_id,
-            tool_name=tool_name,
-            research_act=research_context['act'],
-            category=research_context['category'],
-            arguments=tool_args,
-            result_summary=str(result)[:500],
-            execution_time_ms=execution_time,
-            success=True
-        )
-
         # Update research progress
         await self.update_research_progress(session_id, research_context)
 

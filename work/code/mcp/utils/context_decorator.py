@@ -126,7 +126,7 @@ async def log_tool_usage(
 def context_aware(
     require_context: bool = False,
     fallback_message: Optional[str] = None,
-    enable_logging: bool = True,
+    disable_logging: bool = False,
     allow_explicit_project_path: bool = False,
 ) -> Callable:
     """
@@ -136,7 +136,7 @@ def context_aware(
     Args:
         require_context: If True, tool will fail if no context is available
         fallback_message: Custom message to show when operating without context
-        enable_logging: If True, log tool usage to project database
+        disable_logging: If False, log tool usage to project database
         allow_explicit_project_path: If True, allows explicit project_path to be passed through to the tool (default False)
 
     Usage:
@@ -189,7 +189,9 @@ def context_aware(
                     raise ContextAwareError(error_msg)
 
                 # Log tool usage if enabled and we have a project
-                if enable_logging and (current_project or kwargs.get("project_path")):
+                if not disable_logging and (
+                    current_project or kwargs.get("project_path")
+                ):
                     await log_tool_usage(
                         func.__name__,
                         kwargs,
@@ -229,7 +231,9 @@ def context_aware(
                     )
                     raise ContextAwareError(error_msg)
 
-                if enable_logging and (current_project or kwargs.get("project_path")):
+                if not disable_logging and (
+                    current_project or kwargs.get("project_path")
+                ):
                     try:
                         asyncio.create_task(
                             log_tool_usage(
@@ -255,7 +259,7 @@ def context_aware(
 
 
 def project_required(
-    fallback_message: Optional[str] = None, enable_logging: bool = True
+    fallback_message: Optional[str] = None, disable_logging: bool = False
 ) -> Callable:
     """
     Convenience decorator for tools that require project context
@@ -264,12 +268,12 @@ def project_required(
     return context_aware(
         require_context=True,
         fallback_message=fallback_message,
-        enable_logging=enable_logging,
+        disable_logging=disable_logging,
     )
 
 
 def context_optional(
-    fallback_message: Optional[str] = None, enable_logging: bool = True
+    fallback_message: Optional[str] = None, disable_logging: bool = False
 ) -> Callable:
     """
     Convenience decorator for tools that can work with or without context
@@ -278,7 +282,7 @@ def context_optional(
     return context_aware(
         require_context=False,
         fallback_message=fallback_message,
-        enable_logging=enable_logging,
+        disable_logging=disable_logging,
     )
 
 

@@ -6,8 +6,8 @@
     "session_timeout": 3600
   },
   "storage": {
-    "database_file": ".srrd/sessions.db",
-    "vector_db_path": ".srrd/knowledge.db",
+    "database_file": ".srrd/data/sessions.db",
+    "vector_db_path": ".srrd/data/knowledge.db",
     "git_auto_commit": true,
     "backup_enabled": true
   },

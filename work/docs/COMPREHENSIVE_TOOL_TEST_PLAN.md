@@ -157,7 +157,7 @@ async def verify_tool_logging(tool_func, tool_name, **kwargs):
 @pytest.fixture
 async def test_project_context():
     """Create test project with proper .srrd structure"""
-    # Create temp directory with .srrd/sessions.db
+    # Create temp directory with .srrd/data/sessions.db
     # Initialize SQLiteManager
     # Yield project_path and db manager
     # Cleanup

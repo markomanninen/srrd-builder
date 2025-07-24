@@ -101,7 +101,7 @@ class ClaudeMCPServer:
             # Try to get project path from environment
             project_path = get_current_project()  # os.environ.get('SRRD_PROJECT_PATH')
             if project_path:
-                db_path = str(Path(project_path) / ".srrd" / "sessions.db")
+                db_path = SQLiteManager.get_db_path(project_path)
                 self.sqlite_manager = SQLiteManager(db_path)
                 await self.sqlite_manager.initialize()
 

@@ -31,7 +31,7 @@ await sqlite_manager.log_tool_usage(
 
 1. **Project ID** to create/find sessions
 2. **Session ID** to log tool usage  
-3. **Database path** derived from project_path (`{project_path}/.srrd/sessions.db`)
+3. **Database path** derived from project_path (`{project_path}/.srrd/data/sessions.db`)
 
 Therefore, **project_path is mandatory for ALL tools** to enable research tracking.
 

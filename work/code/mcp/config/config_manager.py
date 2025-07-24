@@ -19,9 +19,13 @@ except ImportError:
 
 @dataclass
 class DatabaseConfig:
-    """Database configuration settings"""
+    """
+    Database configuration settings
+    Note: Use SQLiteManager.get_sessions_db_path(project_path) for canonical path resolution.
+    """
 
-    sqlite_path: str = "data/srrd_builder.db"
+    # Path should always be resolved via SQLiteManager.get_sessions_db_path(project_path)
+    sqlite_path: str = None  # Deprecated: do not use directly
     enable_wal: bool = True
     timeout: int = 30
 
@@ -31,7 +35,7 @@ class VectorConfig:
     """Vector database configuration"""
 
     backend: str = "chromadb"
-    persist_directory: str = "../../../.srrd/knowledge.db"
+    persist_directory: str = ".srrd/data/knowledge.db"
     embedding_model: str = "all-MiniLM-L6-v2"
     max_chunk_size: int = 1000
     chunk_overlap: int = 100
@@ -62,13 +66,16 @@ class ServerConfig:
 
     host: str = "localhost"
     port: int = 8080
-    enable_logging: bool = True
+    disable_logging: bool = False
     log_level: str = "INFO"
     log_file: str = "logs/mcp_server.log"
 
 
 class ConfigManager:
-    """Manages configuration for the SRRD Builder MCP Server"""
+    """
+    Manages configuration for the SRRD Builder MCP Server
+    For all database path usage, use SQLiteManager.get_sessions_db_path(project_path) for consistency.
+    """
 
     def __init__(self, config_path: Optional[str] = None):
         self.config_path = config_path or self._get_default_config_path()
@@ -79,6 +86,22 @@ class ConfigManager:
         self.server = ServerConfig()
         self._load_config()
         self._load_environment_variables()
+        # Guarantee sqlite_path is always set to a valid default
+        if not self.database.sqlite_path:
+            try:
+                # Import SQLiteManager
+                from srrd_builder.utils.launcher_config import SQLiteManager
+
+                # Use self.project_path if available, else fallback to cwd
+                project_path = getattr(self, "project_path", os.getcwd())
+                self.database.sqlite_path = SQLiteManager.get_sessions_db_path(
+                    project_path
+                )
+            except Exception:
+                # Fallback to default path in project root
+                self.database.sqlite_path = os.path.join(
+                    os.getcwd(), ".srrd", "data", "sessions.db"
+                )
 
     def _get_default_config_path(self) -> str:
         """Get the default configuration file path"""
@@ -162,8 +185,8 @@ class ConfigManager:
             server_config = config_data["server"]
             self.server.host = server_config.get("host", self.server.host)
             self.server.port = server_config.get("port", self.server.port)
-            self.server.enable_logging = server_config.get(
-                "enable_logging", self.server.enable_logging
+            self.server.disable_logging = server_config.get(
+                "disable_logging", self.server.disable_logging
             )
             self.server.log_level = server_config.get(
                 "log_level", self.server.log_level
@@ -233,7 +256,7 @@ class ConfigManager:
             "server": {
                 "host": self.server.host,
                 "port": self.server.port,
-                "enable_logging": self.server.enable_logging,
+                "disable_logging": self.server.disable_logging,
                 "log_level": self.server.log_level,
                 "log_file": self.server.log_file,
             },
@@ -299,8 +322,14 @@ class ConfigManager:
 
     def setup_directories(self):
         """Create necessary directories based on configuration"""
+        # Ensure sqlite_path is never None
+        db_dir = (
+            os.path.dirname(self.database.sqlite_path)
+            if self.database.sqlite_path
+            else os.path.join(os.getcwd(), ".srrd", "data")
+        )
         directories = [
-            os.path.dirname(self.database.sqlite_path),
+            db_dir,
             self.vector.persist_directory,
             os.path.dirname(self.server.log_file),
             "data",

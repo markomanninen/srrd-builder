@@ -152,7 +152,7 @@ run_cmd "41. restore_session" '{"jsonrpc": "2.0", "id": 41, "method": "tools/cal
 run_cmd "42. get_workflow_recommendations" '{"jsonrpc": "2.0", "id": 42, "method": "tools/call", "params": {"name": "get_workflow_recommendations", "arguments": {}}}'
 
 # 43. version_control
-run_cmd "43. version_control" '{"jsonrpc": "2.0", "id": 43, "method": "tools/call", "params": {"name": "version_control", "arguments": {"action": "git status"}}}'
+run_cmd "43. version_control" '{"jsonrpc": "2.0", "id": 43, "method": "tools/call", "params": {"name": "version_control", "arguments": {"action": "commit", "message": "Test commit from batch script"}}}'
 
 # 44. switch_project_context
 run_cmd "44. switch_project_context" '{"jsonrpc": "2.0", "id": 44, "method": "tools/call", "params": {"name": "switch_project_context", "arguments": {"target_project_path": "'"${TARGET_PROJECT_PATH}"'"}}}'

@@ -153,7 +153,21 @@ class CurrentProjectManager:
         if not project_path:
             return None
 
-        db_path = Path(project_path) / ".srrd" / "sessions.db"
+        # Use relative import to avoid 'No module named work' error
+        try:
+            from ..storage.sqlite_manager import SQLiteManager
+        except ImportError:
+            # Fallback for direct script execution
+            import sys
+            from pathlib import Path
+
+            # Add workspace root to sys.path if not present
+            workspace_root = str(Path(__file__).resolve().parents[4])
+            if workspace_root not in sys.path:
+                sys.path.insert(0, workspace_root)
+            from work.code.mcp.storage.sqlite_manager import SQLiteManager
+
+        db_path = SQLiteManager.get_sessions_db_path(project_path)
         return str(db_path)
 
     def has_current_project(self) -> bool:

@@ -6,8 +6,25 @@ import aiosqlite
 
 
 class SQLiteManager:
-    def __init__(self, db_path: str):
-        self.db_path = db_path
+    @staticmethod
+    def get_sessions_db_path(project_path: str) -> str:
+        """Return the canonical sessions.db path for a project"""
+        from pathlib import Path
+
+        return str(Path(project_path) / ".srrd" / "data" / "sessions.db")
+
+    @staticmethod
+    def get_db_path(project_path: str) -> str:
+        """Centralized getter for sessions.db path under .srrd/data"""
+        return str(Path(project_path) / ".srrd" / "data" / "sessions.db")
+
+    def __init__(self, db_path: str = None, project_path: str = None):
+        if db_path:
+            self.db_path = db_path
+        elif project_path:
+            self.db_path = self.get_db_path(project_path)
+        else:
+            self.db_path = None
         self.connection: Optional[aiosqlite.Connection] = None
 
     async def initialize(self):
@@ -227,6 +244,20 @@ class SQLiteManager:
         error_message: str = None,
     ) -> int:
         """Log tool usage with research act context"""
+        import logging
+
+        logger = logging.getLogger("srrd_builder.sqlite_manager")
+        # Get project_id for debug
+        project_id = None
+        try:
+            async with self.connection.execute(
+                "SELECT project_id FROM sessions WHERE id = ?", (session_id,)
+            ) as cursor:
+                row = await cursor.fetchone()
+                if row:
+                    project_id = row[0]
+        except Exception:
+            pass
         cursor = await self.connection.execute(
             """INSERT INTO tool_usage 
                (session_id, tool_name, research_act, research_category, arguments, 
@@ -396,14 +427,20 @@ class SQLiteManager:
         }
 
     async def get_tool_usage_history(self, session_id: int) -> List[Dict[str, Any]]:
-        """Get tool usage history for a session"""
+        """Get tool usage history for a session. Returns empty list if session does not exist."""
+        # Check if session exists
+        async with self.connection.execute(
+            "SELECT id FROM sessions WHERE id = ?", (session_id,)
+        ) as check_cursor:
+            session_row = await check_cursor.fetchone()
+        if not session_row:
+            return []
+        # Fetch tool usage if session exists
         async with self.connection.execute(
             "SELECT * FROM tool_usage WHERE session_id = ? ORDER BY timestamp",
             (session_id,),
         ) as cursor:
             rows = await cursor.fetchall()
-
-        # Convert to list of dicts
         columns = [description[0] for description in cursor.description] if rows else []
         return [dict(zip(columns, row)) for row in rows]
 

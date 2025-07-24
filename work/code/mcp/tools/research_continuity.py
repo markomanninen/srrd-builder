@@ -63,15 +63,17 @@ async def get_research_progress_tool(**kwargs) -> str:
             "description", "No description available"
         )
 
-        # Initialize database
-        db_path = str(Path(project_path) / ".srrd" / "sessions.db")
+        # Always use canonical getter for sessions.db
+        db_path = SQLiteManager.get_sessions_db_path(project_path)
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
 
-        # Get project ID and stats from database
-        async with sqlite_manager.connection.execute(
+        sql_query = (
             "SELECT id, name, created_at FROM projects ORDER BY created_at DESC LIMIT 1"
-        ) as cursor:
+        )
+
+        # Get project ID and stats from database
+        async with sqlite_manager.connection.execute(sql_query) as cursor:
             project_row = await cursor.fetchone()
             if not project_row:
                 return f"""# Research Progress Analysis
@@ -86,7 +88,7 @@ async def get_research_progress_tool(**kwargs) -> str:
 Please initialize the project by running research tools first."""
 
         project_id = project_row[0]
-        db_project_name = project_row[1]
+        # db_project_name = project_row[1]
         created_at = project_row[2]
 
         # Check for recent activity
@@ -181,8 +183,8 @@ async def get_tool_usage_history_tool(**kwargs) -> str:
         return "Error: Project context not available. Please ensure you are in an SRRD project."
 
     try:
-        # Initialize database
-        db_path = str(Path(project_path) / ".srrd" / "sessions.db")
+        # Always use canonical getter for sessions.db
+        db_path = SQLiteManager.get_sessions_db_path(project_path)
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
 
@@ -219,6 +221,7 @@ async def get_tool_usage_history_tool(**kwargs) -> str:
             history = [dict(zip(columns, row)) for row in rows]
 
         if not history:
+
             return "No tool usage history found."
 
         # Format response
@@ -276,7 +279,7 @@ async def get_workflow_recommendations_tool(**kwargs) -> str:
 
     try:
         # Initialize database
-        db_path = str(Path(project_path) / ".srrd" / "sessions.db")
+        db_path = SQLiteManager.get_db_path(project_path)
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
 
@@ -348,7 +351,7 @@ async def get_research_milestones_tool(**kwargs) -> str:
 
     try:
         # Initialize database
-        db_path = str(Path(project_path) / ".srrd" / "sessions.db")
+        db_path = SQLiteManager.get_db_path(project_path)
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
 
@@ -408,24 +411,25 @@ async def get_research_milestones_tool(**kwargs) -> str:
 @context_aware(require_context=True)
 async def start_research_session_tool(**kwargs) -> str:
     """Start a new research session with act-specific goals"""
+    import logging
+
+    logger = logging.getLogger("srrd_builder.research_continuity")
     project_path = get_current_project()
     research_act = kwargs.get("research_act")  # Optional
     session_goals = kwargs.get("session_goals", [])  # Optional list of goals
     research_focus = kwargs.get("research_focus")  # Optional description
 
+    db_path = SQLiteManager.get_db_path(project_path)
+
     if not project_path:
         return "Error: Project context not available. Please ensure you are in an SRRD project."
 
     try:
-        # Initialize database
-        db_path = str(Path(project_path) / ".srrd" / "sessions.db")
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
 
-        # Get project ID
-        async with sqlite_manager.connection.execute(
-            "SELECT id FROM projects ORDER BY created_at DESC LIMIT 1"
-        ) as cursor:
+        sql_query = "SELECT id FROM projects ORDER BY created_at DESC LIMIT 1"
+        async with sqlite_manager.connection.execute(sql_query) as cursor:
             project_row = await cursor.fetchone()
             if not project_row:
                 return (
@@ -460,7 +464,6 @@ async def start_research_session_tool(**kwargs) -> str:
                     project_id, session_id
                 )
             except Exception as e:
-                # Continue even if recommendations fail
                 pass
 
         # Format response
@@ -509,7 +512,7 @@ async def get_session_summary_tool(**kwargs) -> str:
 
     try:
         # Initialize database
-        db_path = str(Path(project_path) / ".srrd" / "sessions.db")
+        db_path = SQLiteManager.get_db_path(project_path)
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
 

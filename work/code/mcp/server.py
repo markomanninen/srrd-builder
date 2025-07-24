@@ -140,7 +140,7 @@ class MCPServer:
                             {
                                 "port": 8765,
                                 "host": "localhost",
-                                "enable_logging": True,
+                                "disable_logging": False,
                                 "log_level": "INFO",
                                 "log_file": None,
                             },
@@ -161,7 +161,7 @@ class MCPServer:
         self.session_manager = None
 
         # Setup logging (enable for both WebSocket and stdio)
-        if config.server.enable_logging:
+        if config.server.disable_logging:
             # For stdio mode, disable console logging to avoid interfering with stdio communication
             enable_console_logging = not use_stdio
 
@@ -970,8 +970,6 @@ class MCPServer:
             "parameters": parameters,
             "handler": handler,
         }
-        if self.logger:
-            self.logger.info(f"Registered tool: {name}")
 
     async def list_tools_mcp(self):
         """Return list of available tools in MCP format - USING REAL REGISTERED SCHEMAS"""
@@ -1047,7 +1045,28 @@ class MCPServer:
         return await self.handle_mcp_message(websocket, path or "/")
 
 
+import logging
+import os
+
+
+def setup_logging():
+    log_dir = os.path.join(os.path.dirname(__file__), "../../logs")
+    log_dir = os.path.abspath(log_dir)
+    os.makedirs(log_dir, exist_ok=True)
+    log_file = os.path.join(log_dir, "mcp_server.log")
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s",
+        handlers=[
+            logging.FileHandler(log_file, mode="a", encoding="utf-8"),
+            logging.StreamHandler(),
+        ],
+    )
+    logging.getLogger().info("MCP server logging initialized.")
+
+
 if __name__ == "__main__":
+    setup_logging()
     import argparse
 
     parser = argparse.ArgumentParser(description="SRRD Builder MCP Server")

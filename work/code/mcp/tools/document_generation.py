@@ -707,10 +707,11 @@ async def store_bibliography_reference_tool(**kwargs) -> str:
         # Import vector manager for storage
         import os
 
+        # Create VectorManager with project-specific path
+        from storage import get_srrd_db_path
         from storage.vector_manager import VectorManager
 
-        # Create VectorManager with project-specific path
-        vector_db_path = str(Path(project_path) / ".srrd" / "knowledge.db")
+        vector_db_path = get_srrd_db_path()
         vector_manager = VectorManager(db_path=vector_db_path)
 
         # Initialize the vector manager
