@@ -1,3 +1,5 @@
+# FILE: ./work/tests/unit/test_document_generation_tools.py
+
 #!/usr/bin/env python3
 """
 Unit Tests for Document Generation Tools
@@ -257,17 +259,27 @@ class TestDocumentGenerationTools:
                 "doi": "10.1000/test",
             }
 
-            with patch("storage.project_manager.VectorManager") as MockVectorManager:
-                mock_instance = MockVectorManager.return_value
-                mock_instance.initialize = AsyncMock(return_value=None)
-                mock_instance.add_document = AsyncMock(return_value=None)
-                mock_instance.search_knowledge = AsyncMock(
+            with patch("storage.project_manager.ProjectManager") as MockProjectManager:
+                # Mock the ProjectManager class. When the tool instantiates it,
+                # it will get our mock instance.
+                mock_pm_instance = MockProjectManager.return_value
+
+                # Now, create a mock for the VectorManager that the ProjectManager would contain.
+                mock_vm_instance = MagicMock()
+                mock_vm_instance.initialize = AsyncMock(return_value=None)
+                mock_vm_instance.add_document = AsyncMock(return_value=None)
+                mock_vm_instance.search_knowledge = AsyncMock(
                     return_value={"metadatas": [[reference]]}
                 )
-                # *** FIX 2: MAKE THE MOCK BEHAVE LIKE THE REAL OBJECT ***
-                # The tool checks for this collection, so the mock must have it.
-                mock_instance.collections = {"research_literature": MagicMock()}
+                mock_vm_instance.collections = {"research_literature": MagicMock()}
 
+                # Attach the mocked VectorManager to the mocked ProjectManager instance.
+                mock_pm_instance.vector_manager = mock_vm_instance
+
+                # The tool's `finally` block calls project_manager.close(), so mock that too.
+                mock_pm_instance.close = AsyncMock(return_value=None)
+
+                # Now, when the tool runs, it will use our complete mock setup.
                 store_result = await store_bibliography_reference_tool(
                     reference=reference
                 )
