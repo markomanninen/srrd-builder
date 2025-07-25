@@ -448,19 +448,19 @@ def _prioritize_development(framework_dev: Dict) -> List[str]:
 async def compare_paradigms(**kwargs) -> str:
     """Equal-treatment comparison of competing theories"""
 
-    original_paradigm = kwargs.get(
+    mainstream_paradigm = kwargs.get(
         "mainstream_paradigm"
     )  # MCP registration uses mainstream_paradigm
     alternative_paradigm = kwargs.get("alternative_paradigm")
     comparison_criteria = kwargs.get("comparison_criteria", [])
     domain = kwargs.get("domain")
 
-    if not original_paradigm or not alternative_paradigm or not domain:
+    if not mainstream_paradigm or not alternative_paradigm or not domain:
         return "Error: Missing required parameters (mainstream_paradigm, alternative_paradigm, domain)"
 
     comparison = {
         "comparison_overview": {
-            "mainstream_paradigm": original_paradigm,
+            "mainstream_paradigm": mainstream_paradigm,
             "alternative_paradigm": alternative_paradigm,
             "domain": domain,
             "comparison_criteria": comparison_criteria,
@@ -475,7 +475,7 @@ async def compare_paradigms(**kwargs) -> str:
     # Create detailed comparison for each criterion
     for criterion in comparison_criteria:
         comparison["detailed_comparison"][criterion] = {
-            "mainstream_assessment": f"Assessment of {original_paradigm} on {criterion}",
+            "mainstream_assessment": f"Assessment of {mainstream_paradigm} on {criterion}",
             "alternative_assessment": f"Assessment of {alternative_paradigm} on {criterion}",
             "comparative_analysis": f"Comparative analysis for {criterion}",
             "evidence_quality": "high",  # Would be determined by actual analysis
@@ -522,11 +522,11 @@ async def compare_paradigms(**kwargs) -> str:
     # Generate recommendation
     if comparison["scoring_matrix"]["weighted_totals"]["alternative_total"] > 0.6:
         comparison["recommendation"] = (
-            f"The alternative paradigm '{alternative_paradigm}' shows sufficient promise to warrant serious investigation and development. While '{original_paradigm}' currently dominates, the alternative offers genuine theoretical advances."
+            f"The alternative paradigm '{alternative_paradigm}' shows sufficient promise to warrant serious investigation and development. While '{mainstream_paradigm}' currently dominates, the alternative offers genuine theoretical advances."
         )
     else:
         comparison["recommendation"] = (
-            f"The alternative paradigm '{alternative_paradigm}' requires further development before it can seriously challenge '{original_paradigm}'. Focus on strengthening weak areas identified in the comparison."
+            f"The alternative paradigm '{alternative_paradigm}' requires further development before it can seriously challenge '{mainstream_paradigm}'. Focus on strengthening weak areas identified in the comparison."
         )
 
     # Add user interaction requirement instead of automatic next_steps

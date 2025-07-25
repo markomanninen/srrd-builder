@@ -747,7 +747,7 @@ class EnhancedSRRDApp {
                 assumptions: 'Core assumptions about machine learning effectiveness and generalization capabilities'
             },
             'compare_paradigms': {
-                original_paradigm: 'Traditional supervised learning paradigm',
+                mainstream_paradigm: 'Traditional supervised learning paradigm',
                 alternative_paradigm: 'Modern deep learning paradigm',
                 domain: 'artificial intelligence'
             },

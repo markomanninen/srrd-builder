@@ -876,7 +876,7 @@ class SRRDFrontendApp {
                 ]
             },
             'compare_paradigms': {
-                original_paradigm: 'classical mechanics',
+                mainstream_paradigm: 'classical mechanics',
                 alternative_paradigm: 'quantum mechanics',
                 domain: 'physics',
                 comparison_criteria: ['predictive power', 'experimental support', 'mathematical elegance']
