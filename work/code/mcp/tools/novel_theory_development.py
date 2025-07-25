@@ -24,7 +24,7 @@ class NovelTheoryDevelopmentTool:
 
     def __init__(self):
         self.paradigm_types = {
-            "theoretical_physics": {
+            "physics": {
                 "mainstream_paradigms": [
                     "standard_model",
                     "general_relativity",
@@ -550,17 +550,18 @@ async def validate_novel_theory(**kwargs) -> str:
 
     theory_framework_input = kwargs.get("theory_framework", {})
     domain = kwargs.get("domain")
-    validation_criteria = kwargs.get(
-        "validation_criteria",
-        [
-            "logical_consistency",
-            "empirical_testability",
-            "explanatory_power",
-            "predictive_accuracy",
-            "theoretical_elegance",
-            "paradigm_compatibility",
-        ],
-    )
+    default_criteria = [
+        "logical_consistency",
+        "empirical_testability",
+        "explanatory_power",
+        "predictive_accuracy",
+        "theoretical_elegance",
+        "paradigm_compatibility",
+    ]
+    validation_criteria = kwargs.get("validation_criteria", default_criteria)
+
+    if validation_criteria is None:
+        validation_criteria = default_criteria
 
     if not domain:
         return "Error: Missing required parameter (domain)"
@@ -576,7 +577,7 @@ async def validate_novel_theory(**kwargs) -> str:
             "paradigm_challenge": True,
         }
     else:
-        theory_framework = theory_framework_input
+        theory_framework = theory_framework_input or {}
 
     validation_results = {
         "theory_overview": theory_framework,
@@ -622,8 +623,8 @@ async def validate_novel_theory(**kwargs) -> str:
     # Development recommendations
     recommendations = []
     for criterion, result in validation_results["validation_results"].items():
-        if result["score"] < 0.6:
-            recommendations.extend(result.get("improvement_suggestions", []))
+        if result and result["score"] < 0.6:
+            recommendations.extend(result.get("improvement_suggestions") or [])
 
     validation_results["development_recommendations"] = recommendations
 
@@ -972,7 +973,7 @@ async def assess_foundational_assumptions(**kwargs) -> str:
         current_paradigm = "Current Theory"
         theory_framework = {"description": theory_framework_input}
     else:
-        theory_framework = theory_framework_input
+        theory_framework = theory_framework_input or {}
         current_paradigm = theory_framework.get("name", "Current Theory")
 
     if not domain:
@@ -992,14 +993,17 @@ async def assess_foundational_assumptions(**kwargs) -> str:
     }
 
     # Get domain-specific information
-    # Use generic assumptions since paradigm_types doesn't exist in the tool class
-    assumptions = [
-        "Reality is fundamentally material/physical",
-        "Causation follows deterministic patterns",
-        "Knowledge can be objectively measured",
-        "The observer can be separated from the observed",
-        "Natural laws are universal and invariant",
-    ]
+    domain_info = tool.paradigm_types.get(domain, {})
+    assumptions = domain_info.get(
+        "foundational_assumptions",
+        [
+            "Reality is fundamentally material/physical",
+            "Causation follows deterministic patterns",
+            "Knowledge can be objectively measured",
+            "The observer can be separated from the observed",
+            "Natural laws are universal and invariant",
+        ],
+    )
 
     # Ontological analysis (what exists)
     assessment["ontological_analysis"] = {
@@ -1127,7 +1131,7 @@ async def generate_critical_questions(**kwargs) -> str:
         paradigm_context = kwargs.get("paradigm_context", "Current paradigm")
         theory_framework = {"description": theory_framework_input}
     else:
-        theory_framework = theory_framework_input
+        theory_framework = theory_framework_input or {}
         paradigm_context = theory_framework.get("name") or kwargs.get(
             "paradigm_context", "Current paradigm"
         )
@@ -1225,17 +1229,21 @@ async def evaluate_paradigm_shift_potential(**kwargs) -> str:
 
     theory_framework_input = kwargs.get("theory_framework", {})
     domain = kwargs.get("domain")
+
+    default_metrics = [
+        "explanatory_scope",
+        "predictive_power",
+        "mathematical_elegance",
+        "empirical_support",
+        "paradigm_coherence",
+        "revolutionary_potential",
+    ]
     paradigm_metrics = kwargs.get(
         "paradigm_metrics",
-        [
-            "explanatory_scope",
-            "predictive_power",
-            "mathematical_elegance",
-            "empirical_support",
-            "paradigm_coherence",
-            "revolutionary_potential",
-        ],
+        default_metrics,
     )
+    if paradigm_metrics is None:
+        paradigm_metrics = default_metrics
 
     if not domain:
         return "Error: Missing required parameter (domain)"
@@ -1251,7 +1259,7 @@ async def evaluate_paradigm_shift_potential(**kwargs) -> str:
             "paradigm_challenge": True,
         }
     else:
-        theory_framework = theory_framework_input
+        theory_framework = theory_framework_input or {}
 
     evaluation = {
         "theory_framework": theory_framework,
@@ -1286,7 +1294,7 @@ async def evaluate_paradigm_shift_potential(**kwargs) -> str:
         "predictive_novelty": shift_scores.get("predictive_power", 0.5) > 0.7,
         "mathematical_innovation": shift_scores.get("mathematical_elegance", 0.5) > 0.8,
         "empirical_anomalies_resolved": len(
-            theory_framework.get("resolved_anomalies", [])
+            theory_framework.get("resolved_anomalies") or []
             if isinstance(theory_framework, dict)
             else []
         )
@@ -1420,7 +1428,7 @@ def _assess_confidence(theory_framework) -> str:
         "mathematical_basis" in theory_framework,
         "empirical_predictions" in theory_framework,
         "target_phenomena" in theory_framework,
-        len(theory_framework.get("core_principles", [])) >= 2,
+        len(theory_framework.get("core_principles") or []) >= 2,
     ]
 
     confidence_score = sum(confidence_factors) / len(confidence_factors)

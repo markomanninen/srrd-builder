@@ -21,8 +21,6 @@ if str(utils_dir) not in sys.path:
 from context_decorator import context_aware
 from current_project import get_current_project as get_project_path
 
-# --- (LaTeXTemplateManager class and LATEX_TEMPLATE remain unchanged) ---
-# ... (omitted for brevity, same as before) ...
 LATEX_TEMPLATE = r"""\documentclass[12pt,a4paper]{{article}}
 \usepackage[utf8]{{inputenc}}
 \usepackage[T1]{{fontenc}}
@@ -330,16 +328,13 @@ Additional materials and appendices can be added here.
         }
 
 
-# ... (rest of the class is the same) ...
 template_manager = LaTeXTemplateManager()
 
 
-# --- (generate_latex_document_tool, compile_latex_tool, etc. remain unchanged) ---
-# ... (omitted for brevity, same as before) ...
 @context_aware(require_context=True)
 async def generate_latex_document_tool(**kwargs) -> str:
     """Generate LaTeX document from research content"""
-
+    project_manager = None
     try:
         title = kwargs.get("title", "Untitled Research Paper")
         author = kwargs.get("author", "SRRD Builder")
@@ -352,7 +347,6 @@ async def generate_latex_document_tool(**kwargs) -> str:
         bibliography = kwargs.get("bibliography", "")
         project_path = get_project_path()
 
-        # Format the LaTeX document using format() method
         latex_content = LATEX_TEMPLATE.format(
             title=title,
             author=author,
@@ -366,7 +360,6 @@ async def generate_latex_document_tool(**kwargs) -> str:
             bibliography=bibliography,
         )
 
-        # Save to project if path provided
         if project_path:
             project_manager = ProjectManager(project_path)
             doc_path = (
@@ -385,12 +378,14 @@ async def generate_latex_document_tool(**kwargs) -> str:
 
     except Exception as e:
         return f"Error generating LaTeX document: {str(e)}"
+    finally:
+        if project_manager:
+            await project_manager.close()
 
 
 @context_aware(require_context=True)
 async def compile_latex_tool(**kwargs) -> str:
     """Compile LaTeX document to PDF or other formats"""
-
     try:
         tex_file_path = kwargs.get("tex_file_path")
         output_format = kwargs.get("output_format", "pdf")
@@ -402,18 +397,15 @@ async def compile_latex_tool(**kwargs) -> str:
         if not tex_path.exists():
             return f"Error: LaTeX file not found at {tex_file_path}"
 
-        # Change to the directory containing the .tex file
         work_dir = tex_path.parent
         tex_filename = tex_path.name
 
         if output_format.lower() == "pdf":
-            # Check if pdflatex is available
             import shutil
 
             if not shutil.which("pdflatex"):
                 return f"Error: pdflatex not found. Please install LaTeX distribution:\n- macOS: 'brew install --cask mactex'\n- Ubuntu: 'sudo apt-get install texlive-full'\n- Windows: Install MiKTeX from https://miktex.org/\n\nSee INSTALLATION.md for complete setup guide. The LaTeX source file is available at: {tex_file_path}"
 
-            # Compile with pdflatex
             result = subprocess.run(
                 ["pdflatex", "-interaction=nonstopmode", tex_filename],
                 cwd=work_dir,
@@ -439,7 +431,6 @@ async def compile_latex_tool(**kwargs) -> str:
                         "LaTeX compilation failed with no error output. The LaTeX file may contain syntax errors."
                     ]
 
-                # Also check if the .tex file contains valid LaTeX
                 try:
                     with open(tex_path, "r") as f:
                         content = f.read().strip()
@@ -463,7 +454,6 @@ async def compile_latex_tool(**kwargs) -> str:
 @context_aware(require_context=False)
 async def format_research_content_tool(**kwargs) -> str:
     """Format research content according to academic standards"""
-
     try:
         content = kwargs.get("content", "")
         content_type = kwargs.get("content_type", "section")
@@ -475,14 +465,12 @@ async def format_research_content_tool(**kwargs) -> str:
         formatted_content = content.strip()
 
         if content_type == "section":
-            # Add proper paragraph breaks and formatting
             lines = formatted_content.split("\n")
             formatted_lines = []
 
             for line in lines:
                 line = line.strip()
                 if line:
-                    # Ensure proper capitalization for section start
                     if len(formatted_lines) == 0 and line[0].islower():
                         line = line[0].upper() + line[1:]
                     formatted_lines.append(line)
@@ -492,14 +480,12 @@ async def format_research_content_tool(**kwargs) -> str:
             formatted_content = "\n\n".join([line for line in formatted_lines if line])
 
         elif content_type == "equation":
-            # Format mathematical equations
             if not formatted_content.startswith("\\begin{equation}"):
                 formatted_content = (
                     f"\\begin{{equation}}\n{formatted_content}\n\\end{{equation}}"
                 )
 
         elif content_type == "citation":
-            # Format citations
             if not formatted_content.startswith("\\cite"):
                 formatted_content = f"\\cite{{{formatted_content}}}"
 
@@ -512,7 +498,6 @@ async def format_research_content_tool(**kwargs) -> str:
 @context_aware(require_context=False)
 async def generate_bibliography_tool(**kwargs) -> str:
     """Generate LaTeX bibliography from reference list"""
-
     try:
         references = kwargs.get("references", [])
 
@@ -523,7 +508,6 @@ async def generate_bibliography_tool(**kwargs) -> str:
 
         for i, ref in enumerate(references, 1):
             if isinstance(ref, dict):
-                # Handle structured reference
                 title = ref.get("title", "Unknown Title")
                 authors = ref.get("authors", "Unknown Author")
                 year = ref.get("year", "Unknown Year")
@@ -536,7 +520,6 @@ async def generate_bibliography_tool(**kwargs) -> str:
 
                 bib_entries.append(bib_entry)
             else:
-                # Handle string reference
                 bib_entries.append(f"\\bibitem{{ref{i}}} {ref}")
 
         bibliography = "\n\n".join(bib_entries)
@@ -550,7 +533,7 @@ async def generate_bibliography_tool(**kwargs) -> str:
 @context_aware(require_context=False)
 async def extract_document_sections_tool(**kwargs) -> str:
     """Extract and identify sections from document content for modular LaTeX management"""
-
+    project_manager = None
     try:
         document_content = kwargs.get("document_content", "")
         create_separate_files = kwargs.get("create_separate_files", False)
@@ -562,7 +545,6 @@ async def extract_document_sections_tool(**kwargs) -> str:
         if create_separate_files and not project_path:
             return "Error: A project context is required when create_separate_files is True."
 
-        # Define section patterns for academic papers
         section_patterns = [
             r"\\section\{([^}]+)\}",
             r"\\subsection\{([^}]+)\}",
@@ -575,47 +557,38 @@ async def extract_document_sections_tool(**kwargs) -> str:
         current_section = "preamble"
         current_content = []
         document_started = False
-        preamble_content = []
 
         lines = document_content.split("\n")
 
         for line in lines:
-            # Track document structure
             if "\\begin{document}" in line:
-                # Save preamble content (everything before \begin{document})
                 if current_section == "preamble":
                     sections["preamble"] = "\n".join(current_content).strip()
                     current_content = []
                 document_started = True
                 continue
             elif "\\end{document}" in line:
-                # Save last section before document end
                 if current_content and current_section != "preamble":
                     sections[current_section] = "\n".join(current_content).strip()
                 break
 
-            # Skip document structure commands in sections
             if document_started and (
                 "\\maketitle" in line or "\\begin{document}" in line
             ):
                 continue
 
-            # Check if line starts a new section (only after document has started)
             section_found = False
-
             if document_started:
                 for pattern in section_patterns:
                     import re
 
                     match = re.search(pattern, line, re.IGNORECASE)
                     if match:
-                        # Save previous section
                         if current_content and current_section != "preamble":
                             sections[current_section] = "\n".join(
                                 current_content
                             ).strip()
 
-                        # Start new section
                         section_name = match.group(1).lower().replace(" ", "_")
                         current_section = section_name
                         current_content = [line]
@@ -625,57 +598,37 @@ async def extract_document_sections_tool(**kwargs) -> str:
             if not section_found:
                 current_content.append(line)
 
-        # Save the last section
         if current_content and current_section != "preamble":
             sections[current_section] = "\n".join(current_content).strip()
 
-        # Create separate .tex files if requested
         if create_separate_files and project_path:
-            from pathlib import Path
-
+            project_manager = ProjectManager(project_path)
             sections_dir = Path(project_path) / "sections"
             sections_dir.mkdir(exist_ok=True)
-
             main_tex_includes = []
 
             for section_name, content in sections.items():
                 if section_name != "preamble" and content.strip():
-                    # Clean up content for separate file
                     clean_content = content.strip()
-
-                    # Create section file
                     section_file = sections_dir / f"{section_name}.tex"
                     with open(section_file, "w", encoding="utf-8") as f:
                         f.write(clean_content)
-
-                    # Add to main document includes (relative path from documents dir)
                     main_tex_includes.append(f"\\input{{../sections/{section_name}}}")
 
-            # Create main document structure
             if main_tex_includes:
                 main_doc_path = Path(project_path) / "documents" / "main.tex"
                 main_doc_path.parent.mkdir(parents=True, exist_ok=True)
-
-                # Extract clean preamble (without \begin{document})
                 preamble = sections.get("preamble", "").strip()
-
                 main_document = f"""{preamble}
-
 \\begin{{document}}
-
 \\maketitle
-
 {chr(10).join(main_tex_includes)}
-
 \\end{{document}}
 """
-
                 with open(main_doc_path, "w", encoding="utf-8") as f:
                     f.write(main_document)
-
                 return f"Document sections extracted and modularized:\n- Main document: {main_doc_path}\n- Sections directory: {sections_dir}\n- Created {len(main_tex_includes)} separate section files"
 
-        # Return structured section information
         result = "Extracted document sections:\n\n"
         for section_name, content in sections.items():
             preview = content[:100] + "..." if len(content) > 100 else content
@@ -685,11 +638,15 @@ async def extract_document_sections_tool(**kwargs) -> str:
 
     except Exception as e:
         return f"Error extracting document sections: {str(e)}"
+    finally:
+        if project_manager:
+            await project_manager.close()
 
 
 @context_aware(require_context=True)
 async def store_bibliography_reference_tool(**kwargs) -> str:
     """Store a bibliography reference in the vector database for future retrieval"""
+    project_manager = None
     try:
         reference = kwargs.get("reference", {})
         project_path = get_project_path()
@@ -698,7 +655,6 @@ async def store_bibliography_reference_tool(**kwargs) -> str:
             return "Error: Missing required parameters or project context."
 
         project_manager = ProjectManager(project_path)
-        # *** FIX: Use the existing VectorManager instance from ProjectManager ***
         vector_manager = project_manager.vector_manager
         await vector_manager.initialize()
 
@@ -721,11 +677,15 @@ async def store_bibliography_reference_tool(**kwargs) -> str:
 
     except Exception as e:
         return f"Error storing bibliography reference: {str(e)}"
+    finally:
+        if project_manager:
+            await project_manager.close()
 
 
 @context_aware(require_context=True)
 async def retrieve_bibliography_references_tool(**kwargs) -> str:
     """Retrieve relevant bibliography references from the vector database based on search query"""
+    project_manager = None
     try:
         query = kwargs.get("query", "")
         project_path = get_project_path()
@@ -734,7 +694,6 @@ async def retrieve_bibliography_references_tool(**kwargs) -> str:
             return "Error: Missing required parameters or project context."
 
         project_manager = ProjectManager(project_path)
-        # *** FIX: Use the existing VectorManager instance from ProjectManager ***
         vector_manager = project_manager.vector_manager
         await vector_manager.initialize()
 
@@ -761,14 +720,15 @@ async def retrieve_bibliography_references_tool(**kwargs) -> str:
 
     except Exception as e:
         return f"Error retrieving bibliography references: {str(e)}"
+    finally:
+        if project_manager:
+            await project_manager.close()
 
 
-# --- (Rest of the file remains unchanged) ---
-# ... (omitted for brevity, same as before) ...
 @context_aware(require_context=True)
 async def generate_document_with_database_bibliography_tool(**kwargs) -> str:
     """Generate LaTeX document with bibliography retrieved from vector database"""
-
+    project_manager = None
     try:
         title = kwargs.get("title", "Untitled Research Paper")
         author = kwargs.get("author", "SRRD Builder")
@@ -781,24 +741,20 @@ async def generate_document_with_database_bibliography_tool(**kwargs) -> str:
         project_path = get_project_path()
         bibliography_query = kwargs.get("bibliography_query", "")
 
-        # Retrieve bibliography from database if query provided
         bibliography = ""
         if bibliography_query:
             bib_result = await retrieve_bibliography_references_tool(
                 query=bibliography_query, project_path=project_path, max_results=10
             )
-
-            # Extract bibliography section from result
-            if "Retrieved" in bib_result and "bibliography references:" in bib_result:
+            if "Retrieved" in bib_result and "references:" in bib_result:
                 bib_lines = bib_result.split("\n")
-                bib_entries = []
-                for line in bib_lines:
-                    line = line.strip()
-                    if line.startswith("\\bibitem"):
-                        bib_entries.append(line)
+                bib_entries = [
+                    line.strip()
+                    for line in bib_lines
+                    if line.strip().startswith("\\bibitem")
+                ]
                 bibliography = "\n".join(bib_entries)
 
-        # Generate document using existing template
         latex_content = LATEX_TEMPLATE.format(
             title=title,
             author=author,
@@ -812,24 +768,25 @@ async def generate_document_with_database_bibliography_tool(**kwargs) -> str:
             bibliography=bibliography,
         )
 
-        # Save to project if path provided
         if project_path:
+            project_manager = ProjectManager(project_path)
             doc_path = (
                 Path(project_path)
                 / "documents"
                 / f"{title.replace(' ', '_').lower()}_with_db_bib.tex"
             )
             doc_path.parent.mkdir(parents=True, exist_ok=True)
-
             with open(doc_path, "w", encoding="utf-8") as f:
                 f.write(latex_content)
-
             return f"LaTeX document with database bibliography generated successfully at: {doc_path}"
         else:
             return f"LaTeX document with database bibliography generated:\n{latex_content[:500]}..."
 
     except Exception as e:
         return f"Error generating document with database bibliography: {str(e)}"
+    finally:
+        if project_manager:
+            await project_manager.close()
 
 
 @context_aware(require_context=False)
@@ -851,6 +808,7 @@ async def list_latex_templates_tool(**kwargs) -> str:
 @context_aware(require_context=True)
 async def generate_latex_with_template_tool(**kwargs) -> str:
     """Generate LaTeX document using a specific template"""
+    project_manager = None
     try:
         title = kwargs.get("title", "Untitled Research Document")
         author = kwargs.get("author", "SRRD Builder")
@@ -864,11 +822,9 @@ async def generate_latex_with_template_tool(**kwargs) -> str:
         project_path = get_project_path()
         template_type = kwargs.get("template_type", "basic_article")
 
-        # Get the specified template
         template_info = template_manager.get_template(template_type)
         latex_template = template_info["template"]
 
-        # Format the LaTeX document using the selected template
         latex_content = latex_template.format(
             title=title,
             author=author,
@@ -882,7 +838,6 @@ async def generate_latex_with_template_tool(**kwargs) -> str:
             bibliography=bibliography,
         )
 
-        # Save to project if path provided
         if project_path:
             project_manager = ProjectManager(project_path)
             doc_path = (
@@ -891,16 +846,17 @@ async def generate_latex_with_template_tool(**kwargs) -> str:
                 / f"{title.replace(' ', '_').lower()}_{template_type}.tex"
             )
             doc_path.parent.mkdir(parents=True, exist_ok=True)
-
             with open(doc_path, "w", encoding="utf-8") as f:
                 f.write(latex_content)
-
             return f"LaTeX document generated using '{template_info['name']}' template at: {doc_path}"
         else:
             return f"LaTeX document generated using '{template_info['name']}' template:\n{latex_content[:500]}..."
 
     except Exception as e:
         return f"Error generating LaTeX document with template: {str(e)}"
+    finally:
+        if project_manager:
+            await project_manager.close()
 
 
 def register_document_tools(server):
@@ -1116,7 +1072,6 @@ def register_document_tools(server):
     )
 
 
-# Export functions for MCP server registration
 __all__ = [
     "generate_latex_document_tool",
     "compile_latex_tool",

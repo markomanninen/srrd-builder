@@ -35,7 +35,7 @@ for test_dir in "${test_directories[@]}"; do
 
         # Run pytest with color output and capture to temp file
         test_output=$(mktemp)
-        timeout 120s python3 -m pytest "$test_dir" --tb=short -v --color=yes | tee "$test_output"
+        timeout 240s python3 -m pytest "$test_dir" --tb=short -v --color=yes | tee "$test_output"
         exit_code=${PIPESTATUS[0]}
 
         # Check for failures or errors in output

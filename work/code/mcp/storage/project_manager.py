@@ -86,10 +86,8 @@ class ProjectManager:
 
     def create_directory_structure(self) -> bool:
         """Create standard research project directories"""
-        # Create project directory if it doesn't exist
         self.project_path.mkdir(parents=True, exist_ok=True)
 
-        # Create standard SRRD directory structure
         directories = [
             self.project_path / ".srrd",
             self.project_path / ".srrd" / "data",
@@ -111,7 +109,6 @@ class ProjectManager:
         import json
         from datetime import datetime
 
-        # Create proper SRRD configuration
         from .sqlite_manager import SQLiteManager
 
         full_config = {
@@ -148,3 +145,12 @@ class ProjectManager:
         """Get comprehensive project status"""
         # This is a placeholder
         return {}
+
+    async def close(self):
+        """Gracefully close all managed resources."""
+        logger.debug("Closing project manager resources...")
+        if self.sqlite_manager:
+            await self.sqlite_manager.close()
+        if self.vector_manager:
+            await self.vector_manager.close()
+        logger.debug("Project manager resources closed.")

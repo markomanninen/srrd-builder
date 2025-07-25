@@ -22,55 +22,51 @@ from current_project import get_current_project as get_project_path
 @context_aware(allow_explicit_project_path=True)
 async def initialize_project_tool(**kwargs) -> str:
     """MCP tool to initialize Git-based project storage"""
-    name = kwargs.get("name")
-    description = kwargs.get("description")
-    domain = kwargs.get("domain")
-    project_path = kwargs.get("project_path")
-
-    if not all([name, description, domain]):
-        return "Error: Missing required parameters (name, description, domain)"
-
-    # Project location handling and validation
+    project_manager = None
     try:
-        resolved_path, error = _resolve_project_location(name, project_path)
-        if error:
-            return error
-    except Exception as e:
-        return f"Error: {str(e)}"
+        name = kwargs.get("name")
+        description = kwargs.get("description")
+        domain = kwargs.get("domain")
+        project_path = kwargs.get("project_path")
 
-    # Check if project already exists
-    if os.path.exists(resolved_path):
-        return f"Error: Project already exists at {resolved_path}"
+        if not all([name, description, domain]):
+            return "Error: Missing required parameters (name, description, domain)"
 
-    # Only create project if all checks pass
-    project_manager = ProjectManager(resolved_path)
-    result = await project_manager.initialize_project(name, description, domain)
+        try:
+            resolved_path, error = _resolve_project_location(name, project_path)
+            if error:
+                return error
+        except Exception as e:
+            return f"Error: {str(e)}"
 
-    # ==========================================================================
-    # RESTORED: The original, detailed user guidance messages are back.
-    # ==========================================================================
-    guidance = _get_project_creation_guidance(resolved_path)
-    auto_switched = result.get("auto_switched", False)
+        if os.path.exists(resolved_path):
+            return f"Error: Project already exists at {resolved_path}"
 
-    if auto_switched:
-        switch_status = """**MCP Context Automatically Switched!**
+        project_manager = ProjectManager(resolved_path)
+        result = await project_manager.initialize_project(name, description, domain)
+
+        guidance = _get_project_creation_guidance(resolved_path)
+        auto_switched = result.get("auto_switched", False)
+
+        if auto_switched:
+            switch_status = """**MCP Context Automatically Switched!**
 Claude Desktop is now using this project for all research tools."""
-        next_steps = """**Your project is ready!**
+            next_steps = """**Your project is ready!**
 
 What would you like to work on next?
 - Use **clarify_research_goals** if you want to refine your research objectives
 - Use **suggest_methodology** if you want research methodology recommendations  
 - Use **start_research_session** if you want to begin a formal research session
 - Or simply tell me what aspect of your research you'd like to focus on"""
-    else:
-        switch_status = """**Manual Switch Required**
+        else:
+            switch_status = """**Manual Switch Required**
 Auto-switch failed. Please run: srrd switch"""
-        next_steps = f"""**Setup Required**:
+            next_steps = f"""**Setup Required**:
 1. Navigate to your project: cd {resolved_path}
 2. Switch MCP context: srrd switch
 3. Then tell me what you'd like to work on!"""
 
-    return f"""Project '{name}' initialized successfully!
+        return f"""Project '{name}' initialized successfully!
 
 **Project Location**: {resolved_path}
 **Status**: {result.get('status', 'initialized')}
@@ -82,6 +78,9 @@ Auto-switch failed. Please run: srrd switch"""
 
 {next_steps}
 """
+    finally:
+        if project_manager:
+            await project_manager.close()
 
 
 def _resolve_project_location(
@@ -138,60 +137,80 @@ def _get_project_creation_guidance(project_path: str) -> str:
 @context_aware(require_context=True)
 async def save_session_tool(**kwargs) -> str:
     """MCP tool to save research session data"""
-    session_data = kwargs.get("session_data")
-    project_path = get_project_path()
+    project_manager = None
+    try:
+        session_data = kwargs.get("session_data")
+        project_path = get_project_path()
 
-    if not session_data:
-        return "Error: Missing session_data parameter"
+        if not session_data:
+            return "Error: Missing session_data parameter"
 
-    # The decorator `require_context=True` ensures project_path is valid
-    project_manager = ProjectManager(project_path)
-    # This is a placeholder until the session manager is implemented
-    return f"Session saved to project: {project_path}"
+        project_manager = ProjectManager(project_path)
+        return f"Session saved to project: {project_path}"
+    finally:
+        if project_manager:
+            await project_manager.close()
 
 
 @context_aware(require_context=True)
 async def search_knowledge_tool(**kwargs) -> str:
     """MCP tool for vector database search"""
-    query = kwargs.get("query")
-    collection = kwargs.get("collection", "default")
-    project_path = get_project_path()
+    project_manager = None
+    try:
+        query = kwargs.get("query")
+        collection = kwargs.get("collection", "default")
+        project_path = get_project_path()
 
-    if not query:
-        return "Error: Missing required parameter (query)"
+        if not query:
+            return "Error: Missing required parameter (query)"
 
-    project_manager = ProjectManager(project_path)
-    results = await project_manager.vector_manager.search_knowledge(query, collection)
-    return f"Search results: {results}"
+        project_manager = ProjectManager(project_path)
+        results = await project_manager.vector_manager.search_knowledge(
+            query, collection
+        )
+        return f"Search results: {results}"
+    finally:
+        if project_manager:
+            await project_manager.close()
 
 
 @context_aware(require_context=True)
 async def version_control_tool(**kwargs) -> str:
     """MCP tool for Git operations"""
-    action = kwargs.get("action")
-    message = kwargs.get("message")
-    files = kwargs.get("files", [])
-    project_path = get_project_path()
+    project_manager = None
+    try:
+        action = kwargs.get("action")
+        message = kwargs.get("message")
+        files = kwargs.get("files", [])
+        project_path = get_project_path()
 
-    if not all([action, message]):
-        return "Error: Missing required parameters (action, message)"
+        if not all([action, message]):
+            return "Error: Missing required parameters (action, message)"
 
-    project_manager = ProjectManager(project_path)
-    if action == "commit":
-        commit_hash = project_manager.git_manager.commit_changes(message, files)
-        return f"Committed changes with hash: {commit_hash}"
-    return "Unknown action"
+        project_manager = ProjectManager(project_path)
+        if action == "commit":
+            commit_hash = project_manager.git_manager.commit_changes(message, files)
+            return f"Committed changes with hash: {commit_hash}"
+        return "Unknown action"
+    finally:
+        if project_manager:
+            await project_manager.close()
 
 
 @context_aware(require_context=True)
 async def backup_project_tool(**kwargs) -> str:
     """MCP tool to backup project"""
-    project_path = get_project_path()
-    backup_location = kwargs.get("backup_location")
+    project_manager = None
+    try:
+        project_path = get_project_path()
+        backup_location = kwargs.get("backup_location")
 
-    project_manager = ProjectManager(project_path)
-    result = project_manager.backup_project(backup_location)
-    return f"Project backed up with status: {result}"
+        project_manager = ProjectManager(project_path)
+        result = project_manager.backup_project(backup_location)
+        return f"Project backed up with status: {result}"
+    finally:
+        if project_manager:
+            await project_manager.close()
 
 
 @context_aware(require_context=True)
