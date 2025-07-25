@@ -1,3 +1,5 @@
+# FILE: ./work/code/mcp/server.py
+
 #!/usr/bin/env python3
 import asyncio
 import json
@@ -161,7 +163,7 @@ class MCPServer:
         self.session_manager = None
 
         # Setup logging (enable for both WebSocket and stdio)
-        if config.server.disable_logging:
+        if not config.server.disable_logging:
             # For stdio mode, disable console logging to avoid interfering with stdio communication
             enable_console_logging = not use_stdio
 
@@ -525,9 +527,10 @@ class MCPServer:
             close_timeout=10,  # Wait 10 seconds for close handshake
             origins=None,  # Allow all origins (for CORS)
         ):
-            self.logger.info(
-                f"SRRD Builder MCP Server running on ws://{config.server.host}:{self.port}"
-            )
+            if self.logger:
+                self.logger.info(
+                    f"SRRD Builder MCP Server running on ws://{config.server.host}:{self.port}"
+                )
             await asyncio.Future()  # run forever
 
     async def handle_mcp_message(self, websocket, path):
@@ -1043,26 +1046,6 @@ class MCPServer:
         """WebSocket handler wrapper - compatible with different websockets versions"""
         # Some websockets versions pass path, others don't
         return await self.handle_mcp_message(websocket, path or "/")
-
-
-import logging
-import os
-
-
-def setup_logging():
-    log_dir = os.path.join(os.path.dirname(__file__), "../../logs")
-    log_dir = os.path.abspath(log_dir)
-    os.makedirs(log_dir, exist_ok=True)
-    log_file = os.path.join(log_dir, "mcp_server.log")
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s",
-        handlers=[
-            logging.FileHandler(log_file, mode="a", encoding="utf-8"),
-            logging.StreamHandler(),
-        ],
-    )
-    logging.getLogger().info("MCP server logging initialized.")
 
 
 if __name__ == "__main__":
