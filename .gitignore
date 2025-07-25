@@ -260,6 +260,7 @@ test_comprehensive_*.log
 # Documentation builds
 work/docs/_build/
 work/docs/build/
+docs/project_summary/
 
 # Temporary Python testing directories
 /var/folders/
