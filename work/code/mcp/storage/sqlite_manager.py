@@ -9,8 +9,6 @@ class SQLiteManager:
     @staticmethod
     def get_sessions_db_path(project_path: str) -> str:
         """Return the canonical sessions.db path for a project"""
-        from pathlib import Path
-
         return str(Path(project_path) / ".srrd" / "data" / "sessions.db")
 
     @staticmethod
@@ -32,123 +30,33 @@ class SQLiteManager:
         return await self.initialize_database()
 
     async def initialize_database(self):
-        """Create database with schema"""
+        """Create database with schema, using a robust path to the schema file."""
+        if not self.db_path:
+            raise ValueError("Database path is not set for SQLiteManager.")
+
+        db_file = Path(self.db_path)
+        db_file.parent.mkdir(parents=True, exist_ok=True)
         self.connection = await aiosqlite.connect(self.db_path)
 
-        # Try to find schema file in multiple locations
-        schema_paths = [
-            "config/database_schema.sql",
-            "work/code/mcp/config/database_schema.sql",
-            str(Path(__file__).parent.parent / "config" / "database_schema.sql"),
-        ]
+        try:
+            base_dir = Path(__file__).resolve().parent.parent
+            schema_file_path = base_dir / "config" / "database_schema.sql"
 
-        schema_content = None
-        for schema_path in schema_paths:
-            try:
-                with open(schema_path, "r") as f:
-                    schema_content = f.read()
-                    break
-            except FileNotFoundError:
-                continue
+            if not schema_file_path.is_file():
+                raise FileNotFoundError(
+                    f"Database schema not found at the expected location: {schema_file_path}"
+                )
 
-        if schema_content:
+            with open(schema_file_path, "r", encoding="utf-8") as f:
+                schema_content = f.read()
+
             await self.connection.executescript(schema_content)
             await self.connection.commit()
-        else:
-            # Fallback: create basic schema with tool_usage table
-            basic_schema = """
-            CREATE TABLE IF NOT EXISTS projects (
-                id INTEGER PRIMARY KEY,
-                name TEXT NOT NULL,
-                description TEXT,
-                domain TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-            
-            CREATE TABLE IF NOT EXISTS sessions (
-                id INTEGER PRIMARY KEY,
-                project_id INTEGER,
-                session_type TEXT,
-                user_id TEXT,
-                started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (project_id) REFERENCES projects (id)
-            );
-            
-            CREATE TABLE IF NOT EXISTS tool_usage (
-                id INTEGER PRIMARY KEY,
-                session_id INTEGER,
-                tool_name TEXT NOT NULL,
-                research_act TEXT NOT NULL,
-                research_category TEXT NOT NULL,
-                arguments TEXT,
-                result_summary TEXT,
-                execution_time_ms INTEGER,
-                success BOOLEAN DEFAULT TRUE,
-                error_message TEXT,
-                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (session_id) REFERENCES sessions (id)
-            );
-            
-            CREATE TABLE IF NOT EXISTS research_progress (
-                id INTEGER PRIMARY KEY,
-                project_id INTEGER,
-                research_act TEXT NOT NULL,
-                research_category TEXT NOT NULL,
-                status TEXT DEFAULT 'not_started',
-                completion_percentage INTEGER DEFAULT 0,
-                tools_used TEXT,
-                notes TEXT,
-                last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (project_id) REFERENCES projects (id)
-            );
-            
-            CREATE TABLE IF NOT EXISTS interactions (
-                id INTEGER PRIMARY KEY,
-                session_id INTEGER,
-                interaction_type TEXT,
-                content TEXT,
-                metadata TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (session_id) REFERENCES sessions (id)
-            );
-            
-            CREATE TABLE IF NOT EXISTS requirements (
-                id INTEGER PRIMARY KEY,
-                project_id INTEGER,
-                category TEXT,
-                requirement_text TEXT,
-                priority INTEGER DEFAULT 1,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (project_id) REFERENCES projects (id)
-            );
-            
-            CREATE TABLE IF NOT EXISTS quality_checks (
-                id INTEGER PRIMARY KEY,
-                project_id INTEGER,
-                check_type TEXT,
-                component TEXT,
-                result TEXT,
-                comments TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (project_id) REFERENCES projects (id)
-            );
-            
-            CREATE TABLE IF NOT EXISTS research_milestones (
-                id INTEGER PRIMARY KEY,
-                project_id INTEGER,
-                milestone_type TEXT NOT NULL,
-                milestone_name TEXT NOT NULL,
-                description TEXT,
-                research_act TEXT,
-                research_category TEXT,
-                achieved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                impact_score INTEGER DEFAULT 1,
-                FOREIGN KEY (project_id) REFERENCES projects (id)
-            );
-            """
-            await self.connection.executescript(basic_schema)
-            await self.connection.commit()
+        except Exception as e:
+            await self.close()
+            raise RuntimeError(
+                f"FATAL: Could not initialize database from schema file. Error: {e}"
+            )
 
     async def create_project(self, name: str, description: str, domain: str) -> int:
         """Create new project record"""
@@ -229,8 +137,6 @@ class SQLiteManager:
             interactions = await cursor.fetchall()
         return {"project": project, "sessions": sessions, "interactions": interactions}
 
-    # Enhanced methods for research lifecycle persistence
-
     async def log_tool_usage(
         self,
         session_id: int,
@@ -244,20 +150,6 @@ class SQLiteManager:
         error_message: str = None,
     ) -> int:
         """Log tool usage with research act context"""
-        import logging
-
-        logger = logging.getLogger("srrd_builder.sqlite_manager")
-        # Get project_id for debug
-        project_id = None
-        try:
-            async with self.connection.execute(
-                "SELECT project_id FROM sessions WHERE id = ?", (session_id,)
-            ) as cursor:
-                row = await cursor.fetchone()
-                if row:
-                    project_id = row[0]
-        except Exception:
-            pass
         cursor = await self.connection.execute(
             """INSERT INTO tool_usage 
                (session_id, tool_name, research_act, research_category, arguments, 
@@ -289,7 +181,6 @@ class SQLiteManager:
         notes: str = None,
     ) -> int:
         """Update or create research progress entry"""
-        # Check if progress entry exists
         async with self.connection.execute(
             "SELECT id FROM research_progress WHERE project_id = ? AND research_act = ? AND research_category = ?",
             (project_id, research_act, research_category),
@@ -297,7 +188,6 @@ class SQLiteManager:
             existing = await cursor.fetchone()
 
         if existing:
-            # Update existing entry
             await self.connection.execute(
                 """UPDATE research_progress 
                    SET status = ?, completion_percentage = ?, tools_used = ?, notes = ?, 
@@ -314,7 +204,6 @@ class SQLiteManager:
             await self.connection.commit()
             return existing[0]
         else:
-            # Create new entry
             cursor = await self.connection.execute(
                 """INSERT INTO research_progress 
                    (project_id, research_act, research_category, status, completion_percentage, 
@@ -397,29 +286,20 @@ class SQLiteManager:
 
     async def get_research_progress_summary(self, project_id: int) -> Dict[str, Any]:
         """Get comprehensive research progress summary"""
-        # Get all progress entries
         async with self.connection.execute(
             "SELECT * FROM research_progress WHERE project_id = ?", (project_id,)
         ) as cursor:
             progress_rows = await cursor.fetchall()
-
-        # Get tool usage for the project
         async with self.connection.execute(
-            """SELECT tu.* FROM tool_usage tu 
-               JOIN sessions s ON tu.session_id = s.id 
-               WHERE s.project_id = ? 
-               ORDER BY tu.timestamp""",
+            """SELECT tu.* FROM tool_usage tu JOIN sessions s ON tu.session_id = s.id WHERE s.project_id = ? ORDER BY tu.timestamp""",
             (project_id,),
         ) as cursor:
             tool_usage_rows = await cursor.fetchall()
-
-        # Get milestones
         async with self.connection.execute(
             "SELECT * FROM research_milestones WHERE project_id = ? ORDER BY achieved_at DESC",
             (project_id,),
         ) as cursor:
             milestone_rows = await cursor.fetchall()
-
         return {
             "progress_entries": progress_rows,
             "tool_usage": tool_usage_rows,
@@ -428,34 +308,32 @@ class SQLiteManager:
 
     async def get_tool_usage_history(self, session_id: int) -> List[Dict[str, Any]]:
         """Get tool usage history for a session. Returns empty list if session does not exist."""
-        # Check if session exists
         async with self.connection.execute(
             "SELECT id FROM sessions WHERE id = ?", (session_id,)
-        ) as check_cursor:
-            session_row = await check_cursor.fetchone()
-        if not session_row:
-            return []
-        # Fetch tool usage if session exists
+        ) as cursor:
+            if not await cursor.fetchone():
+                return []
         async with self.connection.execute(
             "SELECT * FROM tool_usage WHERE session_id = ? ORDER BY timestamp",
             (session_id,),
         ) as cursor:
             rows = await cursor.fetchall()
-        columns = [description[0] for description in cursor.description] if rows else []
-        return [dict(zip(columns, row)) for row in rows]
+            columns = (
+                [description[0] for description in cursor.description] if rows else []
+            )
+            return [dict(zip(columns, row)) for row in rows]
 
     async def get_workflow_recommendations(
         self, project_id: int, status: str = "pending"
     ) -> List[Dict[str, Any]]:
         """Get workflow recommendations for a project"""
-        async with self.connection.execute(
-            "SELECT * FROM workflow_recommendations WHERE project_id = ? AND status = ? ORDER BY priority, created_at DESC",
-            (project_id, status),
-        ) as cursor:
+        query = "SELECT * FROM workflow_recommendations WHERE project_id = ? AND status = ? ORDER BY priority, created_at DESC"
+        async with self.connection.execute(query, (project_id, status)) as cursor:
             rows = await cursor.fetchall()
-
-        columns = [description[0] for description in cursor.description] if rows else []
-        return [dict(zip(columns, row)) for row in rows]
+            columns = (
+                [description[0] for description in cursor.description] if rows else []
+            )
+            return [dict(zip(columns, row)) for row in rows]
 
     async def get_research_milestones(
         self, project_id: int, limit: int = None
@@ -463,16 +341,15 @@ class SQLiteManager:
         """Get research milestones for a project"""
         query = "SELECT * FROM research_milestones WHERE project_id = ? ORDER BY achieved_at DESC"
         params = [project_id]
-
         if limit:
             query += " LIMIT ?"
             params.append(limit)
-
         async with self.connection.execute(query, params) as cursor:
             rows = await cursor.fetchall()
-
-        columns = [description[0] for description in cursor.description] if rows else []
-        return [dict(zip(columns, row)) for row in rows]
+            columns = (
+                [description[0] for description in cursor.description] if rows else []
+            )
+            return [dict(zip(columns, row)) for row in rows]
 
     async def update_session_research_context(
         self,
@@ -483,68 +360,45 @@ class SQLiteManager:
         completion_status: str = None,
     ) -> bool:
         """Update session with research context"""
-        updates = []
-        params = []
-
+        updates, params = [], []
         if current_research_act:
             updates.append("current_research_act = ?")
             params.append(current_research_act)
-
         if research_focus:
             updates.append("research_focus = ?")
             params.append(research_focus)
-
         if session_goals:
             updates.append("session_goals = ?")
             params.append(json.dumps(session_goals))
-
-        if completion_status:
-            updates.append("completion_status = ?")
-            params.append(completion_status)
-
         if not updates:
             return False
-
-        # Add session_id for WHERE clause
         params.append(session_id)
-
         query = f"UPDATE sessions SET {', '.join(updates)} WHERE id = ?"
-
-        try:
-            await self.connection.execute(query, params)
-            await self.connection.commit()
-            return True
-        except Exception:
-            return False
+        await self.connection.execute(query, params)
+        await self.connection.commit()
+        return True
 
     async def get_tools_used_in_project(self, project_id: int) -> List[str]:
         """Get list of all tools used in a project"""
-        async with self.connection.execute(
-            """SELECT DISTINCT tu.tool_name FROM tool_usage tu 
-               JOIN sessions s ON tu.session_id = s.id 
-               WHERE s.project_id = ? AND tu.success = 1""",
-            (project_id,),
-        ) as cursor:
+        query = "SELECT DISTINCT tu.tool_name FROM tool_usage tu JOIN sessions s ON tu.session_id = s.id WHERE s.project_id = ? AND tu.success = 1"
+        async with self.connection.execute(query, (project_id,)) as cursor:
             rows = await cursor.fetchall()
-
-        return [row[0] for row in rows]
+            return [row[0] for row in rows]
 
     async def get_research_act_statistics(self, project_id: int) -> Dict[str, Any]:
         """Get statistics about research act usage"""
-        async with self.connection.execute(
-            """SELECT research_act, COUNT(*) as tool_count, 
+        query = """SELECT research_act, COUNT(*) as tool_count, 
                       COUNT(DISTINCT tool_name) as unique_tools,
                       AVG(execution_time_ms) as avg_execution_time
-               FROM tool_usage tu 
-               JOIN sessions s ON tu.session_id = s.id 
+               FROM tool_usage tu JOIN sessions s ON tu.session_id = s.id 
                WHERE s.project_id = ? AND tu.success = 1
-               GROUP BY research_act""",
-            (project_id,),
-        ) as cursor:
+               GROUP BY research_act"""
+        async with self.connection.execute(query, (project_id,)) as cursor:
             rows = await cursor.fetchall()
-
-        columns = [description[0] for description in cursor.description] if rows else []
-        return [dict(zip(columns, row)) for row in rows]
+            columns = (
+                [description[0] for description in cursor.description] if rows else []
+            )
+            return [dict(zip(columns, row)) for row in rows]
 
     async def close(self):
         """Close the database connection"""

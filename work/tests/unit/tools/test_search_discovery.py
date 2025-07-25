@@ -1,273 +1,160 @@
-#!/usr/bin/env python3
-"""
-Test suite for Search & Discovery tools.
+import sys
+from pathlib import Path
 
-Tests semantic_search, discover_patterns, build_knowledge_graph, 
-find_similar_documents, extract_key_concepts, generate_research_summary
-"""
+# FILE: work/code/mcp/tools/search_discovery.py
+project_root = Path(__file__).resolve().parent.parent.parent.parent
+mcp_code_path = project_root / "work" / "code" / "mcp"
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+if str(mcp_code_path) not in sys.path:
+    sys.path.insert(0, str(mcp_code_path))
+
+import tempfile
+from unittest.mock import Mock
 
 import pytest
-import tempfile
-import os
-from pathlib import Path
-from unittest.mock import Mock, patch
 
-# Import search and discovery tools with error handling
 try:
+    import work.code.mcp.utils.current_project as current_project_module
+    from work.code.mcp.storage.project_manager import ProjectManager
     from work.code.mcp.tools.search_discovery import (
-        semantic_search_tool,
-        discover_patterns_tool,
-        build_knowledge_graph_tool,
-        find_similar_documents_tool,
-        extract_key_concepts_tool,
-        generate_research_summary_tool,
-        register_search_tools
+        build_knowledge_graph_tool as build_knowledge_graph_tool_func,
     )
+    from work.code.mcp.tools.search_discovery import (
+        discover_patterns_tool as discover_patterns_tool_func,
+    )
+    from work.code.mcp.tools.search_discovery import (
+        extract_key_concepts_tool as extract_key_concepts_tool_func,
+    )
+    from work.code.mcp.tools.search_discovery import (
+        find_similar_documents_tool as find_similar_documents_tool_func,
+    )
+    from work.code.mcp.tools.search_discovery import (
+        generate_research_summary_tool as generate_research_summary_tool_func,
+    )
+    from work.code.mcp.tools.search_discovery import register_search_tools
+    from work.code.mcp.tools.search_discovery import (
+        semantic_search_tool as semantic_search_tool_func,
+    )
+
     SEARCH_TOOLS_AVAILABLE = True
-except ImportError:
+except ImportError as e:
+    print(f"FATAL: Import failed: {e}", file=sys.stderr)
     SEARCH_TOOLS_AVAILABLE = False
 
 
-@pytest.mark.skipif(not SEARCH_TOOLS_AVAILABLE, reason="Search & Discovery tools not available")
+@pytest.fixture
+async def initialized_project():
+    """
+    Provides a fully initialized SRRD project and sets it as the active context for the test.
+    """
+    with tempfile.TemporaryDirectory() as temp_dir:
+        project_path = Path(temp_dir)
+        (project_path / ".srrd" / "data").mkdir(parents=True)
+        (project_path / ".srrd" / "config.json").write_text('{"name": "test"}')
+        (project_path / "work").mkdir()
+        (project_path / "data").mkdir()
+
+        pm = ProjectManager(str(project_path))
+        await pm.sqlite_manager.initialize_database()
+        await pm.vector_manager.initialize(enable_embedding_model=False)
+
+        # Store original project to restore it later
+        original_project = current_project_module.get_current_project()
+        try:
+            # Set the current project context for the duration of the test
+            current_project_module.set_current_project(str(project_path))
+            yield project_path
+        finally:
+            # Restore original context after the test
+            if original_project:
+                current_project_module.set_current_project(original_project)
+            else:
+                current_project_module.clear_current_project()
+
+
+@pytest.mark.skipif(
+    not SEARCH_TOOLS_AVAILABLE, reason="Search & Discovery tools not available"
+)
+@pytest.mark.usefixtures("initialized_project")
 class TestSearchDiscoveryTools:
     """Test search and discovery functionality"""
-    
-    def create_test_project(self, name="test_project"):
-        """Create a test project directory"""
-        temp_dir = tempfile.mkdtemp(prefix=f"srrd_test_{name}_")
-        project_path = Path(temp_dir)
-        
-        # Create basic SRRD structure
-        srrd_dir = project_path / '.srrd'
-        srrd_dir.mkdir()
-        
-        return project_path
-    
+
     @pytest.mark.asyncio
     async def test_semantic_search_tool(self):
-        """Test semantic search functionality"""
-        try:
-            project_path = self.create_test_project("semantic_search")
-            
-            result = await semantic_search_tool(
-                query="machine learning algorithms",
-                project_path=str(project_path),
-                limit=5
-            )
-            
-            assert result is not None
-                # Tools may return string directly or MCP format
-            if isinstance(result, dict) and "content" in result:
-                assert "content" in result
-            elif isinstance(result, str):
-                assert len(result) > 0  # Should return some result text
-            else:
-                # Accept any non-None result
-                assert result is not None
-            
-        except ImportError:
-            pytest.skip("Semantic search dependencies not available")
-    
+        kwargs = {
+            "query": "machine learning algorithms",
+            "collection": "research_literature",
+        }
+        result = await semantic_search_tool_func(**kwargs)
+        assert "semantic search results" in result.lower()
+
     @pytest.mark.asyncio
     async def test_discover_patterns_tool(self):
-        """Test pattern discovery in research content"""
-        try:
-            test_content = """
-            Machine learning algorithms include neural networks, 
-            decision trees, and support vector machines. These algorithms
-            are used for classification and regression tasks.
-            """
-            
-            result = await discover_patterns_tool(
-                content=test_content,
-                pattern_type="concepts",
-                min_frequency=1
-            )
-            
-            assert result is not None
-            # Tools may return string directly or MCP format
-            if isinstance(result, dict) and "content" in result:
-                assert "content" in result
-            elif isinstance(result, str):
-                assert len(result) > 0  # Should return some result text
-            else:
-                # Accept any non-None result
-                assert result is not None
-            
-        except ImportError:
-            pytest.skip("Pattern discovery dependencies not available")
-    
+        kwargs = {"content": "Machine learning algorithms include neural networks."}
+        result = await discover_patterns_tool_func(**kwargs)
+        assert "discovered patterns" in result.lower()
+
     @pytest.mark.asyncio
     async def test_build_knowledge_graph_tool(self):
-        """Test knowledge graph construction"""
-        try:
-            project_path = self.create_test_project("knowledge_graph")
-            
-            test_documents = [
-                "Neural networks are machine learning models.",
-                "Deep learning uses neural networks with many layers."
-            ]
-            
-            result = await build_knowledge_graph_tool(
-                documents=test_documents,
-                project_path=str(project_path),
-                relationship_types=["is_a", "uses", "contains"]
-            )
-            
-            assert result is not None
-            # Tools may return string directly or MCP format
-            if isinstance(result, dict) and "content" in result:
-                assert "content" in result
-            elif isinstance(result, str):
-                assert len(result) > 0  # Should return some result text
-            else:
-                # Accept any non-None result
-                assert result is not None
-            
-        except ImportError:
-            pytest.skip("Knowledge graph dependencies not available")
-    
+        kwargs = {"documents": ["Neural networks are models."]}
+        result = await build_knowledge_graph_tool_func(**kwargs)
+        assert "knowledge graph built" in result.lower()
+
     @pytest.mark.asyncio
     async def test_find_similar_documents_tool(self):
-        """Test document similarity search"""
-        try:
-            project_path = self.create_test_project("similar_docs")
-            
-            target_doc = "Machine learning is a subset of artificial intelligence"
-            
-            result = await find_similar_documents_tool(
-                target_document=target_doc,
-                project_path=str(project_path),
-                max_results=3,
-                similarity_threshold=0.5
-            )
-            
-            assert result is not None
-            # Tools may return string directly or MCP format
-            if isinstance(result, dict) and "content" in result:
-                assert "content" in result
-            elif isinstance(result, str):
-                assert len(result) > 0  # Should return some result text
-            else:
-                # Accept any non-None result
-                assert result is not None
-            
-        except ImportError:
-            pytest.skip("Document similarity dependencies not available")
-    
+        kwargs = {"target_document": "Machine learning is a subset of AI"}
+        result = await find_similar_documents_tool_func(**kwargs)
+        assert "similar documents found" in result.lower()
+
     @pytest.mark.asyncio
     async def test_extract_key_concepts_tool(self):
-        """Test key concept extraction"""
-        try:
-            test_text = """
-            Artificial intelligence and machine learning are transforming
-            many industries. Natural language processing enables computers
-            to understand human language. Computer vision allows machines
-            to interpret visual information.
-            """
-            
-            result = await extract_key_concepts_tool(
-                text=test_text,
-                max_concepts=5,
-                concept_types=["technology", "field", "capability"]
-            )
-            
-            assert result is not None
-            # Tools may return string directly or MCP format
-            if isinstance(result, dict) and "content" in result:
-                assert "content" in result
-            elif isinstance(result, str):
-                assert len(result) > 0  # Should return some result text
-            else:
-                # Accept any non-None result
-                assert result is not None
-            
-        except ImportError:
-            pytest.skip("Key concept extraction dependencies not available")
-    
+        kwargs = {
+            "text": "Artificial intelligence and machine learning are transforming industries."
+        }
+        result = await extract_key_concepts_tool_func(**kwargs)
+        assert "extracted key concepts" in result.lower()
+
     @pytest.mark.asyncio
     async def test_generate_research_summary_tool(self):
-        """Test research summary generation"""
-        try:
-            test_documents = [
-                "Machine learning algorithms learn from data",
-                "Neural networks are inspired by biological neurons",
-                "Deep learning achieves state-of-the-art performance"
-            ]
-            
-            result = await generate_research_summary_tool(
-                documents=test_documents,
-                summary_type="comprehensive",
-                max_length=200
-            )
-            
-            assert result is not None
-            # Tools may return string directly or MCP format
-            if isinstance(result, dict) and "content" in result:
-                assert "content" in result
-            elif isinstance(result, str):
-                assert len(result) > 0  # Should return some result text
-            else:
-                # Accept any non-None result
-                assert result is not None
-            
-        except ImportError:
-            pytest.skip("Research summary dependencies not available")
+        kwargs = {"documents": ["Machine learning algorithms learn from data."]}
+        result = await generate_research_summary_tool_func(**kwargs)
+        assert "research summary" in result.lower()
 
 
-@pytest.mark.skipif(not SEARCH_TOOLS_AVAILABLE, reason="Search & Discovery tools not available")
+@pytest.mark.skipif(
+    not SEARCH_TOOLS_AVAILABLE, reason="Search & Discovery tools not available"
+)
 class TestSearchToolRegistration:
     """Test search and discovery tool registration"""
-    
+
     def test_search_tools_registration(self):
-        """Test that search tools are properly registered"""
-        try:
-            mock_server = Mock()
-            mock_server.register_tool = Mock()
-            
-            # Register tools
-            register_search_tools(mock_server)
-            
-            # Verify tools were registered
-            assert mock_server.register_tool.called
-            
-        except ImportError:
-            pytest.skip("Search tools not available")
+        mock_server = Mock()
+        mock_server.register_tool = Mock()
+        register_search_tools(mock_server)
+        assert mock_server.register_tool.called
 
 
-@pytest.mark.skipif(not SEARCH_TOOLS_AVAILABLE, reason="Search & Discovery tools not available")
+@pytest.mark.skipif(
+    not SEARCH_TOOLS_AVAILABLE, reason="Search & Discovery tools not available"
+)
+@pytest.mark.usefixtures("initialized_project")
 class TestSearchToolParameters:
     """Test search and discovery tool parameter validation"""
-    
+
     @pytest.mark.asyncio
     async def test_semantic_search_parameter_validation(self):
-        """Test semantic search parameter validation"""
-        try:
-            # Test with minimal required parameters (tools may have defaults)
-            result = await semantic_search_tool(query="test query")
-            assert result is not None
-            
-            # Test with empty query (should still work or handle gracefully) 
-            result_empty = await semantic_search_tool(query="")
-            assert result_empty is not None
-            
-        except ImportError:
-            pytest.skip("Semantic search not available")
-    
-    @pytest.mark.asyncio  
+        result = await semantic_search_tool_func(query="test query")
+        assert "semantic search results" in result.lower()
+        with pytest.raises(TypeError):
+            await semantic_search_tool_func()
+
+    @pytest.mark.asyncio
     async def test_discover_patterns_parameter_validation(self):
-        """Test pattern discovery parameter validation"""
-        try:
-            # Test with minimal required parameters (tools may have defaults)
-            result = await discover_patterns_tool(content="test content")
-            assert result is not None
-            
-            # Test with empty content (should handle gracefully)
-            result_empty = await discover_patterns_tool(content="")
-            assert result_empty is not None
-            
-        except ImportError:
-            pytest.skip("Pattern discovery not available")
+        result = await discover_patterns_tool_func(content="test content")
+        assert "discovered patterns" in result.lower()
+        with pytest.raises(TypeError):
+            await discover_patterns_tool_func()
 
 
 if __name__ == "__main__":

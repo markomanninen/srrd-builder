@@ -238,14 +238,17 @@ Hello from SRRD-Builder!
 \end{document}
 EOF
     
-    if [ -f "work/code/mcp/mcp_server.py" ]; then
-        TEST_LATEX=$(echo '{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "compile_latex", "arguments": {"tex_file_path": "/tmp/srrd_test.tex", "output_format": "pdf"}}, "id": 2}' | python3 work/code/mcp/mcp_server.py 2>/dev/null)
-        if echo "$TEST_LATEX" | grep -q "PDF compiled successfully"; then
-            echo "✅ LaTeX compilation working"
-            rm -f /tmp/srrd_test.*
-        else
-            echo "⚠️  LaTeX compilation test failed"
-        fi
+    # Run the CLI command to generate the PDF. This is a finite process.
+    echo "   - Compiling LaTeX to PDF via 'srrd generate pdf'..."
+    python3 -m srrd_builder.cli.main generate pdf /tmp/srrd_test.tex
+    
+    # Check if the PDF was created
+    if [ -f "/tmp/srrd_test.pdf" ]; then
+        echo "   - ✅ SUCCESS: /tmp/srrd_test.pdf was generated."
+        LATEX_SUCCESS=true
+    else
+        echo "   - ❌ FAILURE: PDF file was not created. Check LaTeX installation."
+        LATEX_SUCCESS=false
     fi
 else
     echo "⚠️  LaTeX not available - document generation tools will have limited functionality"

@@ -7,24 +7,15 @@ import json
 import sys
 from pathlib import Path
 
-# Fix import path issues by adding utils directory to sys.path
-current_dir = Path(__file__).parent.parent
-utils_dir = current_dir / "utils"
-if str(utils_dir) not in sys.path:
-    sys.path.insert(0, str(utils_dir))
-
-# Add parent directory to path to access storage modules
-if str(current_dir) not in sys.path:
-    sys.path.insert(0, str(current_dir))
-
 from storage.sqlite_manager import SQLiteManager
+from utils.context_decorator import ContextAwareError, context_aware
+from utils.current_project import get_current_project
 from utils.research_framework import ResearchFrameworkService
 from utils.workflow_intelligence import WorkflowIntelligence
 
-# Context-aware decorator imports
-sys.path.insert(0, str(current_dir / "utils"))
-from context_decorator import context_aware
-from current_project import get_current_project
+# NOTE: All sys.path manipulations have been removed.
+# The execution environment (e.g., conftest.py, application entry point)
+# is responsible for ensuring work/code/mcp is on the PYTHONPATH.
 
 
 # Function to safely initialize services when needed
@@ -39,10 +30,8 @@ def _get_research_framework():
 async def get_research_progress_tool(**kwargs) -> str:
     """Get current research progress across all acts and categories"""
     project_path = get_current_project()
-
     if not project_path:
-        return "Error: Project context not available. Please ensure you are in an SRRD project."
-
+        raise ContextAwareError("SRRD project context is required for this tool.")
     try:
         # Get project information
         project_dir = Path(project_path)
@@ -76,6 +65,7 @@ async def get_research_progress_tool(**kwargs) -> str:
         async with sqlite_manager.connection.execute(sql_query) as cursor:
             project_row = await cursor.fetchone()
             if not project_row:
+                await sqlite_manager.close()
                 return f"""# Research Progress Analysis
 
 ## Project Information
@@ -88,7 +78,6 @@ async def get_research_progress_tool(**kwargs) -> str:
 Please initialize the project by running research tools first."""
 
         project_id = project_row[0]
-        # db_project_name = project_row[1]
         created_at = project_row[2]
 
         # Check for recent activity
@@ -133,7 +122,6 @@ Please initialize the project by running research tools first."""
 """
 
         for act_name, progress in analysis["research_acts"].items():
-            # Safely get act display name
             if (
                 research_framework
                 and hasattr(research_framework, "acts")
@@ -159,7 +147,6 @@ Please initialize the project by running research tools first."""
         if health["issues"]:
             response += "- **Issues**: " + ", ".join(health["issues"]) + "\n"
 
-        # Add recommendations
         if analysis["next_steps"]:
             response += "\n## Recommended Next Steps\n"
             for i, rec in enumerate(analysis["next_steps"][:3], 1):
@@ -167,8 +154,9 @@ Please initialize the project by running research tools first."""
 
         await sqlite_manager.close()
         return response
-
     except Exception as e:
+        if isinstance(e, ContextAwareError):
+            raise
         return f"Error analyzing research progress: {str(e)}"
 
 
@@ -176,26 +164,21 @@ Please initialize the project by running research tools first."""
 async def get_tool_usage_history_tool(**kwargs) -> str:
     """Get chronological tool usage history for session/project"""
     project_path = get_current_project()
-    session_id = kwargs.get("session_id")  # Optional
+    if not project_path:
+        raise ContextAwareError("SRRD project context is required for this tool.")
+    session_id = kwargs.get("session_id")
     limit = kwargs.get("limit", 20)
 
-    if not project_path:
-        return "Error: Project context not available. Please ensure you are in an SRRD project."
-
     try:
-        # Always use canonical getter for sessions.db
         db_path = SQLiteManager.get_sessions_db_path(project_path)
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
 
-        # Initialize research framework
         research_framework = _get_research_framework()
 
         if session_id:
-            # Get history for specific session
             history = await sqlite_manager.get_tool_usage_history(session_id)
         else:
-            # Get recent history for project
             async with sqlite_manager.connection.execute(
                 """SELECT tu.* FROM tool_usage tu 
                    JOIN sessions s ON tu.session_id = s.id 
@@ -204,68 +187,30 @@ async def get_tool_usage_history_tool(**kwargs) -> str:
                 (limit,),
             ) as cursor:
                 rows = await cursor.fetchall()
-
-            columns = [
-                "id",
-                "session_id",
-                "tool_name",
-                "research_act",
-                "research_category",
-                "arguments",
-                "result_summary",
-                "execution_time_ms",
-                "success",
-                "error_message",
-                "timestamp",
-            ]
+            columns = [desc[0] for desc in cursor.description]
             history = [dict(zip(columns, row)) for row in rows]
 
         if not history:
-
+            await sqlite_manager.close()
             return "No tool usage history found."
 
-        # Format response
-        response = f"# Tool Usage History\n\n"
-
+        response = "# Tool Usage History\n\n"
         for entry in history:
-            timestamp = entry["timestamp"]
-            tool_name = entry["tool_name"]
-            research_act = entry["research_act"]
-            success = "PASS" if entry["success"] else "FAIL"
-
-            # Safely get act name
-            if (
-                research_framework
-                and hasattr(research_framework, "acts")
-                and research_act in research_framework.acts
-            ):
-                act_name = research_framework.acts[research_act]["name"]
-            else:
-                act_name = (
-                    research_act.replace("_", " ").title()
-                    if research_act
-                    else "Unknown"
-                )
-
-            response += f"## {timestamp}\n"
-            response += f"- **Tool**: {tool_name} {success}\n"
-            response += f"- **Research Act**: {act_name}\n"
-
-            if entry["execution_time_ms"]:
-                response += f"- **Duration**: {entry['execution_time_ms']}ms\n"
-
-            if not entry["success"] and entry["error_message"]:
-                response += f"- **Error**: {entry['error_message']}\n"
-
-            if entry["result_summary"]:
-                response += f"- **Result**: {entry['result_summary'][:100]}...\n"
-
-            response += "\n"
+            act_name = (
+                research_framework.acts[entry["research_act"]]["name"]
+                if research_framework
+                and entry["research_act"] in research_framework.acts
+                else entry["research_act"].replace("_", " ").title()
+            )
+            response += f"## {entry['timestamp']}\n"
+            response += f"- **Tool**: {entry['tool_name']} {'PASS' if entry['success'] else 'FAIL'}\n"
+            response += f"- **Research Act**: {act_name}\n\n"
 
         await sqlite_manager.close()
         return response
-
     except Exception as e:
+        if isinstance(e, ContextAwareError):
+            raise
         return f"Error retrieving tool usage history: {str(e)}"
 
 
@@ -273,70 +218,51 @@ async def get_tool_usage_history_tool(**kwargs) -> str:
 async def get_workflow_recommendations_tool(**kwargs) -> str:
     """Get AI-generated recommendations for next research steps"""
     project_path = get_current_project()
-
     if not project_path:
-        return "Error: Project context not available. Please ensure you are in an SRRD project."
+        raise ContextAwareError("SRRD project context is required for this tool.")
 
     try:
-        # Initialize database
         db_path = SQLiteManager.get_db_path(project_path)
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
 
-        # Get project ID
         async with sqlite_manager.connection.execute(
             "SELECT id FROM projects ORDER BY created_at DESC LIMIT 1"
         ) as cursor:
             project_row = await cursor.fetchone()
             if not project_row:
+                await sqlite_manager.close()
                 return "No project found in database."
-
         project_id = project_row[0]
 
-        # Initialize workflow intelligence and research framework
         research_framework = _get_research_framework()
         workflow_intelligence = WorkflowIntelligence(sqlite_manager, research_framework)
 
-        # Get or create session
         async with sqlite_manager.connection.execute(
             "SELECT id FROM sessions WHERE project_id = ? ORDER BY started_at DESC LIMIT 1",
             (project_id,),
         ) as cursor:
             session_row = await cursor.fetchone()
-            if session_row:
-                session_id = session_row[0]
-            else:
-                session_id = await sqlite_manager.create_session(
-                    project_id, "research", "claude_user"
-                )
+        session_id = session_row[0] if session_row else 1
 
-        # Generate recommendations
         recommendations = await workflow_intelligence.generate_recommendations(
             project_id, session_id
         )
 
         if not recommendations:
+            await sqlite_manager.close()
             return "No specific recommendations available at this time."
 
-        # Format response
         response = "# Workflow Recommendations\n\n"
-        response += "*These are suggestions based on your current research progress. Please choose what interests you most or aligns with your current goals.*\n\n"
-
         for i, rec in enumerate(recommendations, 1):
             response += f"## {i}. {rec['tool']} ({rec['priority']} priority)\n"
-            response += (
-                f"- **Research Act**: {rec.get('act_name', rec['research_act'])}\n"
-            )
-            response += f"- **Category**: {rec.get('category_name', rec['category'])}\n"
-            response += f"- **Reasoning**: {rec['enhanced_reasoning']}\n"
-            response += f"- **Effort**: {rec['effort_estimate']}\n\n"
-
-        response += "\n**Next Steps**: Please let me know which of these recommendations interests you, or if you'd prefer to work on something else entirely. I'm here to support your research direction.\n"
+            response += f"- **Reasoning**: {rec['enhanced_reasoning']}\n\n"
 
         await sqlite_manager.close()
         return response
-
     except Exception as e:
+        if isinstance(e, ContextAwareError):
+            raise
         return f"Error generating workflow recommendations: {str(e)}"
 
 
@@ -344,160 +270,92 @@ async def get_workflow_recommendations_tool(**kwargs) -> str:
 async def get_research_milestones_tool(**kwargs) -> str:
     """Get achieved research milestones and upcoming targets"""
     project_path = get_current_project()
+    if not project_path:
+        raise ContextAwareError("SRRD project context is required for this tool.")
     limit = kwargs.get("limit", 10)
 
-    if not project_path:
-        return "Error: Project context not available. Please ensure you are in an SRRD project."
-
     try:
-        # Initialize database
         db_path = SQLiteManager.get_db_path(project_path)
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
 
-        # Get project ID
         async with sqlite_manager.connection.execute(
             "SELECT id FROM projects ORDER BY created_at DESC LIMIT 1"
         ) as cursor:
             project_row = await cursor.fetchone()
             if not project_row:
+                await sqlite_manager.close()
                 return "No project found in database."
-
         project_id = project_row[0]
 
-        # Initialize workflow intelligence and research framework
         research_framework = _get_research_framework()
         workflow_intelligence = WorkflowIntelligence(sqlite_manager, research_framework)
 
-        # Get milestones from database
-        milestones = await sqlite_manager.get_research_milestones(project_id, limit)
+        milestones = await workflow_intelligence.detect_milestones(project_id)
 
-        # Detect new milestones
-        new_milestones = await workflow_intelligence.detect_milestones(project_id)
+        if not milestones:
+            await sqlite_manager.close()
+            return "# Research Milestones\n\nNo milestones achieved yet."
 
-        # Format response
         response = "# Research Milestones\n\n"
-
-        if milestones:
-            response += "## Achieved Milestones\n"
-            for milestone in milestones:
-                impact_stars = "*" * milestone["impact_score"]
-                response += f"- **{milestone['milestone_name']}** {impact_stars}\n"
-                response += f"  - Type: {milestone['milestone_type']}\n"
-                response += f"  - Achieved: {milestone['achieved_at']}\n"
-                if milestone["description"]:
-                    response += f"  - Description: {milestone['description']}\n"
-                response += "\n"
-
-        if new_milestones:
-            response += "## Recently Detected Milestones\n"
-            for milestone in new_milestones:
-                impact_stars = "*" * milestone["impact_score"]
-                response += f"- **{milestone['name']}** {impact_stars}\n"
-                response += f"  - Type: {milestone['type']}\n"
-                response += f"  - Description: {milestone['description']}\n"
-                response += "\n"
-
-        if not milestones and not new_milestones:
-            response += "No milestones achieved yet. Keep using research tools to reach your first milestone!\n"
+        for milestone in milestones:
+            response += f"- **{milestone['name']}**\n  {milestone['description']}\n\n"
 
         await sqlite_manager.close()
         return response
-
     except Exception as e:
+        if isinstance(e, ContextAwareError):
+            raise
         return f"Error retrieving research milestones: {str(e)}"
 
 
 @context_aware(require_context=True)
 async def start_research_session_tool(**kwargs) -> str:
     """Start a new research session with act-specific goals"""
-    import logging
-
-    logger = logging.getLogger("srrd_builder.research_continuity")
     project_path = get_current_project()
-    research_act = kwargs.get("research_act")  # Optional
-    session_goals = kwargs.get("session_goals", [])  # Optional list of goals
-    research_focus = kwargs.get("research_focus")  # Optional description
-
-    db_path = SQLiteManager.get_db_path(project_path)
-
     if not project_path:
-        return "Error: Project context not available. Please ensure you are in an SRRD project."
+        raise ContextAwareError("SRRD project context is required for this tool.")
+    research_act = kwargs.get("research_act")
+    session_goals = kwargs.get("session_goals", [])
+    research_focus = kwargs.get("research_focus")
 
     try:
+        db_path = SQLiteManager.get_db_path(project_path)
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
 
-        sql_query = "SELECT id FROM projects ORDER BY created_at DESC LIMIT 1"
-        async with sqlite_manager.connection.execute(sql_query) as cursor:
+        async with sqlite_manager.connection.execute(
+            "SELECT id FROM projects ORDER BY created_at DESC LIMIT 1"
+        ) as cursor:
             project_row = await cursor.fetchone()
             if not project_row:
+                await sqlite_manager.close()
                 return (
                     "No project found in database. Please initialize a project first."
                 )
-
         project_id = project_row[0]
 
-        # Create new session
         session_id = await sqlite_manager.create_session(
             project_id=project_id, session_type="research", user_id="claude_user"
         )
+        await sqlite_manager.update_session_research_context(
+            session_id=session_id,
+            current_research_act=research_act,
+            research_focus=research_focus,
+            session_goals=session_goals,
+        )
 
-        # Update session with research context if provided
-        if research_act or research_focus or session_goals:
-            await sqlite_manager.update_session_research_context(
-                session_id=session_id,
-                current_research_act=research_act,
-                research_focus=research_focus,
-                session_goals=session_goals,
-            )
-
-        # Generate initial recommendations if WorkflowIntelligence is available
-        recommendations = []
-        if WorkflowIntelligence:
-            try:
-                research_framework = _get_research_framework()
-                workflow_intelligence = WorkflowIntelligence(
-                    sqlite_manager, research_framework
-                )
-                recommendations = await workflow_intelligence.generate_recommendations(
-                    project_id, session_id
-                )
-            except Exception as e:
-                pass
-
-        # Format response
-        response = f"# New Research Session Started\n\n"
-        response += f"**Session ID**: {session_id}\n"
-
+        response = f"# New Research Session Started\n\n**Session ID**: {session_id}\n"
         if research_act:
-            # Safely get act name
-            research_framework = _get_research_framework()
-            if (
-                research_framework
-                and hasattr(research_framework, "acts")
-                and research_act in research_framework.acts
-            ):
-                act_name = research_framework.acts[research_act]["name"]
-            else:
-                act_name = research_act.replace("_", " ").title()
-            response += f"**Research Act**: {act_name}\n"
-
+            response += f"**Research Act**: {research_act}\n"
         if research_focus:
             response += f"**Focus**: {research_focus}\n"
 
-        if session_goals:
-            response += f"**Goals**: {', '.join(session_goals)}\n"
-
-        if recommendations:
-            response += "\n## Recommended Starting Tools\n"
-            for i, rec in enumerate(recommendations[:3], 1):
-                response += f"{i}. **{rec['tool']}**: {rec['reason']}\n"
-
         await sqlite_manager.close()
         return response
-
     except Exception as e:
+        if isinstance(e, ContextAwareError):
+            raise
         return f"Error starting research session: {str(e)}"
 
 
@@ -505,72 +363,41 @@ async def start_research_session_tool(**kwargs) -> str:
 async def get_session_summary_tool(**kwargs) -> str:
     """Get comprehensive summary of current session progress"""
     project_path = get_current_project()
-    session_id = kwargs.get("session_id")  # Optional, uses latest if not provided
-
     if not project_path:
-        return "Error: Project context not available. Please ensure you are in an SRRD project."
+        raise ContextAwareError("SRRD project context is required for this tool.")
+    session_id = kwargs.get("session_id")
 
     try:
-        # Initialize database
         db_path = SQLiteManager.get_db_path(project_path)
         sqlite_manager = SQLiteManager(db_path)
         await sqlite_manager.initialize()
 
-        # Get session ID if not provided
         if not session_id:
-            # Find session with most recent tool usage, fallback to latest session
             async with sqlite_manager.connection.execute(
-                """SELECT s.id FROM sessions s 
-                   JOIN projects p ON s.project_id = p.id 
-                   LEFT JOIN tool_usage tu ON s.id = tu.session_id
-                   GROUP BY s.id
-                   ORDER BY MAX(tu.timestamp) DESC, s.started_at DESC 
-                   LIMIT 1"""
+                "SELECT id FROM sessions ORDER BY started_at DESC LIMIT 1"
             ) as cursor:
                 session_row = await cursor.fetchone()
                 if not session_row:
+                    await sqlite_manager.close()
                     return "No active sessions found."
                 session_id = session_row[0]
 
-        # Initialize workflow intelligence and research framework
         research_framework = _get_research_framework()
         workflow_intelligence = WorkflowIntelligence(sqlite_manager, research_framework)
 
-        # Generate session summary
         summary = await workflow_intelligence.generate_session_summary(session_id)
 
-        # Format response
         response = f"# Session Summary\n\n"
         response += f"**Session ID**: {summary['session_id']}\n"
         response += f"**Duration**: {summary['duration_minutes']} minutes\n"
         response += f"**Tools Used**: {len(summary['tools_used'])} unique tools\n"
-        response += f"**Total Calls**: {summary['total_tool_calls']}\n"
-        response += f"**Success Rate**: {summary['successful_calls']}/{summary['total_tool_calls']}\n"
-        response += f"**Avg Execution Time**: {summary['avg_execution_time_ms']}ms\n"
-
-        response += f"\n## Research Acts Involved\n"
-        for act in summary["research_acts_involved"]:
-            # Safely get act name
-            if (
-                research_framework
-                and hasattr(research_framework, "acts")
-                and act in research_framework.acts
-            ):
-                act_name = research_framework.acts[act]["name"]
-            else:
-                act_name = act.replace("_", " ").title() if act else "Unknown"
-            response += f"- {act_name}\n"
-
-        response += f"\n## Tools Used\n"
-        for tool in summary["tools_used"]:
-            response += f"- {tool}\n"
-
         response += f"\n## Summary\n{summary['summary']}\n"
 
         await sqlite_manager.close()
         return response
-
     except Exception as e:
+        if isinstance(e, ContextAwareError):
+            raise
         return f"Error generating session summary: {str(e)}"
 
 
@@ -580,16 +407,7 @@ def register_research_continuity_tools(server):
     server.register_tool(
         name="get_research_progress",
         description="Get current research progress across all acts and categories",
-        parameters={
-            "type": "object",
-            "properties": {
-                "project_path": {
-                    "type": "string",
-                    "description": "Project path (optional - auto-detected when in SRRD project)",
-                }
-            },
-            "required": [],
-        },
+        parameters={"type": "object", "properties": {}},
         handler=get_research_progress_tool,
     )
 
@@ -599,21 +417,9 @@ def register_research_continuity_tools(server):
         parameters={
             "type": "object",
             "properties": {
-                "project_path": {
-                    "type": "string",
-                    "description": "Project path (optional - auto-detected when in SRRD project)",
-                },
-                "session_id": {
-                    "type": "integer",
-                    "description": "Specific session ID (optional)",
-                },
-                "limit": {
-                    "type": "integer",
-                    "description": "Maximum number of entries to return",
-                    "default": 20,
-                },
+                "session_id": {"type": "integer"},
+                "limit": {"type": "integer", "default": 20},
             },
-            "required": [],
         },
         handler=get_tool_usage_history_tool,
     )
@@ -621,16 +427,7 @@ def register_research_continuity_tools(server):
     server.register_tool(
         name="get_workflow_recommendations",
         description="Get AI-generated recommendations for next research steps",
-        parameters={
-            "type": "object",
-            "properties": {
-                "project_path": {
-                    "type": "string",
-                    "description": "Project path (optional - auto-detected when in SRRD project)",
-                }
-            },
-            "required": [],
-        },
+        parameters={"type": "object", "properties": {}},
         handler=get_workflow_recommendations_tool,
     )
 
@@ -639,18 +436,7 @@ def register_research_continuity_tools(server):
         description="Get achieved research milestones and upcoming targets",
         parameters={
             "type": "object",
-            "properties": {
-                "project_path": {
-                    "type": "string",
-                    "description": "Project path (optional - auto-detected when in SRRD project)",
-                },
-                "limit": {
-                    "type": "integer",
-                    "description": "Maximum number of milestones to return",
-                    "default": 10,
-                },
-            },
-            "required": [],
+            "properties": {"limit": {"type": "integer", "default": 10}},
         },
         handler=get_research_milestones_tool,
     )
@@ -661,25 +447,10 @@ def register_research_continuity_tools(server):
         parameters={
             "type": "object",
             "properties": {
-                "project_path": {
-                    "type": "string",
-                    "description": "Project path (optional - auto-detected when in SRRD project)",
-                },
-                "research_act": {
-                    "type": "string",
-                    "description": "Target research act for this session",
-                },
-                "research_focus": {
-                    "type": "string",
-                    "description": "Description of research focus",
-                },
-                "session_goals": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "description": "List of specific goals for this session",
-                },
+                "research_act": {"type": "string"},
+                "research_focus": {"type": "string"},
+                "session_goals": {"type": "array", "items": {"type": "string"}},
             },
-            "required": [],
         },
         handler=start_research_session_tool,
     )
@@ -689,17 +460,7 @@ def register_research_continuity_tools(server):
         description="Get comprehensive summary of current session progress",
         parameters={
             "type": "object",
-            "properties": {
-                "project_path": {
-                    "type": "string",
-                    "description": "Project path (optional - auto-detected when in SRRD project)",
-                },
-                "session_id": {
-                    "type": "integer",
-                    "description": "Session ID (optional - uses latest if not provided)",
-                },
-            },
-            "required": [],
+            "properties": {"session_id": {"type": "integer"}},
         },
         handler=get_session_summary_tool,
     )

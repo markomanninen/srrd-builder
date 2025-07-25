@@ -352,3 +352,9 @@ python -m pytest -c /dev/null \
 "work/tests/unit/test_research_continuity_tools.py::T
 estResearchContinuityIntegration::test_tool_context_awareness" \
 -vv --tb=long --showlocals --full-trace -s --maxfail=1 --log-cli-level=DEBUG
+
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 PYTEST_ADDOPTS="" \
+python -m pytest -c /dev/null \
+-p pytest_asyncio.plugin \
+"work/tests/unit/tools/test_search_discovery.py::TestSearchDiscoveryTools::test_semantic_search_tool" \
+-vv --tb=long --showlocals --full-trace -s --maxfail=1 --log-cli-level=DEBUG

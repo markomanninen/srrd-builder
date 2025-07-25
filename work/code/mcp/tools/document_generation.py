@@ -11,6 +11,7 @@ from datetime import datetime
 from pathlib import Path
 
 from storage.project_manager import ProjectManager
+from storage.vector_manager import VectorManager
 
 current_dir = Path(__file__).parent.parent
 utils_dir = current_dir / "utils"
@@ -20,7 +21,8 @@ if str(utils_dir) not in sys.path:
 from context_decorator import context_aware
 from current_project import get_current_project as get_project_path
 
-# LaTeX template for scientific research documents - FIXED VERSION
+# --- (LaTeXTemplateManager class and LATEX_TEMPLATE remain unchanged) ---
+# ... (omitted for brevity, same as before) ...
 LATEX_TEMPLATE = r"""\documentclass[12pt,a4paper]{{article}}
 \usepackage[utf8]{{inputenc}}
 \usepackage[T1]{{fontenc}}
@@ -72,7 +74,6 @@ LATEX_TEMPLATE = r"""\documentclass[12pt,a4paper]{{article}}
 """
 
 
-# Enhanced LaTeX Template System
 class LaTeXTemplateManager:
     """Manages multiple LaTeX templates for different document types and journals"""
 
@@ -329,10 +330,12 @@ Additional materials and appendices can be added here.
         }
 
 
-# Initialize global template manager
+# ... (rest of the class is the same) ...
 template_manager = LaTeXTemplateManager()
 
 
+# --- (generate_latex_document_tool, compile_latex_tool, etc. remain unchanged) ---
+# ... (omitted for brevity, same as before) ...
 @context_aware(require_context=True)
 async def generate_latex_document_tool(**kwargs) -> str:
     """Generate LaTeX document from research content"""
@@ -457,7 +460,7 @@ async def compile_latex_tool(**kwargs) -> str:
         return f"Error compiling LaTeX: {str(e)}"
 
 
-@context_aware(require_context=True)
+@context_aware(require_context=False)
 async def format_research_content_tool(**kwargs) -> str:
     """Format research content according to academic standards"""
 
@@ -506,7 +509,7 @@ async def format_research_content_tool(**kwargs) -> str:
         return f"Error formatting content: {str(e)}"
 
 
-@context_aware(require_context=True)
+@context_aware(require_context=False)
 async def generate_bibliography_tool(**kwargs) -> str:
     """Generate LaTeX bibliography from reference list"""
 
@@ -544,17 +547,20 @@ async def generate_bibliography_tool(**kwargs) -> str:
         return f"Error generating bibliography: {str(e)}"
 
 
-@context_aware(require_context=True)
+@context_aware(require_context=False)
 async def extract_document_sections_tool(**kwargs) -> str:
     """Extract and identify sections from document content for modular LaTeX management"""
 
     try:
         document_content = kwargs.get("document_content", "")
-        project_path = get_project_path()
         create_separate_files = kwargs.get("create_separate_files", False)
 
         if not document_content:
             return "Error: Missing required parameter 'document_content'"
+
+        project_path = get_project_path()
+        if create_separate_files and not project_path:
+            return "Error: A project context is required when create_separate_files is True."
 
         # Define section patterns for academic papers
         section_patterns = [
@@ -684,176 +690,81 @@ async def extract_document_sections_tool(**kwargs) -> str:
 @context_aware(require_context=True)
 async def store_bibliography_reference_tool(**kwargs) -> str:
     """Store a bibliography reference in the vector database for future retrieval"""
-
     try:
         reference = kwargs.get("reference", {})
         project_path = get_project_path()
 
-        # DEBUG: Log what we received
-        import os
+        if not reference or not project_path:
+            return "Error: Missing required parameters or project context."
 
-        debug_info = f"DEBUG - store_bibliography_reference_tool called with:\n"
-        debug_info += f"  project_path: {project_path}\n"
-        debug_info += f"  SRRD_PROJECT_PATH env: {os.getenv('SRRD_PROJECT_PATH')}\n"
-        debug_info += f"  Current working directory: {os.getcwd()}\n"
-        print(debug_info)
-
-        if not reference:
-            return "Error: Missing required parameter 'reference'"
-
-        if not project_path:
-            return "Error: Project context not available. Please ensure you are in an SRRD project or provide project_path parameter."
-
-        # Import vector manager for storage
-        import os
-
-        # Create VectorManager with project-specific path
-        from storage import get_srrd_db_path
-        from storage.vector_manager import VectorManager
-
-        vector_db_path = get_srrd_db_path()
-        vector_manager = VectorManager(db_path=vector_db_path)
-
-        # Initialize the vector manager
+        project_manager = ProjectManager(project_path)
+        # *** FIX: Use the existing VectorManager instance from ProjectManager ***
+        vector_manager = project_manager.vector_manager
         await vector_manager.initialize()
 
-        # Check if research_literature collection exists
         if "research_literature" not in vector_manager.collections:
             return (
-                "Error: research_literature collection not available in vector database"
+                "Error: 'research_literature' collection not found in vector database."
             )
 
-        # Format reference for storage
-        reference_text = f"""
-        Title: {reference.get('title', 'Unknown Title')}
-        Authors: {reference.get('authors', 'Unknown Authors')}
-        Year: {reference.get('year', 'Unknown Year')}
-        Journal: {reference.get('journal', 'Unknown Journal')}
-        Abstract: {reference.get('abstract', 'No abstract available')}
-        Keywords: {reference.get('keywords', [])}
-        DOI: {reference.get('doi', 'No DOI')}
-        """
-
-        # Store in research_literature collection
+        reference_text = f"Title: {reference.get('title', '')}\nAuthors: {reference.get('authors', '')}"
         doc_id = f"ref_{reference.get('title', 'unknown').replace(' ', '_').lower()}"
 
         await vector_manager.add_document(
             collection_name="research_literature",
             document=reference_text,
             doc_id=doc_id,
-            metadata={
-                "type": "bibliography_reference",
-                "title": reference.get("title", ""),
-                "authors": (
-                    ", ".join(reference.get("authors", []))
-                    if isinstance(reference.get("authors"), list)
-                    else str(reference.get("authors", ""))
-                ),
-                "year": str(reference.get("year", "")),
-                "journal": reference.get("journal", ""),
-                "doi": reference.get("doi", ""),
-                "keywords": (
-                    ", ".join(reference.get("keywords", []))
-                    if isinstance(reference.get("keywords"), list)
-                    else str(reference.get("keywords", ""))
-                ),
-            },
+            metadata={"type": "bibliography_reference", **reference},
         )
 
         return f"Bibliography reference stored successfully: {reference.get('title', 'Unknown Title')}"
 
     except Exception as e:
-        error_msg = f"Error storing bibliography reference: {str(e)}"
-        return error_msg
+        return f"Error storing bibliography reference: {str(e)}"
 
 
 @context_aware(require_context=True)
 async def retrieve_bibliography_references_tool(**kwargs) -> str:
     """Retrieve relevant bibliography references from the vector database based on search query"""
-
     try:
         query = kwargs.get("query", "")
-        max_results = kwargs.get("max_results", 5)
         project_path = get_project_path()
 
-        if not query:
-            return "Error: Missing required parameter 'query'"
+        if not query or not project_path:
+            return "Error: Missing required parameters or project context."
 
-        if not project_path:
-            return "Error: Project context not available. Please ensure you are in an SRRD project or provide project_path parameter."
-
-        # Import vector manager for retrieval
-        import os
-
-        from storage.vector_manager import VectorManager
-
-        # Create VectorManager with project-specific path
-        vector_db_path = str(Path(project_path) / ".srrd" / "knowledge.db")
-        vector_manager = VectorManager(db_path=vector_db_path)
-
-        # Initialize the vector manager
+        project_manager = ProjectManager(project_path)
+        # *** FIX: Use the existing VectorManager instance from ProjectManager ***
+        vector_manager = project_manager.vector_manager
         await vector_manager.initialize()
 
-        # Check if research_literature collection exists
         if "research_literature" not in vector_manager.collections:
-            return (
-                "Error: research_literature collection not available in vector database"
-            )
+            return "Error: 'research_literature' collection not available in vector database."
 
-        # Search for relevant references
         results = await vector_manager.search_knowledge(
-            query=query, collection="research_literature", n_results=max_results
+            query=query,
+            collection="research_literature",
+            n_results=kwargs.get("max_results", 5),
         )
 
-        # Format results as LaTeX bibliography
-        bib_entries = []
-        found_refs = []
-
-        metadatas = results.get("metadatas", [])
-        if metadatas and len(metadatas) > 0:
-            # metadatas is a list of lists, get the first list
-            metadata_list = (
-                metadatas[0] if isinstance(metadatas[0], list) else metadatas
-            )
-
-            for metadata in metadata_list:
-                if metadata and metadata.get("type") == "bibliography_reference":
-                    title = metadata.get("title", "Unknown Title")
-                    authors = metadata.get("authors", "Unknown Authors")
-                    year = metadata.get("year", "Unknown Year")
-                    journal = metadata.get("journal", "")
-
-                    # Create LaTeX bibitem
-                    ref_key = title.replace(" ", "_").lower()[:20]
-                    if journal:
-                        bib_entry = f"\\bibitem{{{ref_key}}} {authors}. {title}. \\textit{{{journal}}}, {year}."
-                    else:
-                        bib_entry = (
-                            f"\\bibitem{{{ref_key}}} {authors}. {title}. {year}."
-                        )
-
-                    bib_entries.append(bib_entry)
-                    found_refs.append(
-                        {
-                            "key": ref_key,
-                            "title": title,
-                            "authors": authors,
-                            "year": year,
-                            "journal": journal,
-                        }
-                    )
-
-        if not bib_entries:
+        metadatas = results.get("metadatas", [[]])[0]
+        if not metadatas:
             return f"No bibliography references found for query: {query}"
 
-        bibliography = "\n\n".join(bib_entries)
+        bib_entries = []
+        for meta in metadatas:
+            bib_entries.append(
+                f"\\bibitem{{{meta.get('title', 'ref').replace(' ', '_')}}} {meta.get('authors', '')}. {meta.get('title', '')}. {meta.get('year', '')}."
+            )
 
-        return f"Retrieved {len(bib_entries)} bibliography references:\n\n{bibliography}\n\nReference keys for citations: {[ref['key'] for ref in found_refs]}"
+        return f"Retrieved {len(bib_entries)} references:\n\n" + "\n".join(bib_entries)
 
     except Exception as e:
         return f"Error retrieving bibliography references: {str(e)}"
 
 
+# --- (Rest of the file remains unchanged) ---
+# ... (omitted for brevity, same as before) ...
 @context_aware(require_context=True)
 async def generate_document_with_database_bibliography_tool(**kwargs) -> str:
     """Generate LaTeX document with bibliography retrieved from vector database"""
@@ -921,7 +832,7 @@ async def generate_document_with_database_bibliography_tool(**kwargs) -> str:
         return f"Error generating document with database bibliography: {str(e)}"
 
 
-@context_aware(require_context=True)
+@context_aware(require_context=False)
 async def list_latex_templates_tool(**kwargs) -> str:
     """List all available LaTeX templates"""
     try:
@@ -1016,10 +927,6 @@ def register_document_tools(server):
                     "type": "string",
                     "description": "Bibliography content",
                 },
-                "project_path": {
-                    "type": "string",
-                    "description": "Project path for saving",
-                },
             },
             "required": ["title"],
         },
@@ -1094,38 +1001,9 @@ def register_document_tools(server):
                     "type": "string",
                     "description": "Document content to analyze",
                 },
-                "project_path": {
-                    "type": "string",
-                    "description": "Project path for creating separate files",
-                },
                 "create_separate_files": {
                     "type": "boolean",
                     "description": "Create separate .tex files for each section",
-                    "default": False,
-                },
-            },
-            "required": ["document_content"],
-        },
-        handler=extract_document_sections_tool,
-    )
-
-    server.register_tool(
-        name="extract_document_sections",
-        description="Extract and modularize document sections",
-        parameters={
-            "type": "object",
-            "properties": {
-                "document_content": {
-                    "type": "string",
-                    "description": "Full document content",
-                },
-                "project_path": {
-                    "type": "string",
-                    "description": "Project path for saving sections",
-                },
-                "create_separate_files": {
-                    "type": "boolean",
-                    "description": "Flag to create separate section files",
                     "default": False,
                 },
             },
@@ -1144,10 +1022,6 @@ def register_document_tools(server):
                     "type": "object",
                     "description": "Reference data with title, authors, year, journal, etc.",
                 },
-                "project_path": {
-                    "type": "string",
-                    "description": "Project path for vector database",
-                },
             },
             "required": ["reference"],
         },
@@ -1163,10 +1037,6 @@ def register_document_tools(server):
                 "query": {
                     "type": "string",
                     "description": "Search query for finding relevant references",
-                },
-                "project_path": {
-                    "type": "string",
-                    "description": "Project path for vector database",
                 },
                 "max_results": {
                     "type": "integer",
@@ -1196,10 +1066,6 @@ def register_document_tools(server):
                 "results": {"type": "string", "description": "Results section"},
                 "discussion": {"type": "string", "description": "Discussion section"},
                 "conclusion": {"type": "string", "description": "Conclusion section"},
-                "project_path": {
-                    "type": "string",
-                    "description": "Project path for saving",
-                },
                 "bibliography_query": {
                     "type": "string",
                     "description": "Query to retrieve relevant bibliography from database",
@@ -1237,10 +1103,6 @@ def register_document_tools(server):
                 "bibliography": {
                     "type": "string",
                     "description": "Bibliography content",
-                },
-                "project_path": {
-                    "type": "string",
-                    "description": "Project path for saving",
                 },
                 "template_type": {
                     "type": "string",

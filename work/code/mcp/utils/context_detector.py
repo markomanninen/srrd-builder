@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from current_project import get_current_project
+from .current_project import get_current_project
 
 logger = logging.getLogger(__name__)
 

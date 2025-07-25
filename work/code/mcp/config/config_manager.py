@@ -199,7 +199,7 @@ class ConfigManager:
         if os.getenv("SRRD_DB_PATH"):
             self.database.sqlite_path = os.getenv("SRRD_DB_PATH")
 
-        # Vector database settings - FIXED TO USE PROJECT PATH
+        # Vector database settings
         if os.getenv("SRRD_VECTOR_DIR"):
             self.vector.persist_directory = os.getenv("SRRD_VECTOR_DIR")
         elif os.getenv("SRRD_PROJECT_PATH"):

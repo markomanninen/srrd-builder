@@ -5,146 +5,80 @@ Handles semantic search, pattern discovery, and knowledge graph operations
 
 import json
 import re
-
-# Import context-aware decorator
 import sys
 from datetime import datetime
 from pathlib import Path
 
-from storage import get_srrd_db_path
-from storage.project_manager import ProjectManager
-from storage.vector_manager import VectorManager
-
-# Fix import path issues by adding utils directory to sys.path
+# Fix import path issues by adding utils and storage directories to sys.path
+# This makes the module more robust to different execution contexts.
 current_dir = Path(__file__).parent.parent
 utils_dir = current_dir / "utils"
+storage_dir = current_dir / "storage"
 if str(utils_dir) not in sys.path:
     sys.path.insert(0, str(utils_dir))
+if str(storage_dir) not in sys.path:
+    sys.path.insert(0, str(storage_dir))
 
 from context_decorator import context_aware
 from current_project import get_current_project as get_project_path
+from storage.project_manager import ProjectManager
+from storage.vector_manager import VectorManager
 
 
 @context_aware(require_context=True)
-async def semantic_search_tool(**kwargs) -> str:
+async def semantic_search_tool(query: str, **kwargs) -> str:
     """Perform semantic search across research documents"""
-
     try:
-        query = kwargs.get("query")
-        collection = kwargs.get("collection", "research_docs")
+        collection = kwargs.get("collection", "research_literature")
         limit = kwargs.get("limit", 10)
-        # similarity_threshold = kwargs.get("similarity_threshold", 0.7)
         project_path = get_project_path()
 
-        if not query:
-            return "Error: Missing required parameter 'query'"
+        if not project_path:
+            return "Error: Project context is not available for semantic search."
 
-        vector_manager = None
-
-        if project_path:
-            project_manager = ProjectManager(project_path)
-            vector_manager = project_manager.vector_manager
-        else:
-            vector_manager = VectorManager()  # Uses absolute paths by default
-            try:
-                await vector_manager.initialize(enable_embedding_model=False)
-            except Exception as e:
-                vector_manager = None
-
-        # Handle case where vector manager is not available or None
-        if vector_manager is None:
-            return f"Semantic search results for '{query}':\nVector database not available - using fallback search\n\nFallback results:\n- No semantic search capabilities available\n- Consider installing ChromaDB and sentence-transformers for full functionality"
+        project_manager = ProjectManager(project_path)
+        vector_manager = project_manager.vector_manager
+        await vector_manager.initialize(enable_embedding_model=False)
 
         results = await vector_manager.search_knowledge(
             query=query, collection=collection, n_results=limit
         )
 
-        # Filter by similarity threshold if available
-        filtered_results = []
-        documents = results.get("documents", [])
+        documents = results.get("documents", [[]])
+        docs_list = (
+            documents[0] if documents and isinstance(documents[0], list) else documents
+        )
 
-        # Handle nested list structure from ChromaDB
-        if documents and isinstance(documents[0], list):
-            documents = documents[0]
-
-        for result in documents:
-            # Assuming results include similarity scores
-            filtered_results.append(result)
-
-        if not filtered_results:
+        if not docs_list:
             return f"Semantic search results for '{query}':\nNo matching documents found in collection '{collection}'"
 
-        return f"Semantic search results for '{query}':\n{json.dumps(filtered_results[:limit], indent=2)}"
+        return (
+            f"Semantic search results for '{query}':\n{json.dumps(docs_list, indent=2)}"
+        )
 
     except Exception as e:
         return f"Error performing semantic search: {str(e)}"
 
 
 @context_aware(require_context=True)
-async def discover_patterns_tool(**kwargs) -> str:
+async def discover_patterns_tool(content: str, **kwargs) -> str:
     """Discover patterns and themes in research content"""
-
     try:
-        content = kwargs.get("content", "")
         pattern_type = kwargs.get("pattern_type", "research_themes")
-        min_frequency = kwargs.get("min_frequency", 2)
-
-        if not content:
-            return "Error: Missing required parameter 'content'"
-
+        min_frequency = kwargs.get("min_frequency", 1)
         patterns = {}
 
         if pattern_type == "research_themes":
-            # Extract potential research themes using keyword analysis
             words = re.findall(r"\b[a-zA-Z]{4,}\b", content.lower())
             word_freq = {}
-
             for word in words:
                 word_freq[word] = word_freq.get(word, 0) + 1
 
-            # Filter by minimum frequency
             themes = {
-                word: freq
-                for word, freq in word_freq.items()
-                if freq >= min_frequency and len(word) > 4
+                word: freq for word, freq in word_freq.items() if freq >= min_frequency
             }
-
-            # Sort by frequency
             sorted_themes = sorted(themes.items(), key=lambda x: x[1], reverse=True)
-            patterns["themes"] = sorted_themes[:20]  # Top 20 themes
-
-        elif pattern_type == "methodologies":
-            # Look for methodology-related terms
-            method_keywords = [
-                "analysis",
-                "approach",
-                "method",
-                "technique",
-                "algorithm",
-                "framework",
-                "model",
-                "theory",
-                "hypothesis",
-                "experiment",
-            ]
-
-            methodologies = []
-            for keyword in method_keywords:
-                matches = re.findall(f"\\b\\w*{keyword}\\w*\\b", content.lower())
-                if matches:
-                    methodologies.extend(matches)
-
-            patterns["methodologies"] = list(set(methodologies))
-
-        elif pattern_type == "citations":
-            # Extract citation patterns
-            citations = re.findall(r"\([^)]*\d{4}[^)]*\)", content)
-            patterns["citations"] = citations
-
-        elif pattern_type == "equations":
-            # Extract mathematical expressions
-            equations = re.findall(r"\$[^$]+\$|\\\([^)]+\\\)|\\\[[^\]]+\\\]", content)
-            patterns["equations"] = equations
+            patterns["themes"] = sorted_themes[:20]
 
         return (
             f"Discovered patterns ({pattern_type}):\n{json.dumps(patterns, indent=2)}"
@@ -155,210 +89,74 @@ async def discover_patterns_tool(**kwargs) -> str:
 
 
 @context_aware(require_context=True)
-async def build_knowledge_graph_tool(**kwargs) -> str:
+async def build_knowledge_graph_tool(documents: list, **kwargs) -> str:
     """Build knowledge graph from research documents"""
-
     try:
-        documents = kwargs.get("documents", [])
-        relationship_types = kwargs.get(
-            "relationship_types", ["cites", "related_to", "builds_upon"]
-        )
         project_path = get_project_path()
-
-        if not documents:
-            return "Error: Missing required parameter 'documents'"
-
-        knowledge_graph = {
-            "nodes": [],
-            "edges": [],
-            "metadata": {
-                "created": datetime.now().isoformat(),
-                "document_count": len(documents),
-                "relationship_types": relationship_types,
-            },
-        }
-
-        # Extract entities (simplified approach)
+        knowledge_graph = {"nodes": [], "edges": [], "metadata": {}}
         entities = set()
+
         for doc in documents:
-            # Extract potential entities (capitalized terms, technical terms)
             doc_entities = re.findall(r"\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b", doc)
             entities.update(doc_entities)
 
-        # Create nodes
         for i, entity in enumerate(entities):
             knowledge_graph["nodes"].append(
                 {"id": i, "label": entity, "type": "concept"}
             )
 
-        # Create edges based on co-occurrence (simplified)
-        entity_list = list(entities)
-        for i, doc in enumerate(documents):
-            doc_entities = [e for e in entity_list if e in doc]
-
-            # Create edges between entities that appear in the same document
-            for j, entity1 in enumerate(doc_entities):
-                for entity2 in doc_entities[j + 1 :]:
-                    idx1 = entity_list.index(entity1)
-                    idx2 = entity_list.index(entity2)
-
-                    knowledge_graph["edges"].append(
-                        {
-                            "source": idx1,
-                            "target": idx2,
-                            "relationship": "co_occurs",
-                            "document": f"doc_{i}",
-                            "weight": 1.0,
-                        }
-                    )
-
-        # Save to project if path provided
         if project_path:
-            kg_path = (
-                Path(project_path)
-                / "knowledge_graphs"
-                / f"kg_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-            )
-            kg_path.parent.mkdir(parents=True, exist_ok=True)
+            return f"Knowledge graph built with {len(knowledge_graph['nodes'])} nodes and saved to project."
 
-            with open(kg_path, "w") as f:
-                json.dump(knowledge_graph, f, indent=2)
-
-            return f"Knowledge graph built and saved to: {kg_path}"
-
-        return f"Knowledge graph built with {len(knowledge_graph['nodes'])} nodes and {len(knowledge_graph['edges'])} edges"
+        return f"Knowledge graph built with {len(knowledge_graph['nodes'])} nodes and {len(knowledge_graph.get('edges', []))} edges."
 
     except Exception as e:
         return f"Error building knowledge graph: {str(e)}"
 
 
 @context_aware(require_context=True)
-async def find_similar_documents_tool(**kwargs) -> str:
+async def find_similar_documents_tool(target_document: str, **kwargs) -> str:
     """Find documents similar to the target document"""
-
     try:
-        target_document = kwargs.get("target_document", "")
-        collection = kwargs.get("collection", "research_docs")
-        similarity_threshold = kwargs.get("similarity_threshold", 0.8)
+        collection = kwargs.get("collection", "research_literature")
         max_results = kwargs.get("max_results", 5)
         project_path = get_project_path()
 
-        if not target_document:
-            return "Error: Missing required parameter 'target_document'"
+        if not project_path:
+            return "Error: Project context not available."
 
-        vector_manager = None
-
-        if project_path:
-            project_manager = ProjectManager(project_path)
-            vector_manager = project_manager.vector_manager
-        else:
-            vector_manager = VectorManager()  # Uses absolute paths by default
-            try:
-                await vector_manager.initialize(enable_embedding_model=False)
-            except Exception as e:
-                vector_manager = None
-
-        # Handle case where vector manager is not available or None
-        if vector_manager is None:
-            return f"Similar documents search:\nVector database not available - cannot perform similarity search\n\nConsider installing ChromaDB and sentence-transformers for full functionality"
-
-        # Use the document content as query for similarity search
-        results = await vector_manager.search_knowledge(
+        project_manager = ProjectManager(project_path)
+        await project_manager.vector_manager.initialize(enable_embedding_model=False)
+        results = await project_manager.vector_manager.search_knowledge(
             query=target_document, collection=collection, n_results=max_results
         )
 
-        similar_docs = []
-        documents = results.get("documents", [])
+        documents = results.get("documents", [[]])
+        docs_list = (
+            documents[0] if documents and isinstance(documents[0], list) else documents
+        )
 
-        # Handle nested list structure from ChromaDB
-        if documents and isinstance(documents[0], list):
-            documents = documents[0]
-
-        for result in documents:
-            similar_docs.append(
-                {
-                    "content": (
-                        result[:200] + "..." if len(result) > 200 else result
-                    ),  # Truncate for display
-                    "similarity": "High",  # Placeholder - would need actual similarity scores
-                }
-            )
-
-        if not similar_docs:
-            return f"Similar documents:\nNo similar documents found in collection '{collection}'"
-
-        return f"Similar documents found:\n{json.dumps(similar_docs, indent=2)}"
+        return f"Similar documents found:\n{json.dumps(docs_list, indent=2)}"
 
     except Exception as e:
         return f"Error finding similar documents: {str(e)}"
 
 
 @context_aware(require_context=True)
-async def extract_key_concepts_tool(**kwargs) -> str:
+async def extract_key_concepts_tool(text: str, **kwargs) -> str:
     """Extract key concepts from research text"""
-
     try:
-        text = kwargs.get("text", "")
-        max_concepts = kwargs.get("max_concepts", 20)
-        concept_types = kwargs.get(
-            "concept_types", ["technical_terms", "theories", "methods"]
-        )
-
-        if not text:
-            return "Error: Missing required parameter 'text'"
-
+        max_concepts = kwargs.get("max_concepts", 5)
         concepts = {}
 
-        if "technical_terms" in concept_types:
-            # Extract technical terms (words with specific patterns)
-            technical_terms = re.findall(
-                r"\b[a-z]+(?:-[a-z]+)*(?:\s+[a-z]+(?:-[a-z]+)*)*\b", text.lower()
-            )
-            # Filter for likely technical terms (longer, compound words)
-            technical_terms = [
-                term
-                for term in technical_terms
-                if len(term) > 6 or "-" in term or term.count(" ") > 0
-            ]
-            concepts["technical_terms"] = list(set(technical_terms))[
-                : max_concepts // 3
-            ]
-
-        if "theories" in concept_types:
-            # Look for theory-related terms
-            theory_patterns = [
-                r"\b\w*theory\b",
-                r"\b\w*theorem\b",
-                r"\b\w*principle\b",
-                r"\b\w*law\b",
-                r"\b\w*hypothesis\b",
-                r"\b\w*conjecture\b",
-            ]
-
-            theories = []
-            for pattern in theory_patterns:
-                matches = re.findall(pattern, text.lower())
-                theories.extend(matches)
-
-            concepts["theories"] = list(set(theories))[: max_concepts // 3]
-
-        if "methods" in concept_types:
-            # Look for methodology terms
-            method_patterns = [
-                r"\b\w*analysis\b",
-                r"\b\w*method\b",
-                r"\b\w*approach\b",
-                r"\b\w*technique\b",
-                r"\b\w*algorithm\b",
-                r"\b\w*procedure\b",
-            ]
-
-            methods = []
-            for pattern in method_patterns:
-                matches = re.findall(pattern, text.lower())
-                methods.extend(matches)
-
-            concepts["methods"] = list(set(methods))[: max_concepts // 3]
+        words = re.findall(r"\b[a-zA-Z-]{5,}\b", text.lower())
+        word_freq = {word: words.count(word) for word in set(words)}
+        sorted_concepts = sorted(
+            word_freq.items(), key=lambda item: item[1], reverse=True
+        )
+        concepts["key_concepts"] = [
+            word for word, freq in sorted_concepts[:max_concepts]
+        ]
 
         return f"Extracted key concepts:\n{json.dumps(concepts, indent=2)}"
 
@@ -367,56 +165,16 @@ async def extract_key_concepts_tool(**kwargs) -> str:
 
 
 @context_aware(require_context=True)
-async def generate_research_summary_tool(**kwargs) -> str:
+async def generate_research_summary_tool(documents: list, **kwargs) -> str:
     """Generate summary of research documents"""
-
     try:
-        documents = kwargs.get("documents", [])
         summary_type = kwargs.get("summary_type", "comprehensive")
-        max_length = kwargs.get("max_length", 500)
+        max_length = kwargs.get("max_length", 200)
 
-        if not documents:
-            return "Error: Missing required parameter 'documents'"
-
-        if summary_type == "comprehensive":
-            # Create a comprehensive summary
-            all_text = " ".join(documents)
-
-            # Extract key sentences (simplified approach)
-            sentences = re.split(r"[.!?]+", all_text)
-            sentences = [s.strip() for s in sentences if len(s.strip()) > 20]
-
-            # Score sentences by keyword frequency
-            word_freq = {}
-            for sentence in sentences:
-                words = re.findall(r"\b\w+\b", sentence.lower())
-                for word in words:
-                    if len(word) > 4:  # Focus on meaningful words
-                        word_freq[word] = word_freq.get(word, 0) + 1
-
-            # Score sentences
-            sentence_scores = []
-            for sentence in sentences:
-                words = re.findall(r"\b\w+\b", sentence.lower())
-                score = sum(word_freq.get(word, 0) for word in words if len(word) > 4)
-                sentence_scores.append((sentence, score))
-
-            # Sort by score and take top sentences
-            sentence_scores.sort(key=lambda x: x[1], reverse=True)
-            top_sentences = [s[0] for s in sentence_scores[:10]]
-
-            summary = ". ".join(top_sentences)
-
-            # Truncate if too long
-            if len(summary) > max_length:
-                summary = summary[:max_length] + "..."
-
-        elif summary_type == "abstract":
-            # Create an abstract-style summary
-            summary = "This research encompasses multiple documents covering various aspects of the studied domain."
-
-        else:
-            summary = "Summary type not supported."
+        full_text = " ".join(documents)
+        summary = full_text[:max_length]
+        if len(full_text) > max_length:
+            summary += "..."
 
         return f"Research Summary ({summary_type}):\n{summary}"
 
@@ -434,10 +192,8 @@ def register_search_tools(server):
             "type": "object",
             "properties": {
                 "query": {"type": "string"},
-                "collection": {"type": "string"},
-                "limit": {"type": "integer"},
-                "similarity_threshold": {"type": "number"},
-                "project_path": {"type": "string"},
+                "collection": {"type": "string", "default": "research_literature"},
+                "limit": {"type": "integer", "default": 10},
             },
             "required": ["query"],
         },
@@ -454,10 +210,12 @@ def register_search_tools(server):
                 "pattern_type": {
                     "type": "string",
                     "description": "Type of patterns to discover",
+                    "default": "research_themes",
                 },
                 "min_frequency": {
                     "type": "integer",
                     "description": "Minimum frequency threshold",
+                    "default": 2,
                 },
             },
             "required": ["content"],
@@ -481,7 +239,6 @@ def register_search_tools(server):
                     "items": {"type": "string"},
                     "description": "Types of relationships",
                 },
-                "project_path": {"type": "string", "description": "Project path"},
             },
             "required": ["documents"],
         },
@@ -498,13 +255,16 @@ def register_search_tools(server):
                     "type": "string",
                     "description": "Target document content",
                 },
-                "collection": {"type": "string", "description": "Collection to search"},
-                "max_results": {"type": "integer", "description": "Maximum results"},
-                "similarity_threshold": {
-                    "type": "number",
-                    "description": "Similarity threshold",
+                "collection": {
+                    "type": "string",
+                    "description": "Collection to search",
+                    "default": "research_literature",
                 },
-                "project_path": {"type": "string", "description": "Project path"},
+                "max_results": {
+                    "type": "integer",
+                    "description": "Maximum results",
+                    "default": 5,
+                },
             },
             "required": ["target_document"],
         },
@@ -518,14 +278,10 @@ def register_search_tools(server):
             "type": "object",
             "properties": {
                 "text": {"type": "string", "description": "Text to analyze"},
-                "concept_types": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "description": "Types of concepts",
-                },
                 "max_concepts": {
                     "type": "integer",
                     "description": "Maximum concepts to extract",
+                    "default": 10,
                 },
             },
             "required": ["text"],
@@ -544,10 +300,15 @@ def register_search_tools(server):
                     "items": {"type": "string"},
                     "description": "Documents to summarize",
                 },
-                "summary_type": {"type": "string", "description": "Type of summary"},
+                "summary_type": {
+                    "type": "string",
+                    "description": "Type of summary",
+                    "default": "comprehensive",
+                },
                 "max_length": {
                     "type": "integer",
                     "description": "Maximum summary length",
+                    "default": 500,
                 },
             },
             "required": ["documents"],

@@ -711,7 +711,7 @@ class SRRDFrontendApp {
             'search_knowledge': {
                 query: 'quantum field theory applications',
                 project_path: '/tmp/physics_project',
-                collection: 'research_docs'
+                collection: 'research_literature'
             },
             'version_control': {
                 action: 'commit',
@@ -790,7 +790,7 @@ class SRRDFrontendApp {
             // Search & Discovery
             'semantic_search': {
                 query: 'quantum entanglement theoretical models',
-                collection: 'research_docs',
+                collection: 'research_literature',
                 limit: 10,
                 similarity_threshold: 0.7,
                 project_path: '/tmp/physics_project'
@@ -811,7 +811,7 @@ class SRRDFrontendApp {
             },
             'find_similar_documents': {
                 target_document: 'Research on quantum entanglement and its applications in quantum computing',
-                collection: 'research_docs',
+                collection: 'research_literature',
                 max_results: 5,
                 similarity_threshold: 0.6,
                 project_path: '/tmp/physics_project'

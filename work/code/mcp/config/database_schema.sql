@@ -23,7 +23,10 @@ CREATE TABLE IF NOT EXISTS sessions (
     started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     ended_at TIMESTAMP,
     user_id TEXT,
-    status TEXT DEFAULT 'active'
+    status TEXT DEFAULT 'active',
+    current_research_act TEXT,
+    research_focus TEXT,
+    session_goals JSON
 );
 
 -- User interactions and Socratic questioning

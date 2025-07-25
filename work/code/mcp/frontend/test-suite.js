@@ -176,7 +176,7 @@ class TestSuiteRunner {
         try {
             const response = await this.client.callTool('semantic_search', {
                 query: 'quantum mechanics theoretical framework',
-                collection: 'research_docs',
+                collection: 'research_literature',
                 limit: 5
             });
             results.push('semantic_search: ✅');
