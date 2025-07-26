@@ -131,7 +131,10 @@ async def log_tool_usage(
         # Don't let logging failures break the tool
 
 
-def context_aware(
+def context_aware_tool(
+    name: str,
+    description: str,
+    parameters: dict,
     require_context: bool = False,
     fallback_message: Optional[str] = None,
     disable_logging: bool = False,
@@ -176,6 +179,10 @@ def context_aware(
 
             @functools.wraps(func)
             async def async_wrapper(*args, **kwargs):
+                # Attach metadata to the wrapper function
+                async_wrapper.tool_name = name
+                async_wrapper.description = description
+                async_wrapper.parameters = parameters
                 current_project = get_current_project()
                 provided_project_path = kwargs.get("project_path")
                 if not allow_explicit_project_path:

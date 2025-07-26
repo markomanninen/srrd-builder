@@ -27,6 +27,7 @@ if str(current_dir) not in sys.path:
     sys.path.insert(0, str(current_dir))
 from current_project import get_current_project
 from tools import register_all_tools
+from tools.message_box import send_message, read_messages
 
 # Add current directory to path for imports
 # sys.path.append(str(Path(__file__).parent))
@@ -35,6 +36,7 @@ from tools import register_all_tools
 # Import database and workflow intelligence functionality
 try:
     from storage.sqlite_manager import SQLiteManager
+    from storage.mongo_storage import MongoStorage
     from utils.research_framework import ResearchFrameworkService
     from utils.workflow_intelligence import WorkflowIntelligence
 except ImportError as e:
@@ -43,6 +45,7 @@ except ImportError as e:
 
     print(f"Warning: Could not import database functionality: {e}", file=sys.stderr)
     SQLiteManager = None
+    MongoStorage = None
     ResearchFrameworkService = None
     WorkflowIntelligence = None
 
@@ -59,6 +62,7 @@ class ClaudeMCPServer:
             ResearchFrameworkService() if ResearchFrameworkService else None
         )
         self.sqlite_manager = None
+        self.mongo_storage = None
         self.workflow_intelligence = None
 
         self._register_tools()
@@ -83,6 +87,9 @@ class ClaudeMCPServer:
         """Register MCP tools using the standard registration system"""
         # Use the existing registration system from tools module
         register_all_tools(self)
+        self.register_tool("send_message", "Sends a message to another user.", send_message.parameters, send_message)
+        self.register_tool("read_messages", "Reads messages for a user.", read_messages.parameters, read_messages)
+
 
         # Make server instance available globally for tools to access shared database
         sys.modules[__name__].global_server_instance = self
@@ -113,6 +120,8 @@ class ClaudeMCPServer:
 
                 # Ensure a default project exists
                 await self._ensure_default_project_exists()
+        if not self.mongo_storage and MongoStorage:
+            self.mongo_storage = MongoStorage()
 
     async def _ensure_default_project_exists(self):
         """Ensure a default project exists in the database"""
