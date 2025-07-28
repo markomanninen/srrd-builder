@@ -4,8 +4,6 @@ Handles LaTeX generation, formatting, and document compilation
 """
 
 import subprocess
-
-# Fix import path issues by adding utils directory to sys.path
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -13,6 +11,10 @@ from pathlib import Path
 from storage.project_manager import ProjectManager
 from storage.vector_manager import VectorManager
 
+# Import vector database tools
+from .vector_database import retrieve_bibliography_references_tool
+
+# Fix import path issues by adding utils directory to sys.path
 current_dir = Path(__file__).parent.parent
 utils_dir = current_dir / "utils"
 if str(utils_dir) not in sys.path:
@@ -20,6 +22,8 @@ if str(utils_dir) not in sys.path:
 
 from context_decorator import context_aware
 from current_project import get_current_project as get_project_path
+
+import srrd_builder.config.installation_status
 
 LATEX_TEMPLATE = r"""\documentclass[12pt,a4paper]{{article}}
 \usepackage[utf8]{{inputenc}}
@@ -386,6 +390,8 @@ async def generate_latex_document_tool(**kwargs) -> str:
 @context_aware(require_context=True)
 async def compile_latex_tool(**kwargs) -> str:
     """Compile LaTeX document to PDF or other formats"""
+    if not srrd_builder.config.installation_status.is_latex_installed():
+        return "LaTeX is not installed. Please run setup with --with-latex."
     try:
         tex_file_path = kwargs.get("tex_file_path")
         output_format = kwargs.get("output_format", "pdf")
@@ -644,88 +650,6 @@ async def extract_document_sections_tool(**kwargs) -> str:
 
 
 @context_aware(require_context=True)
-async def store_bibliography_reference_tool(**kwargs) -> str:
-    """Store a bibliography reference in the vector database for future retrieval"""
-    project_manager = None
-    try:
-        reference = kwargs.get("reference", {})
-        project_path = get_project_path()
-
-        if not reference or not project_path:
-            return "Error: Missing required parameters or project context."
-
-        project_manager = ProjectManager(project_path)
-        vector_manager = project_manager.vector_manager
-        await vector_manager.initialize()
-
-        if "research_literature" not in vector_manager.collections:
-            return (
-                "Error: 'research_literature' collection not found in vector database."
-            )
-
-        reference_text = f"Title: {reference.get('title', '')}\nAuthors: {reference.get('authors', '')}"
-        doc_id = f"ref_{reference.get('title', 'unknown').replace(' ', '_').lower()}"
-
-        await vector_manager.add_document(
-            collection_name="research_literature",
-            document=reference_text,
-            doc_id=doc_id,
-            metadata={"type": "bibliography_reference", **reference},
-        )
-
-        return f"Bibliography reference stored successfully: {reference.get('title', 'Unknown Title')}"
-
-    except Exception as e:
-        return f"Error storing bibliography reference: {str(e)}"
-    finally:
-        if project_manager:
-            await project_manager.close()
-
-
-@context_aware(require_context=True)
-async def retrieve_bibliography_references_tool(**kwargs) -> str:
-    """Retrieve relevant bibliography references from the vector database based on search query"""
-    project_manager = None
-    try:
-        query = kwargs.get("query", "")
-        project_path = get_project_path()
-
-        if not query or not project_path:
-            return "Error: Missing required parameters or project context."
-
-        project_manager = ProjectManager(project_path)
-        vector_manager = project_manager.vector_manager
-        await vector_manager.initialize()
-
-        if "research_literature" not in vector_manager.collections:
-            return "Error: 'research_literature' collection not available in vector database."
-
-        results = await vector_manager.search_knowledge(
-            query=query,
-            collection="research_literature",
-            n_results=kwargs.get("max_results", 5),
-        )
-
-        metadatas = results.get("metadatas", [[]])[0]
-        if not metadatas:
-            return f"No bibliography references found for query: {query}"
-
-        bib_entries = []
-        for meta in metadatas:
-            bib_entries.append(
-                f"\\bibitem{{{meta.get('title', 'ref').replace(' ', '_')}}} {meta.get('authors', '')}. {meta.get('title', '')}. {meta.get('year', '')}."
-            )
-
-        return f"Retrieved {len(bib_entries)} references:\n\n" + "\n".join(bib_entries)
-
-    except Exception as e:
-        return f"Error retrieving bibliography references: {str(e)}"
-    finally:
-        if project_manager:
-            await project_manager.close()
-
-
-@context_aware(require_context=True)
 async def generate_document_with_database_bibliography_tool(**kwargs) -> str:
     """Generate LaTeX document with bibliography retrieved from vector database"""
     project_manager = None
@@ -859,54 +783,171 @@ async def generate_latex_with_template_tool(**kwargs) -> str:
             await project_manager.close()
 
 
+import os
+
+
 def register_document_tools(server):
     """Register document generation tools with the MCP server"""
 
-    server.register_tool(
-        name="generate_latex_document",
-        description="Generate LaTeX research document",
-        parameters={
-            "type": "object",
-            "properties": {
-                "title": {"type": "string", "description": "Document title"},
-                "author": {"type": "string", "description": "Author name"},
-                "abstract": {"type": "string", "description": "Abstract content"},
-                "introduction": {
-                    "type": "string",
-                    "description": "Introduction section",
+    if srrd_builder.config.installation_status.is_latex_installed():
+        server.register_tool(
+            name="generate_latex_document",
+            description="Generate LaTeX research document",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string", "description": "Document title"},
+                    "author": {"type": "string", "description": "Author name"},
+                    "abstract": {"type": "string", "description": "Abstract content"},
+                    "introduction": {
+                        "type": "string",
+                        "description": "Introduction section",
+                    },
+                    "methodology": {
+                        "type": "string",
+                        "description": "Methodology section",
+                    },
+                    "results": {"type": "string", "description": "Results section"},
+                    "discussion": {
+                        "type": "string",
+                        "description": "Discussion section",
+                    },
+                    "conclusion": {
+                        "type": "string",
+                        "description": "Conclusion section",
+                    },
+                    "bibliography": {
+                        "type": "string",
+                        "description": "Bibliography content",
+                    },
                 },
-                "methodology": {"type": "string", "description": "Methodology section"},
-                "results": {"type": "string", "description": "Results section"},
-                "discussion": {"type": "string", "description": "Discussion section"},
-                "conclusion": {"type": "string", "description": "Conclusion section"},
-                "bibliography": {
-                    "type": "string",
-                    "description": "Bibliography content",
-                },
+                "required": ["title"],
             },
-            "required": ["title"],
-        },
-        handler=generate_latex_document_tool,
-    )
-
-    server.register_tool(
-        name="compile_latex",
-        description="Compile LaTeX document to PDF",
-        parameters={
-            "type": "object",
-            "properties": {
-                "tex_file_path": {"type": "string", "description": "Path to .tex file"},
-                "output_format": {
-                    "type": "string",
-                    "description": "Output format (pdf)",
-                    "default": "pdf",
+            handler=generate_latex_document_tool,
+        )
+        server.register_tool(
+            name="compile_latex",
+            description="Compile LaTeX document to PDF",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "tex_file_path": {"type": "string", "description": "Path to .tex file"},
+                    "output_format": {
+                        "type": "string",
+                        "description": "Output format (pdf)",
+                        "default": "pdf",
+                    },
                 },
+                "required": ["tex_file_path"],
             },
-            "required": ["tex_file_path"],
-        },
-        handler=compile_latex_tool,
-    )
+            handler=compile_latex_tool,
+        )
 
+        server.register_tool(
+            name="generate_bibliography",
+            description="Generate LaTeX bibliography from reference list",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "references": {
+                        "type": "array",
+                        "items": {"type": "object"},
+                        "description": "List of references",
+                    }
+                },
+                "required": ["references"],
+            },
+            handler=generate_bibliography_tool,
+        )
+
+        server.register_tool(
+            name="extract_document_sections",
+            description="Extract and identify sections from document content for modular LaTeX management",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "document_content": {
+                        "type": "string",
+                        "description": "Document content to analyze",
+                    },
+                    "create_separate_files": {
+                        "type": "boolean",
+                        "description": "Create separate .tex files for each section",
+                        "default": False,
+                    },
+                },
+                "required": ["document_content"],
+            },
+            handler=extract_document_sections_tool,
+        )
+
+        server.register_tool(
+            name="generate_document_with_database_bibliography",
+            description="Generate LaTeX document with bibliography retrieved from vector database",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string", "description": "Document title"},
+                    "author": {"type": "string", "description": "Author name"},
+                    "abstract": {"type": "string", "description": "Abstract content"},
+                    "introduction": {
+                        "type": "string",
+                        "description": "Introduction section",
+                    },
+                    "methodology": {"type": "string", "description": "Methodology section"},
+                    "results": {"type": "string", "description": "Results section"},
+                    "discussion": {"type": "string", "description": "Discussion section"},
+                    "conclusion": {"type": "string", "description": "Conclusion section"},
+                    "bibliography_query": {
+                        "type": "string",
+                        "description": "Query to retrieve relevant bibliography from database",
+                    },
+                },
+                "required": ["title", "bibliography_query"],
+            },
+            handler=generate_document_with_database_bibliography_tool,
+        )
+
+        server.register_tool(
+            name="list_latex_templates",
+            description="List all available LaTeX templates",
+            parameters={"type": "object", "properties": {}, "required": []},
+            handler=list_latex_templates_tool,
+        )
+
+        server.register_tool(
+            name="generate_latex_with_template",
+            description="Generate LaTeX document using a specific template",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string", "description": "Document title"},
+                    "author": {"type": "string", "description": "Author name"},
+                    "abstract": {"type": "string", "description": "Abstract content"},
+                    "introduction": {
+                        "type": "string",
+                        "description": "Introduction section",
+                    },
+                    "methodology": {"type": "string", "description": "Methodology section"},
+                    "results": {"type": "string", "description": "Results section"},
+                    "discussion": {"type": "string", "description": "Discussion section"},
+                    "conclusion": {"type": "string", "description": "Conclusion section"},
+                    "bibliography": {
+                        "type": "string",
+                        "description": "Bibliography content",
+                    },
+                    "template_type": {
+                        "type": "string",
+                        "description": "Type of template to use",
+                        "default": "basic_article",
+                    },
+                },
+                "required": ["title"],
+            },
+            handler=generate_latex_with_template_tool,
+        )
+
+    # Non-LaTeX specific tools that are always available
     server.register_tool(
         name="format_research_content",
         description="Format research content according to academic standards",
@@ -930,147 +971,6 @@ def register_document_tools(server):
         handler=format_research_content_tool,
     )
 
-    server.register_tool(
-        name="generate_bibliography",
-        description="Generate LaTeX bibliography from reference list",
-        parameters={
-            "type": "object",
-            "properties": {
-                "references": {
-                    "type": "array",
-                    "items": {"type": "object"},
-                    "description": "List of references",
-                }
-            },
-            "required": ["references"],
-        },
-        handler=generate_bibliography_tool,
-    )
-
-    server.register_tool(
-        name="extract_document_sections",
-        description="Extract and identify sections from document content for modular LaTeX management",
-        parameters={
-            "type": "object",
-            "properties": {
-                "document_content": {
-                    "type": "string",
-                    "description": "Document content to analyze",
-                },
-                "create_separate_files": {
-                    "type": "boolean",
-                    "description": "Create separate .tex files for each section",
-                    "default": False,
-                },
-            },
-            "required": ["document_content"],
-        },
-        handler=extract_document_sections_tool,
-    )
-
-    server.register_tool(
-        name="store_bibliography_reference",
-        description="Store a bibliography reference in the vector database",
-        parameters={
-            "type": "object",
-            "properties": {
-                "reference": {
-                    "type": "object",
-                    "description": "Reference data with title, authors, year, journal, etc.",
-                },
-            },
-            "required": ["reference"],
-        },
-        handler=store_bibliography_reference_tool,
-    )
-
-    server.register_tool(
-        name="retrieve_bibliography_references",
-        description="Retrieve relevant bibliography references from vector database",
-        parameters={
-            "type": "object",
-            "properties": {
-                "query": {
-                    "type": "string",
-                    "description": "Search query for finding relevant references",
-                },
-                "max_results": {
-                    "type": "integer",
-                    "description": "Maximum number of references to retrieve",
-                    "default": 5,
-                },
-            },
-            "required": ["query"],
-        },
-        handler=retrieve_bibliography_references_tool,
-    )
-
-    server.register_tool(
-        name="generate_document_with_database_bibliography",
-        description="Generate LaTeX document with bibliography retrieved from vector database",
-        parameters={
-            "type": "object",
-            "properties": {
-                "title": {"type": "string", "description": "Document title"},
-                "author": {"type": "string", "description": "Author name"},
-                "abstract": {"type": "string", "description": "Abstract content"},
-                "introduction": {
-                    "type": "string",
-                    "description": "Introduction section",
-                },
-                "methodology": {"type": "string", "description": "Methodology section"},
-                "results": {"type": "string", "description": "Results section"},
-                "discussion": {"type": "string", "description": "Discussion section"},
-                "conclusion": {"type": "string", "description": "Conclusion section"},
-                "bibliography_query": {
-                    "type": "string",
-                    "description": "Query to retrieve relevant bibliography from database",
-                },
-            },
-            "required": ["title", "bibliography_query"],
-        },
-        handler=generate_document_with_database_bibliography_tool,
-    )
-
-    server.register_tool(
-        name="list_latex_templates",
-        description="List all available LaTeX templates",
-        parameters={"type": "object", "properties": {}, "required": []},
-        handler=list_latex_templates_tool,
-    )
-
-    server.register_tool(
-        name="generate_latex_with_template",
-        description="Generate LaTeX document using a specific template",
-        parameters={
-            "type": "object",
-            "properties": {
-                "title": {"type": "string", "description": "Document title"},
-                "author": {"type": "string", "description": "Author name"},
-                "abstract": {"type": "string", "description": "Abstract content"},
-                "introduction": {
-                    "type": "string",
-                    "description": "Introduction section",
-                },
-                "methodology": {"type": "string", "description": "Methodology section"},
-                "results": {"type": "string", "description": "Results section"},
-                "discussion": {"type": "string", "description": "Discussion section"},
-                "conclusion": {"type": "string", "description": "Conclusion section"},
-                "bibliography": {
-                    "type": "string",
-                    "description": "Bibliography content",
-                },
-                "template_type": {
-                    "type": "string",
-                    "description": "Type of template to use",
-                    "default": "basic_article",
-                },
-            },
-            "required": ["title"],
-        },
-        handler=generate_latex_with_template_tool,
-    )
-
 
 __all__ = [
     "generate_latex_document_tool",
@@ -1078,8 +978,6 @@ __all__ = [
     "format_research_content_tool",
     "generate_bibliography_tool",
     "extract_document_sections_tool",
-    "store_bibliography_reference_tool",
-    "retrieve_bibliography_references_tool",
     "generate_document_with_database_bibliography_tool",
     "register_document_tools",
 ]

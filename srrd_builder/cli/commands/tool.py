@@ -87,6 +87,7 @@ async def run_tool(tool_name: str, tool_args: dict):
         "methodology_advisory",
         "novel_theory_development",
         "research_continuity",
+        "vector_database",
     ]
 
     for module_name in tool_modules:

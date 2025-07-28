@@ -4,10 +4,17 @@ SRRD Init Command - Initialize SRRD project structure for scientific collaborati
 
 import json
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 
-from work.code.mcp.storage.sqlite_manager import SQLiteManager
+# Add the work/code/mcp directory to Python path for SQLiteManager import
+current_dir = Path(__file__).parent.parent.parent.parent  # Go up to srrd-builder root
+mcp_path = current_dir / "work" / "code" / "mcp"
+if str(mcp_path) not in sys.path:
+    sys.path.insert(0, str(mcp_path))
+
+from storage.sqlite_manager import SQLiteManager
 
 from ...utils.git_utils import get_git_root, is_git_repository
 
@@ -97,16 +104,6 @@ def create_project_structure(
 
     # Set current project pointer using current_project.py
     try:
-        # Add the work/code/mcp directory to Python path so we can import current_project
-        import sys
-
-        current_dir = Path(
-            __file__
-        ).parent.parent.parent.parent  # Go up to srrd-builder root
-        mcp_path = current_dir / "work" / "code" / "mcp"
-        if str(mcp_path) not in sys.path:
-            sys.path.insert(0, str(mcp_path))
-
         from utils.current_project import set_current_project
 
         if set_current_project(str(project_root)):
@@ -294,6 +291,32 @@ def handle_init(args):
 
     # Create project structure
     if create_project_structure(project_root, args.domain, args.template, args.force):
+        
+        # Initialize database and create project entry
+        print("🔧 Setting up project database...")
+        try:
+            import asyncio
+            
+            async def setup_database():
+                db_path = SQLiteManager.get_sessions_db_path(str(project_root))
+                sqlite_manager = SQLiteManager(db_path)
+                await sqlite_manager.initialize()
+                
+                # Create project entry in database
+                project_id = await sqlite_manager.create_project(
+                    name=project_root.name,
+                    description=f"Scientific research project in {args.domain}",
+                    domain=args.domain
+                )
+                await sqlite_manager.close()
+                return project_id
+            
+            project_id = asyncio.run(setup_database())
+            print(f"   ✅ Project database initialized (Project ID: {project_id})")
+            
+        except Exception as e:
+            print(f"   ⚠️  Warning: Could not initialize project database: {e}")
+            print(f"   You may need to run the 'initialize_project' MCP tool manually")
 
         # Make initial Git commit for the new SRRD project
         if (project_root / ".git").exists():

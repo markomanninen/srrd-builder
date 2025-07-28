@@ -14,6 +14,7 @@ sys.path.append(str(Path(__file__).parent.parent.parent / 'code' / 'mcp'))
 
 import pytest
 from mcp_server import ClaudeMCPServer
+from srrd_builder.config.installation_status import is_latex_installed, is_vector_db_installed
 
 
 @pytest.fixture(autouse=True)
@@ -40,6 +41,7 @@ def test_isolation():
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(not (is_latex_installed() and is_vector_db_installed()), reason="LaTeX and/or vector database not installed")
 async def test_complete_research_lifecycle_persistence():
     """
     Comprehensive integration test for complete research lifecycle using MAIN server

@@ -319,31 +319,56 @@ async def start_research_session_tool(**kwargs) -> str:
     session_goals = kwargs.get("session_goals", [])
     research_focus = kwargs.get("research_focus")
 
+    sqlite_manager = None
     try:
         db_path = SQLiteManager.get_db_path(project_path)
+        
+        # Check if database file exists first
+        from pathlib import Path
+        if not Path(db_path).exists():
+            return f"Error: Project database not found at {db_path}. Run 'initialize_project' tool first to create the project."
+        
         sqlite_manager = SQLiteManager(db_path)
-        await sqlite_manager.initialize()
+        
+        # Try to initialize database connection
+        try:
+            await sqlite_manager.initialize()
+        except Exception as init_error:
+            if "no such table" in str(init_error).lower():
+                return f"Error: Database schema is incomplete at {db_path}. Run 'initialize_project' tool to fix the database schema."
+            elif "database is locked" in str(init_error).lower():
+                return f"Error: Database is locked by another process. Wait a moment and try again."
+            return f"Error: Cannot connect to database at {db_path}: {str(init_error)}"
 
-        async with sqlite_manager.connection.execute(
-            "SELECT id FROM projects ORDER BY created_at DESC LIMIT 1"
-        ) as cursor:
-            project_row = await cursor.fetchone()
-            if not project_row:
-                await sqlite_manager.close()
-                return (
-                    "No project found in database. Please initialize a project first."
-                )
+        # Check if any projects exist
+        try:
+            async with sqlite_manager.connection.execute(
+                "SELECT id FROM projects ORDER BY created_at DESC LIMIT 1"
+            ) as cursor:
+                project_row = await cursor.fetchone()
+                if not project_row:
+                    await sqlite_manager.close()
+                    return "Error: No projects found in database. Run 'initialize_project' tool first with parameters: name, description, domain, and project_path."
+        except Exception as query_error:
+            await sqlite_manager.close()
+            return f"Error: Cannot query projects table. Database may be corrupted: {str(query_error)}"
+        
         project_id = project_row[0]
 
-        session_id = await sqlite_manager.create_session(
-            project_id=project_id, session_type="research", user_id="claude_user"
-        )
-        await sqlite_manager.update_session_research_context(
-            session_id=session_id,
-            current_research_act=research_act,
-            research_focus=research_focus,
-            session_goals=session_goals,
-        )
+        # Try to create the session
+        try:
+            session_id = await sqlite_manager.create_session(
+                project_id=project_id, session_type="research", user_id="claude_user"
+            )
+            await sqlite_manager.update_session_research_context(
+                session_id=session_id,
+                current_research_act=research_act,
+                research_focus=research_focus,
+                session_goals=session_goals,
+            )
+        except Exception as session_error:
+            await sqlite_manager.close()
+            return f"Error: Failed to create research session in database: {str(session_error)}"
 
         response = f"# New Research Session Started\n\n**Session ID**: {session_id}\n"
         if research_act:
@@ -354,9 +379,14 @@ async def start_research_session_tool(**kwargs) -> str:
         await sqlite_manager.close()
         return response
     except Exception as e:
+        if sqlite_manager:
+            try:
+                await sqlite_manager.close()
+            except:
+                pass  # Ignore cleanup errors
         if isinstance(e, ContextAwareError):
             raise
-        return f"Error starting research session: {str(e)}"
+        return f"Error: Unexpected failure in start_research_session - {str(e)}"
 
 
 @context_aware(require_context=True)
@@ -367,25 +397,81 @@ async def get_session_summary_tool(**kwargs) -> str:
         raise ContextAwareError("SRRD project context is required for this tool.")
     session_id = kwargs.get("session_id")
 
+    # Validate session_id parameter if provided
+    if session_id is not None and not isinstance(session_id, int):
+        return "Error: session_id parameter must be an integer"
+
+    sqlite_manager = None
     try:
         db_path = SQLiteManager.get_db_path(project_path)
+        
+        # Check if database file exists first
+        from pathlib import Path
+        if not Path(db_path).exists():
+            return f"Error: Project database not found at {db_path}. Run 'initialize_project' tool first to create the project."
+        
         sqlite_manager = SQLiteManager(db_path)
-        await sqlite_manager.initialize()
+        
+        # Try to initialize database connection
+        try:
+            await sqlite_manager.initialize()
+        except Exception as init_error:
+            if "no such table" in str(init_error).lower():
+                return f"Error: Database schema is incomplete at {db_path}. Run 'initialize_project' tool to fix the database schema."
+            elif "database is locked" in str(init_error).lower():
+                return f"Error: Database is locked by another process. Wait a moment and try again."
+            return f"Error: Cannot connect to database at {db_path}: {str(init_error)}"
 
-        if not session_id:
-            async with sqlite_manager.connection.execute(
-                "SELECT id FROM sessions ORDER BY started_at DESC LIMIT 1"
-            ) as cursor:
-                session_row = await cursor.fetchone()
-                if not session_row:
-                    await sqlite_manager.close()
-                    return "No active sessions found."
-                session_id = session_row[0]
+        # Find session to summarize
+        try:
+            if not session_id:
+                async with sqlite_manager.connection.execute(
+                    "SELECT id FROM sessions ORDER BY started_at DESC LIMIT 1"
+                ) as cursor:
+                    session_row = await cursor.fetchone()
+                    if not session_row:
+                        await sqlite_manager.close()
+                        return "Error: No sessions found in database. Run 'start_research_session' tool first to create a session."
+                    session_id = session_row[0]
+            else:
+                # Validate that the provided session_id exists
+                async with sqlite_manager.connection.execute(
+                    "SELECT id FROM sessions WHERE id = ?", (session_id,)
+                ) as cursor:
+                    session_row = await cursor.fetchone()
+                    if not session_row:
+                        await sqlite_manager.close()
+                        return f"Error: Session ID {session_id} not found in database. Use 'get_tool_usage_history' to see available sessions, or omit session_id to use the latest session."
+        except Exception as query_error:
+            await sqlite_manager.close()
+            return f"Error: Cannot query sessions table. Database may be corrupted: {str(query_error)}"
 
         research_framework = _get_research_framework()
         workflow_intelligence = WorkflowIntelligence(sqlite_manager, research_framework)
 
-        summary = await workflow_intelligence.generate_session_summary(session_id)
+        try:
+            summary = await workflow_intelligence.generate_session_summary(session_id)
+        except Exception as e:
+            await sqlite_manager.close()
+            error_msg = str(e)
+            if "Connection closed" in error_msg:
+                return f"Error: Database connection was closed while generating summary for session {session_id}. The session may contain invalid data or the database is corrupted."
+            elif "no such table" in error_msg.lower():
+                return f"Error: Missing database tables required for session summary. Run 'initialize_project' tool to fix the database schema."
+            elif "database is locked" in error_msg.lower():
+                return f"Error: Database is locked by another process. Wait a moment and try again."
+            return f"Error: Failed to generate session summary for session {session_id}. Workflow intelligence error: {error_msg}"
+
+        if not summary or not isinstance(summary, dict):
+            await sqlite_manager.close()
+            return f"Error: No summary data returned for session {session_id}. The session may be empty or corrupted."
+
+        # Validate summary structure
+        required_keys = ['session_id', 'duration_minutes', 'tools_used', 'summary']
+        missing_keys = [key for key in required_keys if key not in summary]
+        if missing_keys:
+            await sqlite_manager.close()
+            return f"Error: Invalid summary data structure for session {session_id} - missing keys: {', '.join(missing_keys)}. Database may be corrupted."
 
         response = f"# Session Summary\n\n"
         response += f"**Session ID**: {summary['session_id']}\n"
@@ -396,9 +482,17 @@ async def get_session_summary_tool(**kwargs) -> str:
         await sqlite_manager.close()
         return response
     except Exception as e:
+        if sqlite_manager:
+            try:
+                await sqlite_manager.close()
+            except:
+                pass  # Ignore cleanup errors
         if isinstance(e, ContextAwareError):
             raise
-        return f"Error generating session summary: {str(e)}"
+        error_msg = str(e)
+        if "Connection closed" in error_msg:
+            return f"Error: Database connection failed unexpectedly. Check if another process is using the database at {project_path}/.srrd/data/sessions.db"
+        return f"Error: Unexpected failure in get_session_summary - {error_msg}"
 
 
 def register_research_continuity_tools(server):

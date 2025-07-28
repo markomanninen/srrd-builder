@@ -3,6 +3,35 @@ setlocal enabledelayedexpansion
 REM Windows Setup Script for SRRD-Builder MCP Server
 REM Provides automated installation on Windows systems
 
+REM Parse command line arguments
+set RUN_TESTS=false
+set WITH_VECTOR_DATABASE=false
+set WITH_LATEX=false
+
+set SRRD_LATEX_INSTALLED=false
+set SRRD_VECTOR_DB_INSTALLED=false
+
+:parse_args
+if "%~1"=="" goto :args_done
+if "%~1"=="--with-tests" (
+    set RUN_TESTS=true
+    shift
+    goto :parse_args
+)
+if "%~1"=="--with-vector-database" (
+    set WITH_VECTOR_DATABASE=true
+    shift
+    goto :parse_args
+)
+if "%~1"=="--with-latex" (
+    set WITH_LATEX=true
+    shift
+    goto :parse_args
+)
+shift
+goto :parse_args
+:args_done
+
 echo SRRD-Builder Windows Setup
 echo ===============================
 
@@ -91,6 +120,118 @@ if errorlevel 1 (
 )
 echo SRRD CLI package installed successfully
 
+REM Optional installations
+if "%WITH_VECTOR_DATABASE%"=="true" (
+    echo Installing vector database dependencies...
+    pip install chromadb
+    if errorlevel 1 (
+        echo Vector database installation failed
+    ) else (
+        echo Vector database dependencies installed
+        call :set_vector_db_success
+    )
+)
+goto after_vector_db
+
+:set_vector_db_success
+set SRRD_VECTOR_DB_INSTALLED=true
+goto :eof
+
+:after_vector_db
+
+REM Debug: Log start of LaTeX block
+echo [DEBUG] Entering LaTeX install block >> setup_debug.log
+
+REM --- Robust LaTeX (MiKTeX) install block ---
+echo [DEBUG] Entering LaTeX install block >> setup_debug.log
+if "%WITH_LATEX%"=="true" goto install_latex
+goto continue_main
+
+:install_latex
+echo [DEBUG] WITH_LATEX true >> setup_debug.log
+echo Installing LaTeX (MiKTeX)...
+set MIKTEX_URL=https://miktex.org/download/win/basic-miktex-x64.exe
+set MIKTEX_EXE=%TEMP%\basic-miktex-installer.exe
+set RETRIES=3
+set COUNT=0
+if not exist "%MIKTEX_EXE%" goto download_miktex
+echo [DEBUG] MiKTeX installer already exists >> setup_debug.log
+goto run_miktex_installer
+
+:download_miktex
+echo [DEBUG] MiKTeX installer not found, downloading... >> setup_debug.log
+echo Downloading MiKTeX installer...
+:download_retry
+powershell -Command "try { Invoke-WebRequest -Uri \"%MIKTEX_URL%\" -OutFile \"%MIKTEX_EXE%\" -ErrorAction Stop } catch { Write-Host 'Download failed:'; Write-Host $_.Exception.Message; exit 1 }"
+set DL_EXIT=%errorlevel%
+echo [DEBUG] Download exit code: %DL_EXIT% >> setup_debug.log
+if %DL_EXIT% gtr 0 (
+    set /a COUNT+=1
+    echo [DEBUG] Download failed, attempt %COUNT% of %RETRIES% >> setup_debug.log
+    if %COUNT% lss %RETRIES% (
+        timeout /t 2 >nul
+        goto download_retry
+    ) else (
+        echo [DEBUG] Download failed after %RETRIES% attempts >> setup_debug.log
+        goto latex_fail
+    )
+)
+echo [DEBUG] Download succeeded >> setup_debug.log
+
+:run_miktex_installer
+echo [DEBUG] Running MiKTeX installer >> setup_debug.log
+echo Running installer: "%MIKTEX_EXE%" --unattended
+"%MIKTEX_EXE%" --unattended
+set INST_EXIT=%errorlevel%
+echo [DEBUG] MiKTeX installer exit code: %INST_EXIT% >> setup_debug.log
+if %INST_EXIT% gtr 0 (
+    echo [DEBUG] MiKTeX installer failed >> setup_debug.log
+    goto latex_fail
+)
+REM Check multiple possible MiKTeX installation paths
+set "MIKTEX_PATHS=C:\Program Files\MiKTeX\miktex\bin\x64;C:\Program Files\MiKTeX\miktex\bin;C:\Program Files (x86)\MiKTeX\miktex\bin\x64;C:\Program Files (x86)\MiKTeX\miktex\bin;%USERPROFILE%\AppData\Local\Programs\MiKTeX\miktex\bin\x64;%USERPROFILE%\AppData\Local\Programs\MiKTeX\miktex\bin"
+
+REM Add potential MiKTeX paths to PATH for testing
+set "PATH=%PATH%;C:\Program Files\MiKTeX\miktex\bin\x64;C:\Program Files\MiKTeX\miktex\bin;C:\Program Files (x86)\MiKTeX\miktex\bin\x64;C:\Program Files (x86)\MiKTeX\miktex\bin"
+
+where pdflatex >nul 2>&1
+set PDFLATEX_FOUND=%errorlevel%
+echo [DEBUG] where pdflatex errorlevel after PATH update: %PDFLATEX_FOUND% >> setup_debug.log
+
+if %PDFLATEX_FOUND% equ 0 (
+    echo LaTeX found in PATH after installation
+    echo [DEBUG] pdflatex found in PATH, LaTeX installation successful >> setup_debug.log
+    goto latex_success
+)
+
+REM Manual check of common MiKTeX installation locations
+echo [DEBUG] pdflatex not in PATH, checking manual locations >> setup_debug.log
+
+for %%p in ("C:\Program Files\MiKTeX\miktex\bin\x64\pdflatex.exe" "C:\Program Files\MiKTeX\miktex\bin\pdflatex.exe" "C:\Program Files (x86)\MiKTeX\miktex\bin\x64\pdflatex.exe" "C:\Program Files (x86)\MiKTeX\miktex\bin\pdflatex.exe" "%USERPROFILE%\AppData\Local\Programs\MiKTeX\miktex\bin\x64\pdflatex.exe" "%USERPROFILE%\AppData\Local\Programs\MiKTeX\miktex\bin\pdflatex.exe") do (
+    echo [DEBUG] Checking: %%p >> setup_debug.log
+    if exist %%p (
+        echo [DEBUG] Found pdflatex at %%p >> setup_debug.log
+        echo LaTeX installed ^(found at %%p^)
+        goto latex_success
+    )
+)
+
+echo [DEBUG] No pdflatex found in any expected location >> setup_debug.log
+goto latex_fail
+
+:latex_success
+set SRRD_LATEX_INSTALLED=true
+echo [DEBUG] Variable set outside if block: SRRD_LATEX_INSTALLED=!SRRD_LATEX_INSTALLED! >> setup_debug.log
+goto continue_main
+
+echo [DEBUG] After LaTeX block, label check >> setup_debug.log
+
+:latex_fail
+echo [DEBUG] Entered :latex_fail label >> setup_debug.log
+echo LaTeX installation failed - pdflatex not found in PATH
+set SRRD_LATEX_INSTALLED=false
+goto continue_main
+
 REM Windows-specific setup
 echo Setting up Windows-specific configurations...
 
@@ -131,6 +272,30 @@ if errorlevel 1 (
 )
 echo Pytest configured correctly
 
+REM Continue to main completion section
+
+
+
+:continue_main
+REM Debug: Show variable values before writing config
+echo [DEBUG] SRRD_LATEX_INSTALLED before config: !SRRD_LATEX_INSTALLED! >> setup_debug.log
+echo [DEBUG] SRRD_VECTOR_DB_INSTALLED before config: !SRRD_VECTOR_DB_INSTALLED! >> setup_debug.log
+
+REM Save installation status to a config file
+set INSTALL_CONFIG_DIR=srrd_builder\config
+set INSTALL_CONFIG_FILE=!INSTALL_CONFIG_DIR!\installed_features.json
+
+if not exist "!INSTALL_CONFIG_DIR!" mkdir "!INSTALL_CONFIG_DIR!"
+
+(
+echo {
+echo   "latex_installed": !SRRD_LATEX_INSTALLED!,
+echo   "vector_db_installed": !SRRD_VECTOR_DB_INSTALLED!
+echo }
+) > "!INSTALL_CONFIG_FILE!"
+
+echo Installation status saved to !INSTALL_CONFIG_FILE!
+
 echo.
 echo SRRD-Builder installation complete!
 echo.
@@ -145,9 +310,40 @@ echo    - srrd switch         Switch MCP context to current project
 echo    - srrd configure      Configure and check status
 echo    - srrd-server         Start WebSocket demo server
 echo.
-echo Press any key to exit...
-echo.
+
 echo Initializing global SRRD project context...
-python -c "import sys; sys.path.insert(0, r'%cd%\srrd_builder\utils'); import launcher_config; launcher_config.reset_to_global_project()"
-echo Global SRRD project context initialized (if not already present)
+REM Run the Python command in a separate process and wait with timeout to avoid hanging
+start /wait /min cmd /c "python -u -c "import sys; print('PYTHON START'); sys.path.insert(0, r'%cd%\srrd_builder\utils'); print('PATH SET'); import launcher_config; print('IMPORTED'); launcher_config.reset_to_global_project(); print('DONE')" 2>&1"
+if errorlevel 1 (
+    echo Global SRRD project context initialization failed
+) else (
+    echo Global SRRD project context initialized, if not already present 
+)
+
+REM Optional test suite execution
+if "%RUN_TESTS%"=="true" (
+    echo.
+    echo Running Professional Test Suite ^(158 tests^)...
+    echo =================================================
+    
+    if exist "run_tests.sh" (
+        bash run_tests.sh
+        if errorlevel 1 (
+            echo Some tests failed. Check test output above.
+            echo Installation is still functional - tests validate code quality.
+        ) else (
+            echo All 158 tests passed successfully!
+        )
+    ) else (
+        echo Test runner not found. Skipping test execution.
+    )
+) else (
+    echo.
+    echo To run the professional test suite ^(158 tests^):
+    echo    bash run_tests.sh
+    echo    or
+    echo    setup.bat --with-tests
+)
+
+echo Press any key to exit...
 pause >nul

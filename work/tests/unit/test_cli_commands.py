@@ -24,6 +24,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from srrd_builder.config.installation_status import is_latex_installed
+
 
 class TestCLICommands:
     """Comprehensive test SRRD CLI command functionality"""
@@ -275,6 +277,7 @@ class TestCLICommands:
 
     # ===== PDF GENERATION TESTS =====
 
+    @pytest.mark.skipif(not is_latex_installed(), reason="LaTeX not installed")
     def test_generate_pdf(self):
         """Test PDF generation (if pdflatex available)"""
         project_dir = self.create_temp_dir("pdf_test")
@@ -296,27 +299,16 @@ class TestCLICommands:
             cwd=project_dir,
         )
 
-        # Check if pdflatex is available
-        try:
-            subprocess.run(["pdflatex", "--version"], capture_output=True, check=True)
-            pdflatex_available = True
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            pdflatex_available = False
+        # Generate PDF
+        returncode, stdout, stderr = self.run_cli_command(
+            ["generate", "pdf", "work/drafts/test_pdf.tex"], cwd=project_dir
+        )
 
-        if pdflatex_available:
-            # Generate PDF
-            returncode, stdout, stderr = self.run_cli_command(
-                ["generate", "pdf", "work/drafts/test_pdf.tex"], cwd=project_dir
-            )
+        assert returncode == 0, f"PDF generation failed: {stderr}"
 
-            assert returncode == 0, f"PDF generation failed: {stderr}"
-
-            # Verify PDF created
-            pdf_file = project_dir / "work" / "drafts" / "test_pdf.pdf"
-            assert pdf_file.is_file(), "PDF file not created"
-        else:
-            # Skip test if pdflatex not available
-            pytest.skip("pdflatex not available")
+        # Verify PDF created
+        pdf_file = project_dir / "work" / "drafts" / "test_pdf.pdf"
+        assert pdf_file.is_file(), "PDF file not created"
 
     # ===== PUBLICATION WORKFLOW TESTS =====
 
@@ -430,6 +422,7 @@ class TestCLICommands:
         assert returncode != 0, "Publish should fail for missing draft"
         assert "Draft not found" in stdout
 
+    @pytest.mark.skipif(not is_latex_installed(), reason="LaTeX not installed")
     def test_generate_pdf_fails_missing_file(self):
         """Test generate PDF fails for non-existent file"""
         project_dir = self.create_temp_dir("pdf_fail_test")

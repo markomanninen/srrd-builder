@@ -5,9 +5,25 @@ set -e
 
 # Parse command line arguments
 RUN_TESTS=false
-if [[ "$1" == "--with-tests" ]]; then
-    RUN_TESTS=true
-fi
+WITH_VECTOR_DATABASE=false
+WITH_LATEX=false
+
+for arg in "$@"; do
+    case $arg in
+        --with-tests)
+        RUN_TESTS=true
+        shift
+        ;;
+        --with-vector-database)
+        WITH_VECTOR_DATABASE=true
+        shift
+        ;;
+        --with-latex)
+        WITH_LATEX=true
+        shift
+        ;;
+    esac
+done
 
 echo "🚀 SRRD-Builder MCP Server Setup"
 echo "================================="
@@ -85,56 +101,40 @@ else
     exit 1
 fi
 
-# Platform-specific installations
-if [[ "$PLATFORM" == "macOS" ]]; then
-    echo "🍺 Setting up macOS-specific configurations..."
-    
-    # Check if Homebrew is installed
-    if ! command -v brew &> /dev/null; then
-        echo "⚠️  Homebrew not found. Install Homebrew for easier package management:"
-        echo "    /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
-    fi
-    
-    # Check for LaTeX installation
-    if ! command -v pdflatex &> /dev/null; then
-        echo "⚠️  LaTeX not found. Install MacTeX for document generation:"
-        echo "    brew install --cask mactex"
-        echo "📝 Document generation tools will show helpful error messages without LaTeX"
+# Optional installations
+if [[ "$WITH_VECTOR_DATABASE" == "true" ]]; then
+    echo "📦 Installing vector database dependencies..."
+    if pip install chromadb; then
+        echo "✅ Vector database dependencies installed"
+        export SRRD_VECTOR_DB_INSTALLED=true
     else
-        echo "✅ LaTeX found"
-    fi
-    
-elif [[ "$PLATFORM" == "Linux" ]]; then
-    echo "🐧 Setting up Linux-specific configurations..."
-    
-    # Check for LaTeX installation
-    if ! command -v pdflatex &> /dev/null; then
-        echo "⚠️  LaTeX not found. Install LaTeX for document generation:"
-        if command -v apt-get &> /dev/null; then
-            echo "    sudo apt-get install texlive-latex-base texlive-latex-extra texlive-fonts-recommended"
-        elif command -v yum &> /dev/null; then
-            echo "    sudo yum install texlive-scheme-basic texlive-latex"
-        else
-            echo "    Please install LaTeX manually for your distribution"
-        fi
-        echo "📝 Document generation tools will show helpful error messages without LaTeX"
-    else
-        echo "✅ LaTeX found"
+        echo "❌ Vector database installation failed"
     fi
 fi
 
-# Download spaCy model (if spaCy is installed)
-echo "🧠 Checking for spaCy..."
-if python3 -c "import spacy" 2>/dev/null; then
-    echo "📥 Downloading spaCy language model..."
-    if python3 -m spacy download en_core_web_sm 2>/dev/null; then
-        echo "✅ spaCy language model downloaded"
-    else
-        echo "⚠️  spaCy language model download failed"
+if [[ "$WITH_LATEX" == "true" ]]; then
+    echo "📦 Installing LaTeX..."
+    if [[ "$PLATFORM" == "macOS" ]]; then
+        if ! command -v brew &> /dev/null; then
+            echo "⚠️ Homebrew not found. Skipping LaTeX installation."
+        else
+            brew install --cask mactex
+        fi
+    elif [[ "$PLATFORM" == "Linux" ]]; then
+        if command -v apt-get &> /dev/null; then
+            sudo apt-get install -y texlive-latex-base texlive-latex-extra texlive-fonts-recommended
+        elif command -v yum &> /dev/null; then
+            sudo yum install -y texlive-scheme-basic texlive-latex
+        else
+            echo "⚠️ Unsupported Linux distribution for automatic LaTeX installation."
+        fi
     fi
-else
-    echo "⚠️  spaCy not installed - skipping language model download"
-    echo "💡 To enable advanced NLP features, install spaCy: pip install spacy"
+    if command -v pdflatex &> /dev/null; then
+        echo "✅ LaTeX installed"
+        export SRRD_LATEX_INSTALLED=true
+    else
+        echo "❌ LaTeX installation failed"
+    fi
 fi
 
 # Download NLTK data (if NLTK is installed)
@@ -228,30 +228,52 @@ else
     TOOL_NAMES=""
 fi
 
-# Test LaTeX if available
-if command -v pdflatex &> /dev/null; then
-    echo "Testing LaTeX compilation..."
-    cat > /tmp/srrd_test.tex << 'EOF'
+# Save installation status to a config file
+INSTALL_CONFIG_DIR="srrd_builder/config"
+INSTALL_CONFIG_FILE="${INSTALL_CONFIG_DIR}/installed_features.json"
+
+mkdir -p "${INSTALL_CONFIG_DIR}"
+
+cat > "${INSTALL_CONFIG_FILE}" << EOF
+{
+  "latex_installed": ${SRRD_LATEX_INSTALLED:-false},
+  "vector_db_installed": ${SRRD_VECTOR_DB_INSTALLED:-false}
+}
+EOF
+
+echo "✅ Installation status saved to ${INSTALL_CONFIG_FILE}"
+
+# Only test LaTeX if --with-latex was used
+if [[ "$WITH_LATEX" == "true" ]]; then
+    if command -v pdflatex &> /dev/null; then
+        echo "Testing LaTeX compilation..."
+        cat > /tmp/srrd_test.tex << 'EOF'
 \documentclass{article}
 \begin{document}
 Hello from SRRD-Builder!
 \end{document}
 EOF
-    
-    # Run the CLI command to generate the PDF. This is a finite process.
-    echo "   - Compiling LaTeX to PDF via 'srrd generate pdf'..."
-    python3 -m srrd_builder.cli.main generate pdf /tmp/srrd_test.tex
-    
-    # Check if the PDF was created
-    if [ -f "/tmp/srrd_test.pdf" ]; then
-        echo "   - ✅ SUCCESS: /tmp/srrd_test.pdf was generated."
-        LATEX_SUCCESS=true
+        # Run the CLI command to generate the PDF. This is a finite process.
+        echo "   - Compiling LaTeX to PDF via 'srrd generate pdf'..."
+        python3 -m srrd_builder.cli.main generate pdf /tmp/srrd_test.tex
+        # Check if the PDF was created
+        if [ -f "/tmp/srrd_test.pdf" ]; then
+            echo "   - ✅ SUCCESS: /tmp/srrd_test.pdf was generated."
+            LATEX_SUCCESS=true
+        else
+            echo "   - ❌ FAILURE: PDF file was not created. Check LaTeX installation."
+            LATEX_SUCCESS=false
+        fi
     else
-        echo "   - ❌ FAILURE: PDF file was not created. Check LaTeX installation."
+        echo "❌ LaTeX is not installed according to system configuration"
+        echo "   Please run 'setup.sh --with-latex' to install LaTeX"
+        echo "   Or install LaTeX manually:"
+        echo "     macOS: brew install --cask mactex"
+        echo "     Ubuntu: sudo apt-get install texlive-latex-extra"
         LATEX_SUCCESS=false
     fi
 else
-    echo "⚠️  LaTeX not available - document generation tools will have limited functionality"
+    echo "💡 LaTeX test skipped (not requested with --with-latex)"
 fi
 
 # Generate Claude Desktop config

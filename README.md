@@ -76,7 +76,21 @@ Choose your platform for quick setup:
 ```powershell
 git clone https://github.com/markomanninen/srrd-builder
 cd srrd-builder
+
+# Basic installation
 setup.bat
+
+# Optional: Install with vector database support
+setup.bat --with-vector-database
+
+# Optional: Install with LaTeX support
+setup.bat --with-latex
+
+# Optional: Install with full test suite execution
+setup.bat --with-tests
+
+# Optional: Install all optional features
+setup.bat --with-vector-database --with-latex --with-tests
 ```
 
 #### WSL (Windows Subsystem for Linux)
@@ -85,7 +99,7 @@ setup.bat
 git clone https://github.com/markomanninen/srrd-builder
 cd srrd-builder
 dos2unix setup.sh  # Convert Windows line endings
-bash setup.sh
+bash setup.sh --with-vector-database --with-latex
 ```
 
 #### macOS/Linux
@@ -93,20 +107,39 @@ bash setup.sh
 ```bash
 git clone https://github.com/markomanninen/srrd-builder
 cd srrd-builder
+
+# Basic installation
 ./setup.sh
+
+# Optional: Install with vector database support
+./setup.sh --with-vector-database
+
+# Optional: Install with LaTeX support
+./setup.sh --with-latex
 
 # Optional: Run with comprehensive testing (183 tests)
 ./setup.sh --with-tests
+
+# Optional: Install all optional features
+./setup.sh --with-vector-database --with-latex --with-tests
 ```
+
+### Installation Options
+
+The setup scripts support the following optional installations:
+
+- `--with-vector-database`: Installs ChromaDB for semantic search capabilities
+- `--with-latex`: Installs LaTeX distribution for PDF document generation  
+- `--with-tests`: Runs the complete test suite (183 tests) after installation
 
 ### What the setup scripts do
 
 - Install Python dependencies with fallback to minimal requirements
 - Install the `srrd` and `srrd-server` CLI tools
-- Configure platform-specific LaTeX installation
+- Configure platform-specific LaTeX installation (if `--with-latex` specified)
 - Set up Claude Desktop configuration automatically  
 - Test all components and verify installation
-- **Optionally run complete test suite (183 tests)**
+- **Optionally run complete test suite (183 tests) if `--with-tests` specified**
 
 ## Platform Support
 

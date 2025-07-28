@@ -64,6 +64,12 @@ try:
 except ImportError as e:
     print(f"Warning: Failed to import research_continuity: {e}")
 
+try:
+    from .vector_database import register_vector_database_tools
+    available_modules['vector_database'] = register_vector_database_tools
+except ImportError as e:
+    print(f"Warning: Failed to import vector_database: {e}")
+
 def register_all_tools(server):
     """Register all tools with the MCP server"""
     total_tools = 0

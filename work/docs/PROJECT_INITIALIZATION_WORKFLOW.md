@@ -1,67 +1,134 @@
 # Project Initialization Workflow
 
-## Automatic Context Switching
+## Installation
 
-As of the latest update, **no manual switching is required** when creating new projects through MCP tools. The system automatically handles MCP context switching.
+### Automated Installation
 
-## How It Works
+Choose your platform for quick setup:
 
-### 1. Via MCP Tools (Claude Desktop/VS Code Chat)
+#### Windows
+
+```powershell
+git clone https://github.com/markomanninen/srrd-builder
+cd srrd-builder
+./setup.bat
+```
+
+#### macOS/Linux
 
 ```bash
-# User in Claude Desktop:
+git clone https://github.com/markomanninen/srrd-builder
+cd srrd-builder
+./setup.sh
+
+# Optional: Install with vector database support
+./setup.sh --with-vector-database
+
+# Optional: Install with LaTeX support
+./setup.sh --with-latex
+```
+
+### Manual Installation
+
+See the [Installation Guide](INSTALLATION.md) for detailed instructions.
+
+## Project Initialization
+
+### Via CLI
+
+```bash
+# Navigate to your research directory
+cd /path/to/my-research-area
+
+# Initialize a new project
+srrd init
+
+# The CLI will automatically switch to the new project context
+```
+
+### Via MCP Tools (Claude Desktop)
+
+```bash
+# In Claude Desktop, use the `initialize_project` tool
 initialize_project(
   name="Quantum NLP Research",
-  description="Research on quantum computing in NLP", 
+  description="Research on quantum computing in NLP",
   domain="computer_science"
 )
 
-# Result: 
-✅ MCP Context Automatically Switched!
-   Claude Desktop is now using this project for all research tools.
+# The MCP server will automatically switch to the new project context
 ```
 
-**What happens automatically:**
-- Project directory structure created
-- Git repository initialized
-- SQLite and vector databases set up
-- MCP global launcher reconfigured
-- **Context automatically switched** - no manual action needed
-
-### 2. Via CLI Commands
+## Switching Projects
 
 ```bash
-# Navigate to any directory
-cd /path/to/my-research-area
-
-# Initialize SRRD project
-srrd init
-
-# Result: MCP context automatically set to this project
-# Start using Claude Desktop with MCP tools immediately
-```
-
-### 3. Switching Between Projects
-
-```bash
-# To switch to an existing project:
+# Switch to a different project directory
 cd /path/to/another-project
+
+# Switch the MCP context
 srrd switch
 
-# Or reset to global context:
+# Reset to the global context
 srrd reset
 ```
 
-## Benefits
+## Verifying the Context
 
-- **Zero Manual Steps**: Create and immediately use new projects
-- **Consistent Experience**: CLI and MCP tools behave identically  
-- **Clear Feedback**: Users know when auto-switch succeeds or fails
-- **Graceful Fallback**: If auto-switch fails, clear instructions provided
+```bash
+# Check the current project context
+srrd status
+```
 
-## Implementation Details
+## Project Structure
 
-The automatic switching is implemented using shared utilities:
-- `srrd_builder/utils/launcher_config.py` - Shared launcher configuration
-- Used by CLI commands (`init`, `switch`, `reset`) and MCP tools
-- Eliminates code duplication and ensures consistent behavior
+When a project is initialized, the following structure is created:
+
+```
+/path/to/my-research-area
+├── .srrd/
+│   ├── config.yaml
+│   └── db.sqlite
+├── .gitignore
+├── README.md
+└── work/
+    ├── documents/
+    ├── logs/
+    └── vector_db/
+```
+
+- **`.srrd/`**: Contains project-specific configuration and the SQLite database.
+- **`.gitignore`**: Ignores the `.srrd/` directory and other temporary files.
+- **`README.md`**: A template README file for the project.
+- **`work/`**: The main directory for research artifacts.
+  - **`documents/`**: For research papers, notes, and other documents.
+  - **`logs/`**: Contains logs from the MCP server.
+  - **`vector_db/`**: Stores the vector database for semantic search.
+
+## Workflow Intelligence
+
+SRRD-Builder includes a **Workflow Intelligence** feature that provides AI-powered analysis of your research progress. This feature is enabled by default.
+
+### How it Works
+
+- **Tool Logging**: All tool usage is logged to `work/logs/mcp_server.log`.
+- **Progress Analysis**: The `srrd status` command analyzes the log file to provide insights and recommendations.
+- **Contextual Awareness**: The analysis is aware of the current project and its goals.
+
+### Usage
+
+1. **Initialize a project** and start using the MCP tools.
+2. Run `srrd status` to see your progress and get recommendations.
+
+## Global Project Context
+
+SRRD-Builder uses a global project context located at `~/.srrd/globalproject`. This allows you to use the MCP tools from any directory without initializing a project.
+
+- **Default Context**: When no project is active, the global context is used.
+- **Initialization**: The global context is automatically initialized on the first run.
+- **Switching**: You can switch back to the global context with `srrd reset`.
+
+## Troubleshooting
+
+- **"No such file or directory"**: Make sure you are in the correct project directory.
+- **"MCP context not switched"**: Run `srrd switch` manually to switch to the correct context.
+- **"Error: Project not initialized"**: Run `srrd init` to initialize a new project.
