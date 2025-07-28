@@ -228,30 +228,38 @@ else
     TOOL_NAMES=""
 fi
 
-# Test LaTeX if available
-if command -v pdflatex &> /dev/null; then
-    echo "Testing LaTeX compilation..."
-    cat > /tmp/srrd_test.tex << 'EOF'
+
+# Only test LaTeX if --with-latex was used
+if [[ "$WITH_LATEX" == "true" ]]; then
+    if command -v pdflatex &> /dev/null; then
+        echo "Testing LaTeX compilation..."
+        cat > /tmp/srrd_test.tex << 'EOF'
 \documentclass{article}
 \begin{document}
 Hello from SRRD-Builder!
 \end{document}
 EOF
-    
-    # Run the CLI command to generate the PDF. This is a finite process.
-    echo "   - Compiling LaTeX to PDF via 'srrd generate pdf'..."
-    python3 -m srrd_builder.cli.main generate pdf /tmp/srrd_test.tex
-    
-    # Check if the PDF was created
-    if [ -f "/tmp/srrd_test.pdf" ]; then
-        echo "   - ✅ SUCCESS: /tmp/srrd_test.pdf was generated."
-        LATEX_SUCCESS=true
+        # Run the CLI command to generate the PDF. This is a finite process.
+        echo "   - Compiling LaTeX to PDF via 'srrd generate pdf'..."
+        python3 -m srrd_builder.cli.main generate pdf /tmp/srrd_test.tex
+        # Check if the PDF was created
+        if [ -f "/tmp/srrd_test.pdf" ]; then
+            echo "   - ✅ SUCCESS: /tmp/srrd_test.pdf was generated."
+            LATEX_SUCCESS=true
+        else
+            echo "   - ❌ FAILURE: PDF file was not created. Check LaTeX installation."
+            LATEX_SUCCESS=false
+        fi
     else
-        echo "   - ❌ FAILURE: PDF file was not created. Check LaTeX installation."
+        echo "❌ LaTeX is not installed according to system configuration"
+        echo "   Please run 'setup.sh --with-latex' to install LaTeX"
+        echo "   Or install LaTeX manually:"
+        echo "     macOS: brew install --cask mactex"
+        echo "     Ubuntu: sudo apt-get install texlive-latex-extra"
         LATEX_SUCCESS=false
     fi
 else
-    echo "⚠️  LaTeX not available - document generation tools will have limited functionality"
+    echo "💡 LaTeX test skipped (not requested with --with-latex)"
 fi
 
 # Generate Claude Desktop config
