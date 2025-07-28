@@ -1,6 +1,6 @@
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Add utility functions for decorators
 current_dir = Path(__file__).parent.parent
@@ -11,17 +11,21 @@ if str(utils_dir) not in sys.path:
 from context_decorator import context_aware
 from current_project import get_current_project as get_project_path
 
+import srrd_builder.config.installation_status
+
 # Conditionally import vector database dependencies
 try:
     from storage.project_manager import ProjectManager
+
     VECTOR_DB_AVAILABLE = True
 except ImportError:
     VECTOR_DB_AVAILABLE = False
 
+
 @context_aware(require_context=True)
 async def store_bibliography_reference_tool(**kwargs) -> str:
     """Store a bibliography reference in the vector database for future retrieval"""
-    if not VECTOR_DB_AVAILABLE:
+    if not VECTOR_DB_AVAILABLE or not srrd_builder.config.installation_status.is_vector_db_installed():
         return "Vector database functionality is not available. Please install with --with-vector-database."
 
     project_manager = None
@@ -63,7 +67,7 @@ async def store_bibliography_reference_tool(**kwargs) -> str:
 @context_aware(require_context=True)
 async def retrieve_bibliography_references_tool(**kwargs) -> str:
     """Retrieve relevant bibliography references from the vector database based on search query"""
-    if not VECTOR_DB_AVAILABLE:
+    if not VECTOR_DB_AVAILABLE or not srrd_builder.config.installation_status.is_vector_db_installed():
         return "Vector database functionality is not available. Please install with --with-vector-database."
 
     project_manager = None
@@ -108,7 +112,7 @@ async def retrieve_bibliography_references_tool(**kwargs) -> str:
 
 def register_vector_database_tools(server):
     """Register vector database tools with the MCP server"""
-    if os.getenv("SRRD_VECTOR_DB_INSTALLED") == "true":
+    if srrd_builder.config.installation_status.is_vector_db_installed():
         server.register_tool(
             name="store_bibliography_reference",
             description="Store a bibliography reference in the vector database",

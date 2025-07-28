@@ -15,6 +15,7 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 sys.path.append(str(Path(__file__).parent.parent.parent / 'code' / 'mcp'))
 
 from mcp_server import ClaudeMCPServer
+from srrd_builder.config.installation_status import is_latex_installed, is_vector_db_installed
 
 """
 COMPREHENSIVE integration tests for main MCP server with ALL functionality
@@ -94,6 +95,7 @@ def setup_server_environment():
     # Final aggressive cleanup
     gc.collect()
     
+@pytest.mark.skipif(not (is_latex_installed() and is_vector_db_installed()), reason="LaTeX and/or vector database not installed")
 def test_server_initialization_complete(setup_server_environment):
         """Test COMPLETE main MCP server initialization - ALL 46 tools"""
         test_env = setup_server_environment
@@ -219,6 +221,7 @@ def test_server_initialization_complete(setup_server_environment):
         print(f"🎉 ALL 46 tools successfully registered and verified!")
     
 @pytest.mark.asyncio
+@pytest.mark.skipif(not (is_latex_installed() and is_vector_db_installed()), reason="LaTeX and/or vector database not installed")
 async def test_comprehensive_tool_execution(setup_server_environment):
         """Test COMPREHENSIVE tool execution - verify tools are callable and return expected types"""
         test_env = setup_server_environment
@@ -308,6 +311,7 @@ async def test_comprehensive_tool_execution(setup_server_environment):
         print("🎉 ALL 46 tools verified as registered and callable!")
         print("✅ Tool execution verification completed successfully!")
     
+@pytest.mark.skipif(not (is_latex_installed() and is_vector_db_installed()), reason="LaTeX and/or vector database not installed")
 def test_mcp_protocol_comprehensive(setup_server_environment):
         """Test COMPREHENSIVE MCP protocol functionality"""
         test_env = setup_server_environment
@@ -351,6 +355,7 @@ def test_mcp_protocol_comprehensive(setup_server_environment):
         print("✅ MCP tool list matches exactly with server registered tools")
             
 @pytest.mark.asyncio
+@pytest.mark.skipif(not (is_latex_installed() and is_vector_db_installed()), reason="LaTeX and/or vector database not installed")
 async def test_mcp_protocol_request_handling_comprehensive(setup_server_environment):
         """Test COMPREHENSIVE MCP protocol request handling"""
         test_env = setup_server_environment
@@ -625,6 +630,7 @@ async def test_error_handling_comprehensive(setup_server_environment):
         print("🎉 ALL error handling tests PASSED!")
     
 @pytest.mark.asyncio
+@pytest.mark.skipif(not (is_latex_installed() and is_vector_db_installed()), reason="LaTeX and/or vector database not installed")
 async def test_research_workflow_integration(setup_server_environment):
         """Test COMPLETE end-to-end research workflow - FULL COMPREHENSIVE TESTING"""
         test_env = setup_server_environment

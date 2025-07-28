@@ -99,6 +99,12 @@ bash setup.sh
 git clone https://github.com/markomanninen/srrd-builder
 cd srrd-builder
 ./setup.sh
+
+# Optional: Install with vector database support
+./setup.sh --with-vector-database
+
+# Optional: Install with LaTeX support
+./setup.sh --with-latex
 ```
 
 These scripts will:

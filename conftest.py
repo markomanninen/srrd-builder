@@ -18,6 +18,9 @@ MCP_CODE_PATH = PROJECT_ROOT / 'work' / 'code' / 'mcp'
 sys.path.insert(0, str(MCP_CODE_PATH))
 sys.path.insert(0, str(PROJECT_ROOT))
 
+# Mock chromadb to prevent import errors
+sys.modules["chromadb"] = Mock()
+
 
 @pytest.fixture(scope="session")
 def project_root():

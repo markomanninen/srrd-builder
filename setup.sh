@@ -339,3 +339,18 @@ echo ""
 echo "🔄 Initializing global SRRD project context..."
 python3 -c "import sys; sys.path.insert(0, '$(pwd)/srrd_builder/utils'); import launcher_config; launcher_config.reset_to_global_project()"
 echo "✅ Global SRRD project context initialized (if not already present)"
+
+# Save installation status to a config file
+INSTALL_CONFIG_DIR="srrd_builder/config"
+INSTALL_CONFIG_FILE="${INSTALL_CONFIG_DIR}/installed_features.json"
+
+mkdir -p "${INSTALL_CONFIG_DIR}"
+
+cat > "${INSTALL_CONFIG_FILE}" << EOF
+{
+  "latex_installed": ${SRRD_LATEX_INSTALLED:-false},
+  "vector_db_installed": ${SRRD_VECTOR_DB_INSTALLED:-false}
+}
+EOF
+
+echo "✅ Installation status saved to ${INSTALL_CONFIG_FILE}"

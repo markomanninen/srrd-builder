@@ -3,6 +3,32 @@ setlocal enabledelayedexpansion
 REM Windows Setup Script for SRRD-Builder MCP Server
 REM Provides automated installation on Windows systems
 
+REM Parse command line arguments
+set RUN_TESTS=false
+set WITH_VECTOR_DATABASE=false
+set WITH_LATEX=false
+
+:parse_args
+if "%~1"=="" goto :args_done
+if "%~1"=="--with-tests" (
+    set RUN_TESTS=true
+    shift
+    goto :parse_args
+)
+if "%~1"=="--with-vector-database" (
+    set WITH_VECTOR_DATABASE=true
+    shift
+    goto :parse_args
+)
+if "%~1"=="--with-latex" (
+    set WITH_LATEX=true
+    shift
+    goto :parse_args
+)
+shift
+goto :parse_args
+:args_done
+
 echo SRRD-Builder Windows Setup
 echo ===============================
 
@@ -91,6 +117,31 @@ if errorlevel 1 (
 )
 echo SRRD CLI package installed successfully
 
+REM Optional installations
+if "%WITH_VECTOR_DATABASE%"=="true" (
+    echo Installing vector database dependencies...
+    pip install chromadb
+    if errorlevel 1 (
+        echo Vector database installation failed
+    ) else (
+        echo Vector database dependencies installed
+        set SRRD_VECTOR_DB_INSTALLED=true
+    )
+)
+
+if "%WITH_LATEX%"=="true" (
+    echo Installing LaTeX...
+    echo Please install MiKTeX manually from: https://miktex.org/download
+    echo After installation, restart this script to continue.
+    where pdflatex >nul 2>&1
+    if errorlevel 1 (
+        echo LaTeX installation failed - pdflatex not found in PATH
+    ) else (
+        echo LaTeX installed
+        set SRRD_LATEX_INSTALLED=true
+    )
+)
+
 REM Windows-specific setup
 echo Setting up Windows-specific configurations...
 
@@ -146,6 +197,44 @@ echo    - srrd configure      Configure and check status
 echo    - srrd-server         Start WebSocket demo server
 echo.
 echo Press any key to exit...
+REM Optional test suite execution
+if "%RUN_TESTS%"=="true" (
+    echo.
+    echo Running Professional Test Suite ^(158 tests^)...
+    echo =================================================
+    
+    if exist "run_tests.sh" (
+        bash run_tests.sh
+        if errorlevel 1 (
+            echo Some tests failed. Check test output above.
+            echo Installation is still functional - tests validate code quality.
+        ) else (
+            echo All 158 tests passed successfully!
+        )
+    ) else (
+        echo Test runner not found. Skipping test execution.
+    )
+) else (
+    echo.
+    echo To run the professional test suite ^(158 tests^):
+    echo    bash run_tests.sh
+    echo    or
+    echo    setup.bat --with-tests
+)
+
+REM Save installation status to a config file
+set INSTALL_CONFIG_DIR=srrd_builder\config
+set INSTALL_CONFIG_FILE=%INSTALL_CONFIG_DIR%\installed_features.json
+
+if not exist "%INSTALL_CONFIG_DIR%" mkdir "%INSTALL_CONFIG_DIR%"
+
+echo { > "%INSTALL_CONFIG_FILE%"
+echo   "latex_installed": %SRRD_LATEX_INSTALLED:true=true%, >> "%INSTALL_CONFIG_FILE%"
+echo   "vector_db_installed": %SRRD_VECTOR_DB_INSTALLED:true=true% >> "%INSTALL_CONFIG_FILE%"
+echo } >> "%INSTALL_CONFIG_FILE%"
+
+echo Installation status saved to %INSTALL_CONFIG_FILE%
+
 echo.
 echo Initializing global SRRD project context...
 python -c "import sys; sys.path.insert(0, r'%cd%\srrd_builder\utils'); import launcher_config; launcher_config.reset_to_global_project()"

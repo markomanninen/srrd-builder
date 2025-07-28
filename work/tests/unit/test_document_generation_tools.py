@@ -19,7 +19,6 @@ Tests all 11 document generation MCP tools:
 - retrieve_bibliography_references
 """
 import json
-import os
 import sys
 import tempfile
 from pathlib import Path
@@ -32,6 +31,7 @@ sys.path.append(str(Path(__file__).parent.parent.parent / "code" / "mcp"))
 
 from storage.sqlite_manager import SQLiteManager
 from utils.current_project import clear_current_project, set_current_project
+from srrd_builder.config.installation_status import is_latex_installed, is_vector_db_installed
 
 
 class TestDocumentGenerationTools:
@@ -139,6 +139,7 @@ class TestDocumentGenerationTools:
             pytest.fail(f"generate_bibliography_tool failed: {e}")
 
     @pytest.mark.asyncio
+    @pytest.mark.skipif(not is_latex_installed(), reason="LaTeX not installed")
     async def test_compile_latex(self, active_project_context):
         """Test LaTeX compilation"""
         try:
@@ -243,6 +244,7 @@ class TestDocumentGenerationTools:
             pytest.fail(f"extract_document_sections_tool failed: {e}")
 
     @pytest.mark.asyncio
+    @pytest.mark.skipif(not is_vector_db_installed(), reason="Vector DB not installed")
     async def test_bibliography_storage_retrieval(self, active_project_context):
         """Test bibliography storage and retrieval"""
         try:

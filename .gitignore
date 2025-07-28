@@ -320,3 +320,5 @@ Thumbs.db
 .env
 
 *.tex
+
+srrd_builder/config/installed_features.json

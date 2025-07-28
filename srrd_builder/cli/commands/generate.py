@@ -7,6 +7,7 @@ import subprocess
 from pathlib import Path
 import json
 import shutil
+from srrd_builder.config.installation_status import is_latex_installed
 
 def handle_generate(args):
     """Handle 'srrd generate' command"""
@@ -39,6 +40,15 @@ def find_srrd_root(path: Path) -> Path:
 
 def generate_pdf(args, project_root: Path):
     """Compile LaTeX document to PDF"""
+    # Check if LaTeX is installed according to configuration
+    if not is_latex_installed():
+        print("❌ LaTeX is not installed according to system configuration")
+        print("   Please run 'setup.sh --with-latex' to install LaTeX")
+        print("   Or install LaTeX manually:")
+        print("     macOS: brew install --cask mactex")
+        print("     Ubuntu: sudo apt-get install texlive-latex-extra")
+        return 1
+    
     tex_file = args.input
     if not tex_file:
         print("❌ No input file specified")

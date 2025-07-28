@@ -6,7 +6,6 @@ Integration Tests for the `srrd tool` CLI Command
 This test file systematically invokes every available MCP tool via the command line
 to ensure basic functionality, argument parsing, and successful execution.
 """
-import json
 import os
 import shutil
 import subprocess
@@ -16,9 +15,10 @@ from pathlib import Path
 
 import pytest
 
-# A dictionary of test cases for each tool with minimal valid arguments.
-# This is necessary because some tools have required parameters.
-TOOL_TEST_CASES = [
+from srrd_builder.config.installation_status import is_latex_installed, is_vector_db_installed
+
+# Test cases for tools that don't require special dependencies
+GENERAL_TOOL_TEST_CASES = [
     # Research Planning
     ("clarify_research_goals", ["--research-area", "AI", "--initial-goals", "Test"]),
     ("suggest_methodology", ["--research-goals", "Test goals", "--domain", "cs"]),
@@ -31,30 +31,8 @@ TOOL_TEST_CASES = [
         "check_quality_gates",
         ["--phase", "planning", "--research-content", '{"methodology":"Test"}'],
     ),
-    # Document Generation
-    ("generate_latex_document", ["--title", "CLITestDoc"]),
-    (
-        "compile_latex",
-        ["--tex-file-path", "test.tex"],
-    ),  # Will fail gracefully, which is a success
-    ("list_latex_templates", []),
-    ("generate_latex_with_template", ["--title", "TemplateDoc"]),
+    # Document Generation (non-LaTeX)
     ("format_research_content", ["--content", "test content"]),
-    ("generate_bibliography", ["--references", '[{"title":"Test Ref"}]']),
-    ("extract_document_sections", ["--document-content", "\\section{Intro} content"]),
-    ("store_bibliography_reference", ["--reference", '{"title":"Test Store"}']),
-    ("retrieve_bibliography_references", ["--query", "Test"]),
-    (
-        "generate_document_with_database_bibliography",
-        ["--title", "DBBibDoc", "--bibliography-query", "Test"],
-    ),
-    # Search & Discovery
-    ("semantic_search", ["--query", "test query"]),
-    ("extract_key_concepts", ["--text", "some concepts here"]),
-    ("generate_research_summary", ["--documents", '["doc one", "doc two"]']),
-    ("discover_patterns", ["--content", "some content here to find patterns"]),
-    ("find_similar_documents", ["--target-document", "A document about AI research"]),
-    ("build_knowledge_graph", ["--documents", '["doc one", "doc two"]']),
     # Methodology Advisory
     ("explain_methodology", ["--research-question", "How to test?", "--domain", "cs"]),
     (
@@ -154,7 +132,6 @@ TOOL_TEST_CASES = [
     # Storage Management (continued)
     ("save_session", ["--session-data", '{"id":1}']),
     ("restore_session", ["--session-id", "1"]),
-    ("search_knowledge", ["--query", "test"]),
     ("version_control", ["--action", "status", "--message", "N/A"]),
     ("backup_project", []),
     ("switch_project_context", ["--target-project-path", "."]),
@@ -166,6 +143,36 @@ TOOL_TEST_CASES = [
     ("get_research_milestones", []),
     ("start_research_session", []),
     ("get_session_summary", []),
+]
+
+# LaTeX-dependent test cases
+LATEX_TOOL_TEST_CASES = [
+    ("generate_latex_document", ["--title", "CLITestDoc"]),
+    (
+        "compile_latex",
+        ["--tex-file-path", "test.tex"],
+    ),  # Will fail gracefully, which is a success
+    ("list_latex_templates", []),
+    ("generate_latex_with_template", ["--title", "TemplateDoc"]),
+    ("generate_bibliography", ["--references", '[{"title":"Test Ref"}]']),
+    ("extract_document_sections", ["--document-content", "\\section{Intro} content"]),
+]
+
+# Vector database-dependent test cases
+VECTOR_DB_TOOL_TEST_CASES = [
+    ("store_bibliography_reference", ["--reference", '{"title":"Test Store"}']),
+    ("retrieve_bibliography_references", ["--query", "Test"]),
+    (
+        "generate_document_with_database_bibliography",
+        ["--title", "DBBibDoc", "--bibliography-query", "Test"],
+    ),
+    ("semantic_search", ["--query", "test query"]),
+    ("extract_key_concepts", ["--text", "some concepts here"]),
+    ("generate_research_summary", ["--documents", '["doc one", "doc two"]']),
+    ("discover_patterns", ["--content", "some content here to find patterns"]),
+    ("find_similar_documents", ["--target-document", "A document about AI research"]),
+    ("build_knowledge_graph", ["--documents", '["doc one", "doc two"]']),
+    ("search_knowledge", ["--query", "test"]),
 ]
 
 
@@ -229,8 +236,8 @@ class TestCliTools:
         )
         return result
 
-    @pytest.mark.parametrize("tool_name, tool_args", TOOL_TEST_CASES)
-    def test_tool_cli_execution(self, active_project_context, tool_name, tool_args):
+    @pytest.mark.parametrize("tool_name, tool_args", GENERAL_TOOL_TEST_CASES)
+    def test_general_tool_cli_execution(self, active_project_context, tool_name, tool_args):
         """
         Tests that each tool can be successfully invoked via the CLI.
         This is a basic success check, not an output validation.
@@ -242,6 +249,72 @@ class TestCliTools:
             (active_project_context / "test.tex").write_text(
                 "\\documentclass{article}\\begin{document}Hello\\end{document}"
             )
+
+        result = self.run_cli_command(command, cwd=active_project_context)
+
+        # Check stderr for critical errors (but allow warnings)
+        stderr_lower = result.stderr.lower()
+        assert (
+            "error" not in stderr_lower
+        ), f"Tool '{tool_name}' produced an error in stderr:\n{result.stderr}"
+        assert (
+            "traceback" not in stderr_lower
+        ), f"Tool '{tool_name}' produced a traceback in stderr:\n{result.stderr}"
+
+        # Check for successful execution status in stdout
+        assert (
+            "Tool executed successfully" in result.stdout
+        ), f"Tool '{tool_name}' did not report success in stdout:\n{result.stdout}"
+
+        # The primary check: command should exit with code 0
+        assert (
+            result.returncode == 0
+        ), f"Tool '{tool_name}' failed with exit code {result.returncode}.\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
+
+    @pytest.mark.parametrize("tool_name, tool_args", LATEX_TOOL_TEST_CASES)
+    @pytest.mark.skipif(not is_latex_installed(), reason="LaTeX not installed")
+    def test_latex_tool_cli_execution(self, active_project_context, tool_name, tool_args):
+        """
+        Tests that LaTeX-dependent tools can be successfully invoked via the CLI.
+        This is a basic success check, not an output validation.
+        """
+        command = ["tool", tool_name] + tool_args
+
+        # Special case for compile_latex, which needs a file to exist
+        if tool_name == "compile_latex":
+            (active_project_context / "test.tex").write_text(
+                "\\documentclass{article}\\begin{document}Hello\\end{document}"
+            )
+
+        result = self.run_cli_command(command, cwd=active_project_context)
+
+        # Check stderr for critical errors (but allow warnings)
+        stderr_lower = result.stderr.lower()
+        assert (
+            "error" not in stderr_lower
+        ), f"Tool '{tool_name}' produced an error in stderr:\n{result.stderr}"
+        assert (
+            "traceback" not in stderr_lower
+        ), f"Tool '{tool_name}' produced a traceback in stderr:\n{result.stderr}"
+
+        # Check for successful execution status in stdout
+        assert (
+            "Tool executed successfully" in result.stdout
+        ), f"Tool '{tool_name}' did not report success in stdout:\n{result.stdout}"
+
+        # The primary check: command should exit with code 0
+        assert (
+            result.returncode == 0
+        ), f"Tool '{tool_name}' failed with exit code {result.returncode}.\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
+
+    @pytest.mark.parametrize("tool_name, tool_args", VECTOR_DB_TOOL_TEST_CASES)
+    @pytest.mark.skipif(not is_vector_db_installed(), reason="Vector database not installed")
+    def test_vector_db_tool_cli_execution(self, active_project_context, tool_name, tool_args):
+        """
+        Tests that vector database-dependent tools can be successfully invoked via the CLI.
+        This is a basic success check, not an output validation.
+        """
+        command = ["tool", tool_name] + tool_args
 
         result = self.run_cli_command(command, cwd=active_project_context)
 

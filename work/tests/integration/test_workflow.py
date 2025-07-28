@@ -12,6 +12,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+from srrd_builder.config.installation_status import is_vector_db_installed
+
 project_root = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(project_root))
 
@@ -129,6 +131,7 @@ class TestContextAwareWorkflow:
         )
 
     @pytest.mark.asyncio
+    @pytest.mark.skipif(not is_vector_db_installed(), reason="Vector database not installed")
     async def test_bibliography_context_aware_workflow(self, active_project_context):
         from work.code.mcp.server import MCPServer
 

@@ -12,7 +12,6 @@ Tests all 5 storage management MCP tools:
 """
 
 import asyncio
-import os
 import sys
 import tempfile
 import shutil
@@ -35,6 +34,8 @@ except ImportError as e:
     print(f"❌ Import Error: {e}")
     print("   Make sure MCP server modules are available")
     pytest.skip("MCP server modules not available", allow_module_level=True)
+
+from srrd_builder.config.installation_status import is_vector_db_installed
 
 class TestStorageTools:
     """Test storage management tools functionality"""
@@ -157,6 +158,7 @@ class TestStorageTools:
             self.assert_test(False, "Save session validation", str(e))
     
     @pytest.mark.asyncio
+    @pytest.mark.skipif(not is_vector_db_installed(), reason="Vector DB not installed")
     async def test_search_knowledge_tool(self):
         """Test knowledge search tool"""
         print("  🔍 Testing search_knowledge_tool...")
