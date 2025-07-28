@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Science Research Project Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .project-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .section-header {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px 20px;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .section-header:hover {
+            background: linear-gradient(45deg, #45a049, #4CAF50);
+        }
+        
+        .section-content {
+            padding: 20px;
+            display: none;
+        }
+        
+        .section-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .hypothesis-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .data-table th,
+        .data-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .data-table th {
+            background: #f5f5f5;
+            font-weight: bold;
+        }
+        
+        .chart-container {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .bar-chart {
+            display: flex;
+            align-items: end;
+            justify-content: space-around;
+            height: 200px;
+            margin: 20px 0;
+        }
+        
+        .bar {
+            width: 60px;
+            background: linear-gradient(to top, #FF6B6B, #FF8E8E);
+            margin: 0 5px;
+            border-radius: 5px 5px 0 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .bar:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+        
+        .bar-label {
+            margin-top: 10px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .conclusion-box {
+            background: #fff3e0;
+            border: 2px solid #ff9800;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .interactive-demo {
+            background: #f0f8ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .demo-controls {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .demo-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .demo-button:hover {
+            background: #45a049;
+        }
+        
+        .demo-result {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+            min-height: 50px;
+        }
+        
+        .progress-bar {
+            background: #e0e0e0;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .methodology-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .step-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .step-number {
+            background: #007bff;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 Science Research Project Demo</h1>
+            <p>Complete Research Process: From Question to Conclusion</p>
+        </div>
+
+        <!-- Research Question -->
+        <div class="project-card">
+            <div class="section-header" onclick="toggleSection('question')">
+                🤔 1. Research Question & Background
+            </div>
+            <div class="section-content" id="question">
+                <h3>Research Question:</h3>
+                <p><strong>"How does the amount of sunlight affect plant growth rate?"</strong></p>
+                
+                <h4>Background Research:</h4>
+                <p>Plants require sunlight for photosynthesis, the process by which they convert light energy into chemical energy (glucose) for growth. Photosynthesis occurs primarily in chloroplasts and requires adequate light intensity.</p>
+                
+                <p><strong>Key Variables:</strong></p>
+                <ul>
+                    <li><strong>Independent Variable:</strong> Amount of daily sunlight exposure</li>
+                    <li><strong>Dependent Variable:</strong> Plant growth rate (height increase)</li>
+                    <li><strong>Controlled Variables:</strong> Water amount, soil type, temperature, plant species</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Hypothesis -->
+        <div class="project-card">
+            <div class="section-header" onclick="toggleSection('hypothesis')">
+                💡 2. Hypothesis Formation
+            </div>
+            <div class="section-content" id="hypothesis">
+                <div class="hypothesis-box">
+                    <h3>Hypothesis:</h3>
+                    <p><strong>"If plants receive more hours of direct sunlight per day, then they will grow taller at a faster rate because increased light availability enhances photosynthesis efficiency."</strong></p>
+                </div>
+                
+                <h4>Reasoning:</h4>
+                <p>This hypothesis is based on the understanding that photosynthesis is light-dependent. More sunlight should provide more energy for the plant to produce glucose, which fuels growth processes including cell division and elongation.</p>
+                
+                <h4>Prediction:</h4>
+                <p>Plants receiving 8 hours of sunlight will grow significantly taller than those receiving 4 hours, which will grow taller than those receiving 1 hour of sunlight over a 3-week period.</p>
+            </div>
+        </div>
+
+        <!-- Methodology -->
+        <div class="project-card">
+            <div class="section-header" onclick="toggleSection('methodology')">
+                🔬 3. Experimental Design & Methodology
+            </div>
+            <div class="section-content" id="methodology">
+                <h3>Experimental Setup:</h3>
+                
+                <div class="methodology-steps">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <h4>Materials</h4>
+                        <p>15 identical bean seedlings, 3 grow lights, identical pots, measuring tools, timer</p>
+                    </div>
+                    
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <h4>Groups</h4>
+                        <p>Group A: 1 hour sunlight<br>Group B: 4 hours sunlight<br>Group C: 8 hours sunlight</p>
+                    </div>
+                    
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h4>Controls</h4>
+                        <p>Same water (50ml daily), same soil, same temperature (22°C), same pot size</p>
+                    </div>
+                    
+                    <div class="step-card">
+                        <div class="step-number">4</div>
+                        <h4>Measurements</h4>
+                        <p>Daily height measurements at same time, record for 21 days</p>
+                    </div>
+                </div>
+
+                <h4>Safety Considerations:</h4>
+                <ul>
+                    <li>Wear safety glasses when handling grow lights</li>
+                    <li>Wash hands after handling soil and plants</li>
+                    <li>Ensure electrical equipment is properly grounded</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Data Collection -->
+        <div class="project-card">
+            <div class="section-header" onclick="toggleSection('data')">
+                📊 4. Data Collection & Results
+            </div>
+            <div class="section-content" id="data">
+                <h3>Sample Data Table:</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Day</th>
+                            <th>Group A (1 hr)<br>Average Height (cm)</th>
+                            <th>Group B (4 hrs)<br>Average Height (cm)</th>
+                            <th>Group C (8 hrs)<br>Average Height (cm)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>0</td><td>3.2</td><td>3.1</td><td>3.3</td></tr>
+                        <tr><td>7</td><td>4.1</td><td>5.8</td><td>7.2</td></tr>
+                        <tr><td>14</td><td>4.8</td><td>8.5</td><td>12.1</td></tr>
+                        <tr><td>21</td><td>5.2</td><td>11.3</td><td>17.8</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="chart-container">
+                    <h4>Growth Results Visualization</h4>
+                    <div class="bar-chart">
+                        <div>
+                            <div class="bar" style="height: 40px;" title="1 Hour Group: 5.2cm"></div>
+                            <div class="bar-label">1 Hour<br>5.2 cm</div>
+                        </div>
+                        <div>
+                            <div class="bar" style="height: 120px;" title="4 Hours Group: 11.3cm"></div>
+                            <div class="bar-label">4 Hours<br>11.3 cm</div>
+                        </div>
+                        <div>
+                            <div class="bar" style="height: 200px;" title="8 Hours Group: 17.8cm"></div>
+                            <div class="bar-label">8 Hours<br>17.8 cm</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="interactive-demo">
+                    <h4>Interactive Data Analysis:</h4>
+                    <p>Calculate growth rates and analyze patterns:</p>
+                    <div class="demo-controls">
+                        <button class="demo-button" onclick="calculateGrowthRate()">Calculate Growth Rates</button>
+                        <button class="demo-button" onclick="analyzePattern()">Analyze Pattern</button>
+                        <button class="demo-button" onclick="statisticalTest()">Statistical Significance</button>
+                    </div>
+                    <div class="demo-result" id="analysisResult">
+                        Click buttons above to perform data analysis
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis -->
+        <div class="project-card">
+            <div class="section-header" onclick="toggleSection('analysis')">
+                📈 5. Data Analysis & Interpretation
+            </div>
+            <div class="section-content" id="analysis">
+                <h3>Statistical Analysis:</h3>
+                
+                <h4>Growth Rate Calculations:</h4>
+                <ul>
+                    <li><strong>Group A (1 hour):</strong> 2.0 cm total growth = 0.095 cm/day</li>
+                    <li><strong>Group B (4 hours):</strong> 8.2 cm total growth = 0.39 cm/day</li>
+                    <li><strong>Group C (8 hours):</strong> 14.5 cm total growth = 0.69 cm/day</li>
+                </ul>
+
+                <h4>Key Observations:</h4>
+                <ul>
+                    <li>Clear positive correlation between sunlight exposure and growth rate</li>
+                    <li>8-hour group grew ~7.3x faster than 1-hour group</li>
+                    <li>Growth rate appeared to plateau after day 14 in all groups</li>
+                    <li>No plant mortality observed in any group</li>
+                </ul>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 95%"></div>
+                </div>
+                <p><strong>Hypothesis Support: 95% - Strong evidence supporting hypothesis</strong></p>
+            </div>
+        </div>
+
+        <!-- Conclusion -->
+        <div class="project-card">
+            <div class="section-header" onclick="toggleSection('conclusion')">
+                🎯 6. Conclusion & Discussion
+            </div>
+            <div class="section-content" id="conclusion">
+                <div class="conclusion-box">
+                    <h3>Conclusion:</h3>
+                    <p><strong>The hypothesis was SUPPORTED.</strong> Plants receiving more daily sunlight (8 hours) grew significantly taller and faster than those receiving moderate (4 hours) or minimal (1 hour) sunlight exposure.</p>
+                </div>
+
+                <h4>Discussion:</h4>
+                <p>The results demonstrate a clear positive relationship between sunlight exposure and plant growth rate. This supports our understanding of photosynthesis as a light-dependent process crucial for plant development.</p>
+
+                <h4>Limitations:</h4>
+                <ul>
+                    <li>Small sample size (5 plants per group)</li>
+                    <li>Short duration (3 weeks)</li>
+                    <li>Only tested one plant species</li>
+                    <li>Controlled indoor environment may not reflect natural conditions</li>
+                </ul>
+
+                <h4>Future Research:</h4>
+                <ul>
+                    <li>Test different plant species</li>
+                    <li>Investigate optimal light intensity vs. duration</li>
+                    <li>Examine long-term effects on plant health</li>
+                    <li>Study impact on fruit/flower production</li>
+                </ul>
+
+                <h4>Real-World Applications:</h4>
+                <p>This research has practical implications for agriculture, greenhouse management, and indoor gardening, helping optimize growing conditions for maximum plant productivity.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSection(sectionId) {
+            const content = document.getElementById(sectionId);
+            const isActive = content.classList.contains('active');
+            
+            // Close all sections
+            document.querySelectorAll('.section-content').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Open clicked section if it wasn't already active
+            if (!isActive) {
+                content.classList.add('active');
+            }
+        }
+
+        function calculateGrowthRate() {
+            const result = document.getElementById('analysisResult');
+            result.innerHTML = `
+                <h4>Growth Rate Analysis:</h4>
+                <ul>
+                    <li><strong>1 Hour Group:</strong> 0.095 cm/day (slowest growth)</li>
+                    <li><strong>4 Hours Group:</strong> 0.39 cm/day (4.1x faster than 1-hour)</li>
+                    <li><strong>8 Hours Group:</strong> 0.69 cm/day (7.3x faster than 1-hour)</li>
+                </ul>
+                <p><strong>Finding:</strong> Growth rate increases exponentially with sunlight exposure.</p>
+            `;
+        }
+
+        function analyzePattern() {
+            const result = document.getElementById('analysisResult');
+            result.innerHTML = `
+                <h4>Pattern Analysis:</h4>
+                <p><strong>Trend:</strong> Strong positive linear relationship (R² ≈ 0.98)</p>
+                <p><strong>Pattern:</strong> Each additional hour of sunlight correlates with ~0.08 cm/day increase in growth rate</p>
+                <p><strong>Consistency:</strong> All groups showed steady growth with no decline over 21 days</p>
+                <p><strong>Variability:</strong> Low standard deviation within groups indicates reliable results</p>
+            `;
+        }
+
+        function statisticalTest() {
+            const result = document.getElementById('analysisResult');
+            result.innerHTML = `
+                <h4>Statistical Significance:</h4>
+                <p><strong>ANOVA Test:</strong> F-statistic = 45.2, p-value < 0.001</p>
+                <p><strong>Result:</strong> Highly significant differences between all groups</p>
+                <p><strong>Confidence:</strong> 99.9% confident that sunlight amount affects growth rate</p>
+                <p><strong>Effect Size:</strong> Large effect (Cohen's d > 0.8 for all comparisons)</p>
+                <p><em>The differences observed are statistically significant and not due to chance.</em></p>
+            `;
+        }
+
+        // Auto-open first section on load
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('question').classList.add('active');
+        });
+    </script>
+</body>
+</html>
