@@ -161,6 +161,16 @@ class MCPServer:
         self.tools = {}
         self.storage_manager = None
         self.session_manager = None
+        
+        # Initialize MongoDB storage for messaging features
+        self.mongo_storage = None
+        try:
+            from storage.mongo_storage import MongoStorage
+            self.mongo_storage = MongoStorage()
+        except Exception as e:
+            # Log but don't fail if MongoDB is not available
+            import sys
+            print(f"Warning: MongoDB storage not available: {e}", file=sys.stderr)
 
         # Setup logging (enable for both WebSocket and stdio)
         if not config.server.disable_logging:
@@ -334,7 +344,7 @@ class MCPServer:
                 try:
                     # Call the handler function from the tool dict
                     handler = self.tools[tool_name]["handler"]
-                    result = await handler(**tool_args)
+                    result = await handler(**(tool_args or {}))
                     execution_end = datetime.now()
 
                     if self.log_adapter:
@@ -442,7 +452,7 @@ class MCPServer:
                 try:
                     # Call the handler function from the tool dict
                     handler = self.tools[tool_name]["handler"]
-                    result = await handler(**tool_args)
+                    result = await handler(**(tool_args or {}))
                     return {
                         "jsonrpc": "2.0",
                         "id": msg_id,
@@ -632,7 +642,7 @@ class MCPServer:
                             if tool_name in self.tools:
                                 try:
                                     result = await self.tools[tool_name]["handler"](
-                                        **tool_args
+                                        **(tool_args or {})
                                     )
                                     execution_end = datetime.now()
 
@@ -808,7 +818,7 @@ class MCPServer:
                             if tool_name and tool_name in self.tools:
                                 try:
                                     result = await self.tools[tool_name]["handler"](
-                                        **tool_args
+                                        **(tool_args or {})
                                     )
                                     execution_end = datetime.now()
 

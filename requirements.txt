@@ -16,6 +16,7 @@ spacy>=3.7.0
 
 # Database (for storage management)
 aiosqlite>=0.17.0
+pymongo>=4.5.0  # MongoDB driver for message system
 
 # Advanced ML libraries (NumPy 1.x for compatibility)
 numpy>=1.24.0,<2.0.0  # Pin to NumPy 1.x for compatibility with compiled packages

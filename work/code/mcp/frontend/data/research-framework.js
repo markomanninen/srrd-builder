@@ -47,6 +47,13 @@ const RESEARCH_FRAMEWORK = {
             icon: '📄',
             color: '#06b6d4',
             categories: ['document_generation', 'formatting', 'project_management', 'workflow_tracking']
+        },
+        collaboration: {
+            name: 'Research Collaboration',
+            description: 'Team communication and message exchange',
+            icon: '💬',
+            color: '#8b5cf6',
+            categories: ['messaging', 'user_management']
         }
     },
 
@@ -201,11 +208,27 @@ const RESEARCH_FRAMEWORK = {
             icon: '🔄',
             act: 'communication',
             tools: ['get_research_progress', 'get_tool_usage_history', 'get_workflow_recommendations', 'get_research_milestones', 'start_research_session', 'get_session_summary']
+        },
+
+        // COLLABORATION
+        messaging: {
+            name: 'Research Messaging',
+            description: 'Send and receive messages with file attachments',
+            icon: '📨',
+            act: 'collaboration',
+            tools: ['send_message', 'send_message_with_file', 'read_messages', 'mark_message_read', 'get_unread_count']
+        },
+        user_management: {
+            name: 'User Management',
+            description: 'Manage users and subscriptions for collaboration',
+            icon: '👥',
+            act: 'collaboration', 
+            tools: ['register_user', 'discover_users', 'subscribe_to_user', 'unsubscribe_from_user', 'get_my_subscriptions']
         }
     }
 };
 
-// Validation: Count all tools to ensure we have all 46
+// Validation: Count all tools to ensure we have all 59 (46 + 13 messaging tools)
 const allTools = Object.values(RESEARCH_FRAMEWORK.categories)
     .flatMap(category => category.tools);
 
@@ -260,7 +283,21 @@ const expectedTools = [
     'switch_project_context',
     'validate_design',
     'validate_novel_theory',
-    'version_control'
+    'version_control',
+    // Messaging tools
+    'register_user',
+    'discover_users',
+    'subscribe_to_user', 
+    'unsubscribe_from_user',
+    'get_my_subscriptions',
+    'send_message',
+    'send_message_with_file',
+    'read_messages',
+    'mark_message_read',
+    'get_unread_count',
+    'view_message_web',
+    'list_messages_web',
+    'get_conversation_web'
 ];
 
 // Verify we have all tools

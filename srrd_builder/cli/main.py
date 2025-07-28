@@ -139,6 +139,49 @@ def create_parser():
         help='Arguments for the tool (e.g., --research-area "AI"). Use --help for tool-specific options.',
     )
 
+    # srrd message command for viewing messages
+    message_parser = subparsers.add_parser(
+        "message", help="View and manage messages"
+    )
+    message_subparsers = message_parser.add_subparsers(
+        dest="message_subcommand", help="Message actions"
+    )
+
+    # message view subcommand
+    view_parser = message_subparsers.add_parser(
+        "view", help="View a specific message by ID"
+    )
+    view_parser.add_argument("message_id", help="Message ID to view")
+    view_parser.add_argument("--user", help="Username of the person viewing the message (to mark as read). If not provided, will only display the message without marking as read.")
+
+    # message list subcommand
+    list_parser = message_subparsers.add_parser(
+        "list", help="List messages for a user"
+    )
+    list_parser.add_argument("username", help="Username to list messages for")
+    list_parser.add_argument(
+        "--unread", action="store_true", help="Show only unread messages"
+    )
+    list_parser.add_argument(
+        "--from", dest="sender", help="Filter by specific sender"
+    )
+    list_parser.add_argument(
+        "--limit", type=int, default=20, help="Maximum number of messages to show"
+    )
+
+    # message conversation subcommand
+    conversation_parser = message_subparsers.add_parser(
+        "conversation", help="View conversation between two users"
+    )
+    conversation_parser.add_argument("user1", help="First user")
+    conversation_parser.add_argument("user2", help="Second user")
+
+    # message stats subcommand
+    stats_parser = message_subparsers.add_parser(
+        "stats", help="Show message statistics for a user"
+    )
+    stats_parser.add_argument("username", help="Username to show stats for")
+
     return parser
 
 
@@ -196,6 +239,10 @@ def main():
         from srrd_builder.cli.commands.tool import handle_tool
 
         return handle_tool(args)
+    elif args.command == "message":
+        from srrd_builder.cli.commands.message import handle_message
+
+        return handle_message(args)
     else:
         print(f"Unknown command: {args.command}")
         return 1

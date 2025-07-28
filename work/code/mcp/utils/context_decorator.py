@@ -358,3 +358,27 @@ def validate_context_injection(func: Callable) -> bool:
     has_kwargs = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in params.values())
 
     return has_project_path or has_kwargs
+
+
+# Alias for backward compatibility - many modules import this
+def context_aware(
+    name: str = None,
+    description: str = None,
+    parameters: dict = None,
+    require_context: bool = False,
+    fallback_message: Optional[str] = None,
+    disable_logging: bool = False,
+    allow_explicit_project_path: bool = False,
+) -> Callable:
+    """
+    Alias for context_aware_tool for backward compatibility
+    """
+    return context_aware_tool(
+        name=name or "",
+        description=description or "",
+        parameters=parameters or {},
+        require_context=require_context,
+        fallback_message=fallback_message,
+        disable_logging=disable_logging,
+        allow_explicit_project_path=allow_explicit_project_path,
+    )

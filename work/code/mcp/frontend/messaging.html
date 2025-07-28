@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRRD Message Viewer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5a6fd8;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        .content {
+            padding: 20px;
+            min-height: 400px;
+        }
+        .status {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #dc3545;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #28a745;
+        }
+        .message-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin: 15px 0;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        .message-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .message-id {
+            font-family: 'Courier New', monospace;
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .message-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-unread {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status-read {
+            background: #d4edda;
+            color: #155724;
+        }
+        .message-meta {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .message-content {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .attachments {
+            margin-top: 15px;
+        }
+        .attachment {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .attachment-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #856404;
+        }
+        .attachment-content {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 3px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 10px 0;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ccc;
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .back-link {
+            color: #667eea;
+            text-decoration: none;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .url-display {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📬 SRRD Message Viewer</h1>
+            <p>View and manage research collaboration messages</p>
+            <div id="connectionStatus" style="font-size: 14px; margin-top: 10px;">
+                🔴 Not connected to server
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="btn btn-primary" onclick="showViewMessage()">📨 View Message</button>
+            <button class="btn btn-primary" onclick="showListMessages()">📋 List Messages</button>
+            <button class="btn btn-primary" onclick="showConversation()">💬 Conversation</button>
+        </div>
+
+        <div class="content" id="content">
+            <div class="status">
+                <h3>Welcome to SRRD Message Viewer</h3>
+                <p>This interface provides access to exact message content that LLM clients might summarize or modify.</p>
+                <p>Select an option above to get started.</p>
+
+                <div class="url-display">
+                    Current URL: <span id="currentUrl"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // WebSocket connection
+        let ws = null;
+        let isConnected = false;
+
+        // Update current URL display
+        function updateUrlDisplay() {
+            const currentUrlElement = document.getElementById('currentUrl');
+            if (currentUrlElement) {
+                currentUrlElement.textContent = window.location.href;
+            }
+        }
+
+        // Update connection status
+        function updateConnectionStatus(status) {
+            const statusElement = document.getElementById('connectionStatus');
+            if (statusElement) {
+                statusElement.textContent = status;
+            }
+        }
+
+        // Handle pending auto-load actions after server connection
+        function handlePendingAutoLoad() {
+            if (window.pendingAutoLoad) {
+                console.log('Executing pending auto-load:', window.pendingAutoLoad);
+                const params = parseHashParams();
+                
+                switch (window.pendingAutoLoad.type) {
+                    case 'viewMessage':
+                        if (params.messageId) {
+                            viewMessage();
+                        }
+                        break;
+                    case 'listMessages':
+                        if (params.username) {
+                            listMessages();
+                        }
+                        break;
+                    case 'viewConversation':
+                        if (params.user1 && params.user2) {
+                            viewConversation();
+                        }
+                        break;
+                }
+                
+                // Clear the pending action
+                window.pendingAutoLoad = null;
+            } else {
+                // Show welcome screen if no auto-load is pending
+                showWelcomeScreen();
+            }
+        }
+
+        // Show welcome screen
+        function showWelcomeScreen() {
+            const params = parseHashParams();
+            // Only show welcome if no URL parameters are present
+            if (!params.view && !params.messageId && !params.username) {
+                const content = document.getElementById('content');
+                content.innerHTML = `
+                    <div class="status">
+                        <h3>Welcome to SRRD Message Viewer</h3>
+                        <p>This interface provides access to exact message content that LLM clients might summarize or modify.</p>
+                        <p>Select an option above to get started.</p>
+
+                        <div class="url-display">
+                            Current URL: <span id="currentUrl"></span>
+                        </div>
+                    </div>
+                `;
+                updateUrlDisplay();
+            }
+        }
+
+        // Connect to WebSocket server
+        function connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const host = window.location.hostname;
+            const port = '8765'; // MCP server port
+            const wsUrl = `${protocol}//${host}:${port}`;
+
+            try {
+                ws = new WebSocket(wsUrl, ['mcp']);
+                
+                ws.onopen = function() {
+                    isConnected = true;
+                    console.log('Connected to MCP server');
+                    updateConnectionStatus('🟢 Connected to server');
+                    // Initialize the server
+                    sendMCPRequest('initialize', {
+                        protocolVersion: '2024-11-05',
+                        capabilities: {},
+                        clientInfo: { name: 'SRRD Message Viewer', version: '1.0.0' }
+                    });
+                };
+
+                ws.onmessage = function(event) {
+                    try {
+                        const response = JSON.parse(event.data);
+                        handleMCPResponse(response);
+                    } catch (e) {
+                        console.error('Failed to parse WebSocket message:', e);
+                    }
+                };
+
+                ws.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                    showError('WebSocket connection error. Make sure the MCP server is running.');
+                };
+
+                ws.onclose = function() {
+                    isConnected = false;
+                    console.log('WebSocket connection closed');
+                    updateConnectionStatus('🔴 Not connected to server');
+                };
+
+            } catch (error) {
+                console.error('Failed to connect to WebSocket:', error);
+                showError('Failed to connect to MCP server. Make sure it is running on the correct port.');
+            }
+        }
+
+        // Send MCP request
+        function sendMCPRequest(method, params = {}, id = null) {
+            if (!isConnected) {
+                showError('Not connected to server. Trying to reconnect...');
+                connectWebSocket();
+                return;
+            }
+
+            const request = {
+                jsonrpc: '2.0',
+                method: method,
+                params: params,
+                id: id || Date.now()
+            };
+
+            ws.send(JSON.stringify(request));
+            return request.id;
+        }
+
+        // Handle MCP response
+        let pendingRequests = new Map();
+
+        function handleMCPResponse(response) {
+            console.log('MCP Response:', response);
+            
+            // Handle initialization response
+            if (response.result && response.result.serverInfo) {
+                console.log('Server initialized:', response.result.serverInfo);
+                // Trigger pending auto-load if any
+                handlePendingAutoLoad();
+                return;
+            }
+
+            // Handle tool call responses
+            if (response.result && response.result.content) {
+                const content = response.result.content[0].text;
+                console.log('Response content:', content);
+                try {
+                    const data = JSON.parse(content);
+                    handleToolResponse(data, response.id);
+                } catch (e) {
+                    console.log('Non-JSON response, handling as text');
+                    // Handle non-JSON responses
+                    handleToolResponse(content, response.id);
+                }
+            } else if (response.error) {
+                console.error('Server error:', response.error);
+                showError(`Server error: ${response.error.message}`);
+            } else {
+                console.log('Unhandled response type:', response);
+                // Don't show error for unhandled responses (like tool list responses)
+            }
+        }
+
+        // Handle tool responses
+        function handleToolResponse(data, requestId) {
+            console.log('Handling tool response for ID:', requestId, 'Data:', data);
+            const callback = pendingRequests.get(requestId);
+            if (callback) {
+                try {
+                    callback(data);
+                } catch (e) {
+                    console.error('Error in callback:', e);
+                    showError('Error handling response: ' + e.message);
+                }
+                pendingRequests.delete(requestId);
+            } else {
+                console.log('No callback found for request ID:', requestId);
+            }
+        }
+
+        // Call MCP tool
+        function callTool(toolName, args, callback) {
+            if (!isConnected) {
+                showError('Not connected to server');
+                return;
+            }
+
+            const requestId = sendMCPRequest('tools/call', {
+                name: toolName,
+                arguments: args
+            });
+
+            if (callback) {
+                pendingRequests.set(requestId, callback);
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            const content = document.getElementById('content');
+            content.innerHTML = `<div class="error">❌ ${message}</div>`;
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            const content = document.getElementById('content');
+            content.innerHTML = `<div class="success">✅ ${message}</div>`;
+        }
+
+        // Show loading state
+        function showLoading(message = 'Loading...') {
+            const content = document.getElementById('content');
+            content.innerHTML = `<div class="loading">${message}</div>`;
+        }
+
+        // Parse URL hash parameters
+        function parseHashParams() {
+            const hash = window.location.hash.substring(1);
+            const params = new URLSearchParams(hash);
+            return Object.fromEntries(params);
+        }
+
+        // Update URL hash
+        function updateHash(params) {
+            const searchParams = new URLSearchParams(params);
+            window.location.hash = searchParams.toString();
+            updateUrlDisplay();
+        }
+
+        // Show view message form
+        function showViewMessage() {
+            const params = parseHashParams();
+            const messageId = params.messageId || '';
+            const viewer = params.viewer || '';
+
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <h3>📨 View Message</h3>
+                <div class="form-group">
+                    <label for="messageId">Message ID:</label>
+                    <input type="text" id="messageId" class="form-control" value="${messageId}" placeholder="e.g., msg_12345678">
+                </div>
+                <div class="form-group">
+                    <label for="viewer">Your Username (to mark as read):</label>
+                    <input type="text" id="viewer" class="form-control" value="${viewer}" placeholder="e.g., markom">
+                </div>
+                <button class="btn btn-primary" onclick="viewMessage()">View Message</button>
+                <div id="messageResult"></div>
+            `;
+
+            // Auto-load if message ID is in URL and we're connected
+            if (messageId && isConnected) {
+                viewMessage();
+            } else if (messageId && !isConnected) {
+                // Store the auto-load intention for when connection is established
+                window.pendingAutoLoad = { type: 'viewMessage' };
+            }
+        }
+
+        // View specific message
+        function viewMessage() {
+            const messageId = document.getElementById('messageId').value.trim();
+            const viewer = document.getElementById('viewer').value.trim();
+            
+            if (!messageId) {
+                showError('Please enter a message ID');
+                return;
+            }
+
+            const hashParams = { view: 'message', messageId: messageId };
+            if (viewer) {
+                hashParams.viewer = viewer;
+            }
+            updateHash(hashParams);
+
+            const args = { message_id: messageId };
+            if (viewer) {
+                args.viewer = viewer;
+            }
+
+            callTool('view_message_web', args, function(data) {
+                try {
+                    if (data.error) {
+                        showError(data.error);
+                        return;
+                    }
+
+                    displayMessage(data);
+                } catch (e) {
+                    console.error('Error handling response:', e);
+                    showError('Error handling response: ' + e.message);
+                }
+            });
+        }
+
+        // Display message
+        function displayMessage(message) {
+            const statusClass = message.read_status ? 'status-read' : 'status-unread';
+            const statusText = message.read_status ? 'READ' : 'UNREAD';
+
+            let attachmentsHtml = '';
+            if (message.attachments && message.attachments.length > 0) {
+                attachmentsHtml = '<div class="attachments"><h4>📎 Attachments:</h4>';
+                message.attachments.forEach((att, index) => {
+                    attachmentsHtml += `
+                        <div class="attachment">
+                            <div class="attachment-header">
+                                ${index + 1}. ${att.filename} (${att.size} bytes, ${att.mime_type || 'unknown'})
+                            </div>
+                            <div class="attachment-content">${att.content}</div>
+                        </div>
+                    `;
+                });
+                attachmentsHtml += '</div>';
+            }
+
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <a href="#" class="back-link" onclick="showViewMessage()">← Back to View Message</a>
+                
+                <div class="message-card">
+                    <div class="message-header">
+                        <div class="message-id">${message.message_id}</div>
+                        <div class="message-status ${statusClass}">${statusText}</div>
+                    </div>
+                    
+                    <div class="message-meta">
+                        <strong>From:</strong> ${message.sender}<br>
+                        <strong>To:</strong> ${message.recipient}<br>
+                        <strong>Sent:</strong> ${new Date(message.timestamp).toLocaleString()}<br>
+                        ${message.read_at ? `<strong>Read:</strong> ${new Date(message.read_at).toLocaleString()}<br>` : ''}
+                        <strong>Size:</strong> ${message.size_bytes || 0} bytes
+                    </div>
+                    
+                    <div class="message-content">${message.message}</div>
+                    
+                    ${attachmentsHtml}
+                </div>
+            `;
+        }
+
+        // Show list messages form
+        function showListMessages() {
+            const params = parseHashParams();
+            const username = params.username || '';
+            const unreadOnly = params.unread === 'true';
+            const sender = params.sender || '';
+
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <h3>📋 List Messages</h3>
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" class="form-control" value="${username}" placeholder="e.g., alice">
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="unreadOnly" ${unreadOnly ? 'checked' : ''}>
+                    <label for="unreadOnly">Show only unread messages</label>
+                </div>
+                <div class="form-group">
+                    <label for="sender">Filter by sender (optional):</label>
+                    <input type="text" id="sender" class="form-control" value="${sender}" placeholder="e.g., bob">
+                </div>
+                <button class="btn btn-primary" onclick="listMessages()">List Messages</button>
+                <div id="messagesResult"></div>
+            `;
+
+            // Auto-load if username is in URL and we're connected
+            if (username && isConnected) {
+                listMessages();
+            } else if (username && !isConnected) {
+                // Store the auto-load intention for when connection is established
+                window.pendingAutoLoad = { type: 'listMessages' };
+            }
+        }
+
+        // List messages
+        function listMessages() {
+            const username = document.getElementById('username').value.trim();
+            if (!username) {
+                showError('Please enter a username');
+                return;
+            }
+
+            const unreadOnly = document.getElementById('unreadOnly').checked;
+            const sender = document.getElementById('sender').value.trim();
+
+            const params = { view: 'list', username: username };
+            if (unreadOnly) params.unread = 'true';
+            if (sender) params.sender = sender;
+            updateHash(params);
+
+            const args = { username: username, unread_only: unreadOnly };
+            if (sender) args.sender = sender;
+
+            callTool('list_messages_web', args, function(data) {
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+
+                displayMessageList(data, username);
+            });
+        }
+
+        // Display message list
+        function displayMessageList(data, username) {
+            if (!data.messages || data.messages.length === 0) {
+                const content = document.getElementById('content');
+                content.innerHTML = `
+                    <a href="#" class="back-link" onclick="showListMessages()">← Back to List Messages</a>
+                    <div class="status">No messages found for ${username}</div>
+                `;
+                return;
+            }
+
+            const content = document.getElementById('content');
+            let html = `
+                <a href="#" class="back-link" onclick="showListMessages()">← Back to List Messages</a>
+                <h3>📋 Messages for ${username}</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${data.total_count}</div>
+                        <div class="stat-label">Total Messages</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${data.unread_count}</div>
+                        <div class="stat-label">Unread</div>
+                    </div>
+                </div>
+            `;
+
+            data.messages.forEach(message => {
+                const statusClass = message.read_status ? 'status-read' : 'status-unread';
+                const statusIcon = message.read_status ? '📭' : '📬';
+                const attachmentCount = message.attachments ? message.attachments.length : 0;
+                const attachmentIcon = attachmentCount > 0 ? ` (📎 ${attachmentCount} files)` : '';
+
+                const messagePreview = message.message.length > 100 
+                    ? message.message.substring(0, 100) + '...'
+                    : message.message;
+
+                html += `
+                    <div class="message-card" onclick="viewSpecificMessage('${message.message_id}')">
+                        <div class="message-header">
+                            <div class="message-id">${message.message_id}</div>
+                            <div class="message-status ${statusClass}">${statusIcon} ${message.read_status ? 'read' : 'UNREAD'}</div>
+                        </div>
+                        <div class="message-meta">
+                            <strong>From:</strong> ${message.sender} | 
+                            <strong>Sent:</strong> ${new Date(message.timestamp).toLocaleString()}${attachmentIcon}
+                        </div>
+                        <div style="color: #666; margin-top: 10px;">${messagePreview}</div>
+                    </div>
+                `;
+            });
+
+            content.innerHTML = html;
+        }
+
+        // View specific message from list
+        function viewSpecificMessage(messageId, viewer = '') {
+            const hashParams = { view: 'message', messageId: messageId };
+            if (viewer) {
+                hashParams.viewer = viewer;
+            }
+            updateHash(hashParams);
+            showViewMessage();
+        }
+
+        // Show conversation form
+        function showConversation() {
+            const params = parseHashParams();
+            const user1 = params.user1 || '';
+            const user2 = params.user2 || '';
+
+            const content = document.getElementById('content');
+            content.innerHTML = `
+                <h3>💬 View Conversation</h3>
+                <div class="form-group">
+                    <label for="user1">First User:</label>
+                    <input type="text" id="user1" class="form-control" value="${user1}" placeholder="e.g., alice">
+                </div>
+                <div class="form-group">
+                    <label for="user2">Second User:</label>
+                    <input type="text" id="user2" class="form-control" value="${user2}" placeholder="e.g., bob">
+                </div>
+                <button class="btn btn-primary" onclick="viewConversation()">View Conversation</button>
+                <div id="conversationResult"></div>
+            `;
+
+            // Auto-load if users are in URL and we're connected
+            if (user1 && user2 && isConnected) {
+                viewConversation();
+            } else if (user1 && user2 && !isConnected) {
+                // Store the auto-load intention for when connection is established
+                window.pendingAutoLoad = { type: 'viewConversation' };
+            }
+        }
+
+        // View conversation
+        function viewConversation() {
+            const user1 = document.getElementById('user1').value.trim();
+            const user2 = document.getElementById('user2').value.trim();
+            
+            if (!user1 || !user2) {
+                showError('Please enter both usernames');
+                return;
+            }
+
+            updateHash({ view: 'conversation', user1: user1, user2: user2 });
+
+            callTool('get_conversation_web', { user1: user1, user2: user2 }, function(data) {
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+
+                displayConversation(data);
+            });
+        }
+
+        // Display conversation
+        function displayConversation(data) {
+            if (!data.conversation || data.conversation.length === 0) {
+                const content = document.getElementById('content');
+                content.innerHTML = `
+                    <a href="#" class="back-link" onclick="showConversation()">← Back to Conversation</a>
+                    <div class="status">No conversation found between ${data.participant1} and ${data.participant2}</div>
+                `;
+                return;
+            }
+
+            const content = document.getElementById('content');
+            let html = `
+                <a href="#" class="back-link" onclick="showConversation()">← Back to Conversation</a>
+                <h3>💬 Conversation: ${data.participant1} ↔ ${data.participant2}</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${data.message_count}</div>
+                        <div class="stat-label">Messages</div>
+                    </div>
+                </div>
+            `;
+
+            data.conversation.forEach(message => {
+                const direction = message.sender === data.participant1 ? '→' : '←';
+                const statusText = message.read_status ? '' : ' (UNREAD)';
+                const attachmentCount = message.attachments ? message.attachments.length : 0;
+                const attachmentIcon = attachmentCount > 0 ? ` (📎 ${attachmentCount} files)` : '';
+
+                html += `
+                    <div class="message-card" onclick="viewSpecificMessage('${message.message_id}')">
+                        <div class="message-header">
+                            <div class="message-id">${message.message_id}</div>
+                            <div style="font-size: 14px;">${new Date(message.timestamp).toLocaleString()}</div>
+                        </div>
+                        <div class="message-meta">
+                            <strong>${message.sender} ${direction} ${message.recipient}</strong>${statusText}${attachmentIcon}
+                        </div>
+                        <div class="message-content">${message.message}</div>
+                    </div>
+                `;
+            });
+
+            content.innerHTML = html;
+        }
+
+        // Handle URL hash changes
+        window.addEventListener('hashchange', function() {
+            const params = parseHashParams();
+            switch (params.view) {
+                case 'message':
+                    showViewMessage();
+                    break;
+                case 'list':
+                    showListMessages();
+                    break;
+                case 'conversation':
+                    showConversation();
+                    break;
+            }
+        });
+
+        // Initialize app
+        window.addEventListener('load', function() {
+            updateUrlDisplay();
+            connectWebSocket();
+
+            // Handle URL parameters on load
+            const params = parseHashParams();
+            if (params.view) {
+                switch (params.view) {
+                    case 'message':
+                        showViewMessage();
+                        break;
+                    case 'list':
+                        showListMessages();
+                        break;
+                    case 'conversation':
+                        showConversation();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

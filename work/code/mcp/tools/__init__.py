@@ -64,6 +64,12 @@ try:
 except ImportError as e:
     print(f"Warning: Failed to import research_continuity: {e}")
 
+try:
+    from .message_box import register_message_tools
+    available_modules['message_box'] = register_message_tools
+except ImportError as e:
+    print(f"Warning: Failed to import message_box: {e}")
+
 def register_all_tools(server):
     """Register all tools with the MCP server"""
     total_tools = 0
