@@ -724,3 +724,220 @@
     margin-top: 0.25rem;
     line-height: 1.4;
 }
+
+/* Batch Execution Styles */
+.batch-progress-container {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin: 1rem 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.batch-progress {
+    text-align: center;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-blue), var(--accent-green));
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}
+
+.progress-text {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* Group Action Buttons */
+.act-actions, .category-actions {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.btn-sm {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+}
+
+.btn-success {
+    background: var(--accent-green);
+    color: white;
+    border: 1px solid var(--accent-green);
+}
+
+.btn-success:hover {
+    background: #059669;
+    border-color: #059669;
+}
+
+/* Batch Summary Modal */
+.batch-summary-modal {
+    max-width: 600px;
+    width: 90%;
+}
+
+.batch-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    min-width: 80px;
+}
+
+.stat-item.success {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid var(--accent-green);
+}
+
+.stat-item.error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid #ef4444;
+}
+
+.stat-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.stat-item.success .stat-number {
+    color: var(--accent-green);
+}
+
+.stat-item.error .stat-number {
+    color: #ef4444;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.batch-results-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+.batch-result-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.batch-result-item:last-child {
+    border-bottom: none;
+}
+
+.batch-result-item.success {
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.batch-result-item.error {
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.result-icon {
+    font-size: 1.2rem;
+    width: 1.5rem;
+    text-align: center;
+}
+
+.result-tool {
+    font-weight: 500;
+    color: var(--text-primary);
+    min-width: 200px;
+}
+
+.result-message {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    flex: 1;
+}
+
+.batch-result-item.error .result-message {
+    color: #ef4444;
+}
+
+/* Dependency Modal Styles */
+.dependency-modal {
+    max-width: 600px;
+    width: 90%;
+}
+
+.missing-tools-info {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid #ef4444;
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.missing-tools-info h4 {
+    margin: 0 0 0.5rem 0;
+    color: #ef4444;
+    font-size: 1.1rem;
+}
+
+.dependency-hints {
+    margin-bottom: 1.5rem;
+}
+
+.dependency-hint {
+    color: var(--text-primary);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    padding-left: 1rem;
+}
+
+.dependency-solution {
+    color: var(--text-muted);
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9rem;
+    background: var(--bg-tertiary);
+    padding: 0.5rem;
+    border-radius: 4px;
+    margin: 0.25rem 0 1rem 1rem;
+    border-left: 3px solid var(--primary-blue);
+    white-space: pre-line;
+}
+
+.dependency-note {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid var(--accent-green);
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    color: var(--text-primary);
+}
+
+.dependency-note p {
+    margin: 0;
+    font-size: 0.9rem;
+}

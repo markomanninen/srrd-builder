@@ -34,6 +34,7 @@
             <div class="controls">
                 <button class="btn btn-primary" id="connectBtn">Connect to Server</button>
                 <button class="btn btn-primary" id="refreshBtn" disabled>Refresh Tools</button>
+                <button class="btn btn-success" id="runAllToolsBtn" disabled>🚀 Run All Tools</button>
                 <button class="btn btn-primary" onclick="clearConsole()">Clear Console</button>
             </div>
         </div>
@@ -43,6 +44,11 @@
             <span class="breadcrumb-item" onclick="app.navigateToHome()">🏠 Home</span>
             <span class="breadcrumb-separator">›</span>
             <span class="breadcrumb-current" id="breadcrumbCurrent"></span>
+        </div>
+
+        <!-- Batch Execution Progress -->
+        <div id="batchProgress" style="display: none;" class="batch-progress-container">
+            <!-- Progress content will be populated by JavaScript -->
         </div>
 
         <div class="main-content">

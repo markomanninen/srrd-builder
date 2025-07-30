@@ -18,6 +18,21 @@ class EnhancedSRRDApp {
         this.framework = window.RESEARCH_FRAMEWORK || {};
         this.toolInfo = window.TOOL_INFO_DATABASE || {};
         
+        // Batch execution state
+        this.batchExecution = {
+            isRunning: false,
+            currentTool: null,
+            progress: 0,
+            results: [],
+            totalTools: 0
+        };
+        
+        // Tool dependency and execution order
+        this.toolDependencies = this.initializeToolDependencies();
+        
+        // Test suite integration
+        this.testSuite = null;
+        
         this.init();
     }
 
@@ -70,6 +85,99 @@ class EnhancedSRRDApp {
                 btn.addEventListener('click', () => this.switchView(view));
             }
         });
+
+        // Batch execution buttons
+        const runAllBtn = document.getElementById('runAllToolsBtn');
+        if (runAllBtn) {
+            runAllBtn.addEventListener('click', () => this.runAllTools());
+        }
+    }
+
+    initializeToolDependencies() {
+        // Define tool execution order and dependencies based on research workflow
+        return {
+            // Prerequisites - should run first
+            prerequisites: ['initialize_project', 'clarify_research_goals'],
+            
+            // Research workflow order - Complete list of all 46 tools
+            executionOrder: [
+                // Project setup and initialization
+                'initialize_project',
+                'clarify_research_goals',
+                'start_research_session',
+                
+                // Problem identification and planning
+                'assess_foundational_assumptions',
+                'generate_critical_questions',
+                'explain_methodology',
+                'suggest_methodology',
+                'validate_design',
+                'ensure_ethics',
+                
+                // Knowledge acquisition - Literature and search
+                'search_knowledge',
+                'semantic_search',
+                'find_similar_documents',
+                'extract_key_concepts',
+                'extract_document_sections',
+                
+                // Source management and bibliography
+                'store_bibliography_reference',
+                'retrieve_bibliography_references',
+                'generate_bibliography',
+                
+                // Analysis and synthesis
+                'build_knowledge_graph',
+                'discover_patterns',
+                'generate_research_summary',
+                
+                // Advanced reasoning and theory development
+                'compare_approaches',
+                'compare_paradigms',
+                'initiate_paradigm_challenge',
+                'develop_alternative_framework',
+                'validate_novel_theory',
+                'evaluate_paradigm_shift_potential',
+                'cultivate_innovation',
+                
+                // Quality assurance and validation
+                'simulate_peer_review',
+                'check_quality_gates',
+                
+                // Document generation and templates
+                'list_latex_templates',
+                'generate_latex_document',
+                'generate_latex_with_template',
+                'generate_document_with_database_bibliography',
+                'format_research_content',
+                'compile_latex',
+                
+                // Project management and tracking
+                'get_research_progress',
+                'get_research_milestones',
+                'get_tool_usage_history',
+                'get_workflow_recommendations',
+                'get_session_summary',
+                
+                // Session and context management
+                'save_session',
+                'restore_session',
+                'switch_project_context',
+                'reset_project_context',
+                
+                // Version control and backup
+                'version_control',
+                'backup_project'
+            ],
+            
+            // Tools that depend on others
+            dependencies: {
+                'generate_bibliography': ['extract_key_concepts'],
+                'compile_latex': ['generate_latex_document'],
+                'check_quality_gates': ['generate_research_summary'],
+                'simulate_peer_review': ['format_research_content']
+            }
+        };
     }
 
     async connectToServer() {
@@ -101,9 +209,16 @@ class EnhancedSRRDApp {
             connectBtn.textContent = 'Connected ✓';
             connectBtn.disabled = true;
             document.getElementById('refreshBtn').disabled = false;
+            document.getElementById('runAllToolsBtn').disabled = false;
             
             this.isConnected = true;
             this.log('Connected to MCP server successfully', 'success');
+            
+            // Initialize test suite integration
+            if (typeof TestSuiteRunner !== 'undefined') {
+                this.testSuite = new TestSuiteRunner(this.mcpClient);
+                this.testSuite.app = this; // Cross-reference for integration
+            }
             
             // Load tools and switch to research acts view
             await this.loadTools();
@@ -141,6 +256,17 @@ class EnhancedSRRDApp {
             }
             
             this.availableTools = tools;
+            
+            // Debug: Log all available tool names
+            const toolNames = tools.map(t => t.name).sort();
+            this.log(`Available tools (${toolNames.length}): ${toolNames.join(', ')}`, 'info');
+            
+            // Debug: Check specifically for bibliography tools
+            const bibliographyTools = toolNames.filter(name => name.includes('bibliography') || name.includes('reference'));
+            this.log(`Bibliography-related tools found: ${bibliographyTools.join(', ') || 'None'}`, 'info');
+            
+            // Check for missing optional dependencies and show system status
+            this.checkAndDisplaySystemStatus(toolNames);
             
             // Get the working directory from the server
             const workingDir = await this.getWorkingDirectory();
@@ -296,14 +422,19 @@ class EnhancedSRRDApp {
         const actsHtml = Object.entries(this.framework.acts).map(([actId, act]) => {
             const toolCount = this.getActToolCount(actId);
             return `
-                <div class="research-act-card" data-act="${actId}" onclick="app.selectResearchAct('${actId}')">
-                    <div class="act-header">
+                <div class="research-act-card" data-act="${actId}">
+                    <div class="act-header" onclick="app.selectResearchAct('${actId}')">
                         <span class="act-icon">${act.icon}</span>
                         <h3 class="act-name">${act.name}</h3>
                     </div>
                     <p class="act-description">${act.description}</p>
                     <div class="act-categories">
                         ${act.categories.length} categories • ${toolCount} tools
+                    </div>
+                    <div class="act-actions">
+                        <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); app.runToolGroup('act', '${actId}')">
+                            ▶️ Run All Tools
+                        </button>
                     </div>
                 </div>
             `;
@@ -343,14 +474,19 @@ class EnhancedSRRDApp {
                 : [];
             
             return `
-                <div class="category-card" onclick="app.selectCategory('${category.id}')">
-                    <div class="category-header">
+                <div class="category-card">
+                    <div class="category-header" onclick="app.selectCategory('${category.id}')">
                         <span class="category-icon">${category.icon}</span>
                         <h3>${category.name}</h3>
                     </div>
                     <p>${category.description}</p>
                     <div class="category-stats">
                         ${availableTools.length} tools available
+                    </div>
+                    <div class="category-actions">
+                        <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); app.runToolGroup('category', '${category.id}')">
+                            ▶️ Run Category
+                        </button>
                     </div>
                 </div>
             `;
@@ -886,6 +1022,412 @@ class EnhancedSRRDApp {
             parameters[paramName] = this.getExampleValue(paramName, 'string');
         });
         return parameters;
+    }
+
+    async runAllTools() {
+        if (!this.mcpClient || !this.mcpClient.isConnected) {
+            this.log('Not connected to server', 'error');
+            return;
+        }
+
+        if (this.batchExecution.isRunning) {
+            this.log('Batch execution already in progress', 'warning');
+            return;
+        }
+
+        const availableToolNames = this.availableTools.map(t => t.name);
+        const toolsToRun = this.toolDependencies.executionOrder.filter(toolName => 
+            availableToolNames.includes(toolName)
+        );
+
+        if (toolsToRun.length === 0) {
+            this.log('No tools available to run', 'warning');
+            return;
+        }
+
+        this.startBatchExecution(toolsToRun);
+    }
+
+    async runToolGroup(groupType, groupValue) {
+        if (!this.mcpClient || !this.mcpClient.isConnected) {
+            this.log('Not connected to server', 'error');
+            return;
+        }
+
+        if (this.batchExecution.isRunning) {
+            this.log('Batch execution already in progress', 'warning');
+            return;
+        }
+
+        let toolsToRun = [];
+
+        if (groupType === 'act') {
+            // Get all tools for a research act
+            const categories = Object.values(this.framework.categories).filter(cat => cat.act === groupValue);
+            toolsToRun = categories.flatMap(cat => cat.tools);
+        } else if (groupType === 'category') {
+            // Get all tools for a category
+            const category = this.framework.categories[groupValue];
+            if (category) {
+                toolsToRun = category.tools;
+            }
+        }
+
+        // Debug: Log what tools are expected for this group
+        this.log(`Expected tools for ${groupType} '${groupValue}': ${toolsToRun.join(', ')}`, 'info');
+        
+        // Filter to only available tools and order by dependencies
+        const availableToolNames = this.availableTools.map(t => t.name);
+        const originalToolCount = toolsToRun.length;
+        const originalToolList = [...toolsToRun]; // Copy before filtering
+        
+        toolsToRun = this.orderToolsByDependencies(toolsToRun.filter(toolName => 
+            availableToolNames.includes(toolName)
+        ));
+
+        // Debug: Log filtering results
+        this.log(`After filtering: ${toolsToRun.length}/${originalToolCount} tools available`, 'info');
+        if (toolsToRun.length !== originalToolCount) {
+            const missingTools = originalToolList.filter(tool => !availableToolNames.includes(tool));
+            this.log(`Missing tools: ${missingTools.join(', ') || 'None'}`, 'warning');
+            
+            // Check if missing tools have known dependency issues
+            const dependencyHints = this.getDependencyHints(missingTools);
+            if (dependencyHints.length > 0) {
+                this.log(`💡 Dependency hints:\n${dependencyHints.join('\n')}`, 'info');
+            }
+        }
+
+        if (toolsToRun.length === 0) {
+            // Enhanced error messaging with dependency hints
+            const dependencyHints = this.getDependencyHints(originalToolList);
+            let message = `No tools available to run for ${groupType}: ${groupValue}`;
+            
+            if (dependencyHints.length > 0) {
+                message += `\n\n💡 Possible causes:\n${dependencyHints.join('\n')}`;
+                this.log(message, 'warning');
+                this.showDependencyModal(groupType, groupValue, originalToolList, dependencyHints);
+            } else {
+                this.log(message, 'warning');
+            }
+            return;
+        }
+
+        this.log(`Running ${toolsToRun.length} tools for ${groupType}: ${groupValue}`, 'info');
+        this.startBatchExecution(toolsToRun);
+    }
+
+    orderToolsByDependencies(tools) {
+        // Order tools based on execution order and dependencies
+        const ordered = [];
+        const executionOrder = this.toolDependencies.executionOrder;
+        
+        // Add tools in execution order
+        for (const toolName of executionOrder) {
+            if (tools.includes(toolName) && !ordered.includes(toolName)) {
+                ordered.push(toolName);
+            }
+        }
+        
+        // Add any remaining tools
+        for (const toolName of tools) {
+            if (!ordered.includes(toolName)) {
+                ordered.push(toolName);
+            }
+        }
+        
+        return ordered;
+    }
+
+    async startBatchExecution(toolsToRun) {
+        this.batchExecution = {
+            isRunning: true,
+            currentTool: null,
+            progress: 0,
+            results: [],
+            totalTools: toolsToRun.length
+        };
+
+        this.updateBatchProgressUI();
+        this.log(`Starting batch execution of ${toolsToRun.length} tools`, 'info');
+
+        for (let i = 0; i < toolsToRun.length; i++) {
+            const toolName = toolsToRun[i];
+            this.batchExecution.currentTool = toolName;
+            this.batchExecution.progress = Math.round((i / toolsToRun.length) * 100);
+            
+            this.updateBatchProgressUI();
+            this.log(`Running tool ${i + 1}/${toolsToRun.length}: ${toolName}`, 'info');
+
+            try {
+                const result = await this.runToolForBatch(toolName);
+                this.batchExecution.results.push({
+                    tool: toolName,
+                    success: true,
+                    result: result,
+                    timestamp: new Date().toISOString()
+                });
+                this.log(`✅ ${toolName} completed successfully`, 'success');
+            } catch (error) {
+                this.batchExecution.results.push({
+                    tool: toolName,
+                    success: false,
+                    error: error.message,
+                    timestamp: new Date().toISOString()
+                });
+                this.log(`❌ ${toolName} failed: ${error.message}`, 'error');
+            }
+
+            // Small delay between tools
+            await this.delay(1000);
+        }
+
+        this.completeBatchExecution();
+    }
+
+    async runToolForBatch(toolName) {
+        const tool = this.availableTools.find(t => t && t.name === toolName);
+        if (!tool) {
+            throw new Error(`Tool ${toolName} not found`);
+        }
+
+        const parameters = this.getToolParameters(tool) || {};
+        return await this.mcpClient.callTool(toolName, parameters);
+    }
+
+    completeBatchExecution() {
+        this.batchExecution.isRunning = false;
+        this.batchExecution.currentTool = null;
+        this.batchExecution.progress = 100;
+        
+        this.updateBatchProgressUI();
+        
+        const successCount = this.batchExecution.results.filter(r => r.success).length;
+        const totalCount = this.batchExecution.results.length;
+        
+        this.log(`Batch execution completed: ${successCount}/${totalCount} tools succeeded`, 
+                 successCount === totalCount ? 'success' : 'warning');
+        
+        this.showBatchSummary();
+    }
+
+    updateBatchProgressUI() {
+        const progressContainer = document.getElementById('batchProgress');
+        if (!progressContainer) return;
+
+        if (this.batchExecution.isRunning) {
+            progressContainer.style.display = 'block';
+            progressContainer.innerHTML = `
+                <div class="batch-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${this.batchExecution.progress}%"></div>
+                    </div>
+                    <div class="progress-text">
+                        ${this.batchExecution.currentTool ? `Running: ${this.batchExecution.currentTool}` : 'Preparing...'}
+                        (${this.batchExecution.progress}%)
+                    </div>
+                </div>
+            `;
+        } else {
+            progressContainer.style.display = 'none';
+        }
+    }
+
+    showBatchSummary() {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        
+        const successCount = this.batchExecution.results.filter(r => r.success).length;
+        const failCount = this.batchExecution.results.filter(r => !r.success).length;
+        
+        const resultsList = this.batchExecution.results.map(result => `
+            <div class="batch-result-item ${result.success ? 'success' : 'error'}">
+                <span class="result-icon">${result.success ? '✅' : '❌'}</span>
+                <span class="result-tool">${result.tool}</span>
+                <span class="result-message">${result.success ? 'Success' : result.error}</span>
+            </div>
+        `).join('');
+
+        modal.innerHTML = `
+            <div class="modal batch-summary-modal" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h3 class="modal-title">Batch Execution Summary</h3>
+                    <p class="modal-subtitle">Completed ${this.batchExecution.totalTools} tools</p>
+                </div>
+                <div class="modal-body">
+                    <div class="batch-stats">
+                        <div class="stat-item success">
+                            <span class="stat-number">${successCount}</span>
+                            <span class="stat-label">Successful</span>
+                        </div>
+                        <div class="stat-item error">
+                            <span class="stat-number">${failCount}</span>
+                            <span class="stat-label">Failed</span>
+                        </div>
+                    </div>
+                    <div class="batch-results-list">
+                        ${resultsList}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" type="button" onclick="app.closeModal()">
+                        Close
+                    </button>
+                </div>
+            </div>
+        `;
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                this.closeModal();
+            }
+        });
+
+        document.body.appendChild(modal);
+        this.currentModal = modal;
+    }
+
+    checkAndDisplaySystemStatus(availableToolNames) {
+        // Define expected optional tools
+        const optionalTools = [
+            'store_bibliography_reference',
+            'retrieve_bibliography_references', 
+            'semantic_search',
+            'build_knowledge_graph'
+        ];
+        
+        const missingOptionalTools = optionalTools.filter(tool => !availableToolNames.includes(tool));
+        
+        if (missingOptionalTools.length > 0) {
+            const dependencyInfo = this.getDependencyHints(missingOptionalTools);
+            
+            // Show subtle status indicator
+            const statusText = document.getElementById('statusText');
+            if (statusText) {
+                statusText.innerHTML = `Connected <span style="color: #f59e0b; font-size: 0.8em;">⚠️ ${missingOptionalTools.length} optional features unavailable</span>`;
+                statusText.title = `Missing optional tools: ${missingOptionalTools.join(', ')}\nClick for details`;
+                statusText.style.cursor = 'pointer';
+                
+                // Add click handler for system status
+                statusText.onclick = () => {
+                    this.showSystemStatusModal(missingOptionalTools, dependencyInfo);
+                };
+            }
+            
+            this.log(`📊 System Status: ${availableToolNames.length} tools available, ${missingOptionalTools.length} optional features unavailable`, 'info');
+        } else {
+            const statusText = document.getElementById('statusText');
+            if (statusText) {
+                statusText.textContent = 'Connected • All features available';
+                statusText.style.color = '#10b981';
+            }
+            this.log(`📊 System Status: All ${availableToolNames.length} tools available - full functionality enabled`, 'success');
+        }
+    }
+
+    showSystemStatusModal(missingTools, dependencyInfo) {
+        this.showDependencyModal('system', 'optional features', missingTools, dependencyInfo);
+    }
+
+    getDependencyHints(missingTools) {
+        const hints = [];
+        const toolDependencies = {
+            'store_bibliography_reference': {
+                dependency: 'Vector Database',
+                solution: 'Reinstall: sh setup.sh --with-vector-database',
+                optional: true
+            },
+            'retrieve_bibliography_references': {
+                dependency: 'Vector Database', 
+                solution: 'Reinstall: sh setup.sh --with-vector-database',
+                optional: true
+            },
+            'semantic_search': {
+                dependency: 'Vector Database',
+                solution: 'Reinstall: sh setup.sh --with-vector-database',
+                optional: true
+            },
+            'build_knowledge_graph': {
+                dependency: 'Graph Database or Vector DB',
+                solution: 'Reinstall: sh setup.sh --with-vector-database',
+                optional: true
+            }
+        };
+
+        const dependencyGroups = {};
+        
+        missingTools.forEach(tool => {
+            const depInfo = toolDependencies[tool];
+            if (depInfo) {
+                if (!dependencyGroups[depInfo.dependency]) {
+                    dependencyGroups[depInfo.dependency] = {
+                        tools: [],
+                        solution: depInfo.solution,
+                        optional: depInfo.optional
+                    };
+                }
+                dependencyGroups[depInfo.dependency].tools.push(tool);
+            }
+        });
+
+        Object.entries(dependencyGroups).forEach(([dependency, info]) => {
+            const toolList = info.tools.join(', ');
+            const optionalText = info.optional ? ' (optional feature)' : '';
+            hints.push(`• Missing ${dependency}${optionalText} required for: ${toolList}`);
+            hints.push(`  Solution: ${info.solution}`);
+        });
+
+        return hints;
+    }
+
+    showDependencyModal(groupType, groupValue, missingTools, hints) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        
+        const toolsList = missingTools.join(', ');
+        const hintsHtml = hints.map(hint => 
+            hint.startsWith('•') ? `<div class="dependency-hint">${hint}</div>` : 
+            `<div class="dependency-solution">${hint}</div>`
+        ).join('');
+
+        modal.innerHTML = `
+            <div class="modal dependency-modal" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h3 class="modal-title">⚠️ Missing Dependencies</h3>
+                    <p class="modal-subtitle">Some tools require additional setup</p>
+                </div>
+                <div class="modal-body">
+                    <div class="missing-tools-info">
+                        <h4>Category: ${groupValue}</h4>
+                        <p><strong>Missing tools:</strong> ${toolsList}</p>
+                    </div>
+                    <div class="dependency-hints">
+                        ${hintsHtml}
+                    </div>
+                    <div class="dependency-note">
+                        <p><strong>Note:</strong> These are optional features. The main SRRD Builder functionality works without them.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" type="button" onclick="app.closeModal()">
+                        Got it
+                    </button>
+                </div>
+            </div>
+        `;
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                this.closeModal();
+            }
+        });
+
+        document.body.appendChild(modal);
+        this.currentModal = modal;
+    }
+
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     editToolParameters(toolName) {

@@ -105,11 +105,20 @@ frontend/
 - **One-Click Testing**: Run tools with default parameters instantly
 - **Custom Parameter Editing**: Full JSON parameter editor with validation
 
-### **📝 Parameter Editor**
+### **🚀 Batch Execution System (NEW)**
+- **Run All Tools**: Execute all available tools in dependency order with one click
+- **Group Execution**: Run tools by research act (Conceptualization, Analysis, etc.)
+- **Category Execution**: Run tools by category (Document Generation, Quality Control, etc.)
+- **Smart Dependency Management**: Automatic tool ordering based on research workflow
+- **Real-time Progress Tracking**: Visual progress bars and current tool indicators
+- **Batch Results Summary**: Comprehensive success/failure reporting with detailed statistics
+
+### **📝 Enhanced Parameter Editor**
 - **Modal Interface**: Clean popup editor for tool parameters
 - **Template System**: Pre-built parameter templates for each tool
 - **JSON Validation**: Real-time syntax checking and error highlighting
 - **Smart Defaults**: Intelligent default parameters based on tool requirements
+- **Auto-retry Logic**: Automatic fallback parameters for failed tool executions
 
 ### **📊 Real-time Monitoring**
 - **Connection Status**: Live WebSocket connection monitoring
@@ -138,45 +147,89 @@ Click any tool button in the interface or use custom parameters:
 }
 ```
 
-### **3. Automated Test Suite**
-Click "Run Full Test Suite" or use:
+### **3. Batch Execution Testing (NEW)**
+**Run All Tools**:
+- Click the "🚀 Run All Tools" button in the main toolbar
+- Tools execute in proper dependency order automatically
+- Real-time progress tracking with visual indicators
+
+**Group Testing**:
+- Navigate to Research Acts view
+- Click "▶️ Run All Tools" on any research act card
+- Or click "▶️ Run Category" on any category card
+
+**Programmatic Batch Execution**:
 ```javascript
-// In browser console
+// Run all tools in dependency order
+await app.runAllTools();
+
+// Run tools for a specific research act
+await app.runToolGroup('act', 'conceptualization');
+
+// Run tools for a specific category
+await app.runToolGroup('category', 'document_generation');
+```
+
+### **4. Automated Test Suite Integration**
+Enhanced test suite with batch execution support:
+```javascript
+// Traditional test suite
 const testRunner = new TestSuiteRunner(client);
 testRunner.onProgress = (msg) => console.log(msg);
 const results = await testRunner.runFullTestSuite();
+
+// NEW: Group-based testing
+const groupResults = await testRunner.runGroupTestSuite('act', 'analysis_synthesis');
+
+// NEW: Dependency-ordered testing
+const orderedResults = await testRunner.runDependencyOrderedTests();
 ```
 
-### **4. Performance Testing**
-Monitor the "Server Statistics" panel for:
-- Response times
-- Success rates
-- Active connections
-- Error frequencies
+### **5. Performance Testing & Monitoring**
+**Real-time Monitoring**:
+- Monitor the "Server Statistics" panel for response times, success rates, active connections, and error frequencies
+- Watch batch execution progress with live updates
+- Review comprehensive batch summary reports with success/failure statistics
 
-## 🔍 Test Categories
+**Batch Performance Analytics**:
+- Track execution time for complete tool workflows
+- Monitor dependency resolution efficiency  
+- Analyze tool failure patterns and retry success rates
+- Export batch results for performance analysis
 
-### **Research Planning Tools**
-- `clarify_research_goals`: Socratic questioning for research clarification
-- `suggest_methodology`: Research methodology recommendations
+## 🔍 Research Acts & Tool Categories
 
-### **Quality Assurance Tools**
-- `simulate_peer_review`: AI-driven peer review simulation
-- `check_quality_gates`: Research quality validation
+### **🎯 Conceptualization**
+**Goal Setting**: `clarify_research_goals`
+**Problem Identification**: `assess_foundational_assumptions`, `generate_critical_questions`
+**Critical Thinking**: `compare_approaches`, `initiate_paradigm_challenge`
 
-### **Document Generation Tools**
-- `generate_latex_document`: LaTeX document generation
-- `format_research_content`: Academic content formatting
-- `generate_bibliography`: Citation and bibliography management
+### **📋 Design & Planning**
+**Methodology**: `explain_methodology`, `suggest_methodology`
+**Experimental Design**: Planning and design tools
+**Ethics Validation**: `ensure_ethics`
 
-### **Search & Discovery Tools**
-- `semantic_search`: Intelligent content search
-- `discover_patterns`: Research pattern identification
-- `extract_key_concepts`: Key concept extraction
+### **📚 Knowledge Acquisition**
+**Literature Search**: `search_scholarly_articles`, `semantic_search_documents`
+**Data Collection**: `find_similar_documents`, `extract_document_sections`
+**Source Management**: Document and source organization tools
 
-### **Storage Management Tools**
-- `initialize_project`: Project setup and initialization
-- Additional storage and versioning tools
+### **🔬 Analysis & Synthesis**
+**Data Analysis**: `discover_patterns`, `build_knowledge_graph`
+**Pattern Recognition**: `extract_key_concepts`, `synthesize_findings`
+**Semantic Analysis**: Content analysis and interpretation tools
+**Knowledge Building**: `generate_research_summary`
+
+### **✅ Validation & Refinement**
+**Peer Review**: `simulate_peer_review`
+**Quality Control**: `check_quality_gates`
+**Paradigm Validation**: `validate_novel_theory`, `evaluate_paradigm_shift_potential`, `cultivate_innovation`
+
+### **📄 Communication & Dissemination**
+**Document Generation**: `generate_latex_document`, `generate_document_with_database_bibliography`
+**Formatting**: `compile_latex`, `format_research_content`, `generate_bibliography`
+**Project Management**: `initialize_project`, `save_session`, `restore_session`, `version_control`
+**Workflow Tracking**: `get_research_progress`, `get_workflow_recommendations`, `start_research_session`
 
 ## 📊 Expected Results
 
@@ -185,6 +238,9 @@ Monitor the "Server Statistics" panel for:
 - Response times should be under 5 seconds
 - Success rate should be 90%+ for basic functionality
 - WebSocket connection should remain stable
+- **NEW**: Batch execution should complete with proper dependency order
+- **NEW**: Group testing should execute all tools in the selected category/act
+- **NEW**: Progress tracking should show real-time updates during batch runs
 
 ### **Common Issues and Solutions**
 

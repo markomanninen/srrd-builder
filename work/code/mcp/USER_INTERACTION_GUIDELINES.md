@@ -47,6 +47,44 @@ User: "I'd like to understand methodology options"
 Assistant: *calls suggest_methodology*
 ```
 
+## Frontend Batch Execution System
+
+### **NEW: Enhanced Tool Runner Features**
+
+**🚀 Batch Execution Capabilities:**
+- **Run All Tools**: Execute all 44 tools in proper dependency order
+- **Research Act Groups**: Run tools by research workflow phase (Conceptualization, Analysis, etc.)
+- **Category Groups**: Run tools by functional category (Document Generation, Quality Control, etc.)
+- **Smart Dependencies**: Automatic tool ordering based on research workflow requirements
+
+**🎯 Group Runner Categories:**
+- **Conceptualization**: Goal setting, problem identification, critical thinking tools
+- **Design & Planning**: Methodology, experimental design, ethics validation tools  
+- **Knowledge Acquisition**: Literature search, data collection, source management tools
+- **Analysis & Synthesis**: Data analysis, pattern recognition, knowledge building tools
+- **Validation & Refinement**: Peer review, quality control, paradigm validation tools
+- **Communication**: Document generation, formatting, project management tools
+
+**📊 Testing & Verification:**
+- **Progress Tracking**: Real-time progress bars during batch execution
+- **Result Analytics**: Success/failure statistics with detailed reporting
+- **Dependency Validation**: Ensures tools run in proper order (e.g., `initialize_project` before others)
+- **Error Handling**: Smart fallbacks and retry logic for failed tool executions
+
+### **Batch Execution Guidelines**
+
+**✅ PROPER Usage:**
+- Use batch execution for comprehensive workflow testing
+- Use group runners for testing specific research phases
+- Monitor progress and results through the enhanced UI
+- Review batch summary reports for quality assurance
+
+**⚠️ IMPORTANT Notes:**
+- Batch execution respects individual tool interaction requirements
+- GUIDANCE/ADVISORY tools in batch mode will complete but still require user review
+- ACTION/COMPLETION tools execute normally in batch mode
+- Progress tracking helps identify bottlenecks and failures
+
 ## Fixed Issues
 
 **CRITICAL FIXES COMPLETED:**

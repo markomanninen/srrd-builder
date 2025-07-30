@@ -10,6 +10,9 @@ class TestSuiteRunner {
         this.currentTest = null;
         this.onProgress = null;
         this.onComplete = null;
+        
+        // Integration with EnhancedSRRDApp for group testing
+        this.app = null; // Will be set by the main app
     }
 
     async runFullTestSuite() {
@@ -47,6 +50,65 @@ class TestSuiteRunner {
         const summary = this.generateSummary();
         this.notifyComplete(summary);
         return summary;
+    }
+
+    async runGroupTestSuite(groupType, groupValue) {
+        this.testResults = [];
+        this.notifyProgress(`Starting ${groupType} test suite: ${groupValue}...`);
+
+        if (!this.app) {
+            throw new Error('Test suite not integrated with main app');
+        }
+
+        // Use the main app's batch execution logic
+        try {
+            await this.app.runToolGroup(groupType, groupValue);
+            
+            // Convert batch results to test results format
+            const batchResults = this.app.batchExecution.results;
+            this.testResults = batchResults.map(result => ({
+                testName: result.tool,
+                passed: result.success,
+                message: result.success ? 'Tool executed successfully' : result.error,
+                timestamp: result.timestamp
+            }));
+
+            const summary = this.generateSummary();
+            this.notifyComplete(summary);
+            return summary;
+        } catch (error) {
+            this.notifyProgress(`❌ Group test failed: ${error.message}`);
+            throw error;
+        }
+    }
+
+    async runDependencyOrderedTests() {
+        this.testResults = [];
+        this.notifyProgress('Starting dependency-ordered test suite...');
+
+        if (!this.app) {
+            throw new Error('Test suite not integrated with main app');
+        }
+
+        try {
+            await this.app.runAllTools();
+            
+            // Convert batch results to test results format
+            const batchResults = this.app.batchExecution.results;
+            this.testResults = batchResults.map(result => ({
+                testName: result.tool,
+                passed: result.success,
+                message: result.success ? 'Tool executed successfully' : result.error,
+                timestamp: result.timestamp
+            }));
+
+            const summary = this.generateSummary();
+            this.notifyComplete(summary);
+            return summary;
+        } catch (error) {
+            this.notifyProgress(`❌ Dependency-ordered test failed: ${error.message}`);
+            throw error;
+        }
     }
 
     async testConnection() {

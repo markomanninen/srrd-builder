@@ -284,6 +284,33 @@ TEST_CASES = [
 
 ## Test Execution Strategy
 
+### **NEW: Enhanced Frontend Batch Testing**
+
+**🚀 Batch Execution Testing**:
+```bash
+# Frontend batch execution testing
+cd work/code/mcp/frontend
+python3 -m http.server 8080
+
+# Navigate to http://localhost:8080
+# Use new batch execution features:
+```
+
+**Batch Testing Workflow**:
+1. **Full Workflow Testing**: Click "🚀 Run All Tools" - tests all 44 tools in dependency order
+2. **Research Act Testing**: Click "▶️ Run All Tools" on each research act card
+3. **Category Testing**: Click "▶️ Run Category" on each category card
+4. **Progress Monitoring**: Watch real-time progress bars and success/failure tracking
+5. **Results Analysis**: Review comprehensive batch summary reports
+
+**Group Testing Categories**:
+- **Conceptualization Tools**: Goal setting, problem identification, critical thinking
+- **Design & Planning Tools**: Methodology, experimental design, ethics validation
+- **Knowledge Acquisition Tools**: Literature search, data collection, source management
+- **Analysis & Synthesis Tools**: Data analysis, pattern recognition, knowledge building
+- **Validation & Refinement Tools**: Peer review, quality control, paradigm validation
+- **Communication Tools**: Document generation, formatting, project management
+
 ### Automated Testing
 ```bash
 # Run all methodology advisory tests
@@ -297,6 +324,10 @@ pytest work/tests/unit/tools/ -k "database_logging" -v
 
 # Run all tool tests with coverage
 pytest work/tests/unit/tools/ --cov=work/code/mcp/tools --cov-report=html
+
+# NEW: Frontend batch execution integration tests
+cd work/code/mcp/frontend
+python3 test_batch_execution.py  # Run automated batch tests
 ```
 
 ### Manual Verification
@@ -304,6 +335,9 @@ pytest work/tests/unit/tools/ --cov=work/code/mcp/tools --cov-report=html
 2. **Global launcher PROJECT_PATH testing** - Verify environment variable usage
 3. **Project switching workflow** - Test init/switch/reset sequence
 4. **Cross-platform testing** - Verify on macOS/Windows/Linux
+5. **NEW: Batch execution verification** - Test complete research workflows through frontend
+6. **NEW: Dependency order validation** - Verify tools run in proper sequence
+7. **NEW: Error handling testing** - Verify smart fallbacks and retry logic
 
 ## Risk Mitigation
 
@@ -311,11 +345,15 @@ pytest work/tests/unit/tools/ --cov=work/code/mcp/tools --cov-report=html
 - **Database setup complexity** - Use temporary databases for tests
 - **Context detector mocking** - Isolate context-aware behavior testing
 - **Tool dependency issues** - Handle import failures gracefully
+- **NEW: Batch execution timing** - Tools may timeout or interfere with each other
+- **NEW: Frontend integration complexity** - WebSocket connections and state management
 
 ### Implementation Risks
 - **Breaking existing functionality** - Run regression tests
 - **Performance degradation** - Benchmark before/after changes
 - **Cross-tool compatibility** - Test tool interaction workflows
+- **NEW: Batch execution resource usage** - Monitor memory and CPU during large batches
+- **NEW: Dependency order failures** - Ensure proper error handling when prerequisites fail
 
 ## Deliverables
 
@@ -324,9 +362,15 @@ pytest work/tests/unit/tools/ --cov=work/code/mcp/tools --cov-report=html
 2. **Reusable test utilities** for project path and logging verification
 3. **Mock infrastructure** for context detection and database testing
 4. **Performance benchmarking** framework
+5. **NEW: Batch execution test framework** for frontend integration testing
+6. **NEW: Dependency order validation utilities** for workflow testing
+7. **NEW: Progress tracking test infrastructure** for UI verification
 
 ### Documentation Updates
 1. **Updated PROJECT_PATH_USAGE_ANALYSIS.md** with test findings
+2. **NEW: Frontend batch execution user guide** with testing procedures
+3. **NEW: Dependency management documentation** for tool workflow ordering
+4. **NEW: Performance benchmarking results** for batch execution capabilities
 2. **Tool behavior documentation** with verified patterns
 3. **Testing guidelines** for future tool development
 4. **Integration testing procedures** for MCP server
