@@ -49,9 +49,9 @@ except Exception as e:
 if current_project_path:
     PROJECT_PATH = current_project_path
 else:
-    # Use ~/.srrd/globalproject/ as default for both Windows and Unix
+    # Use ~/Projects/default as default for both Windows and Unix
     home = Path.home()
-    default_project_path = home / ".srrd" / "globalproject"
+    default_project_path = home / "Projects" / "default"
 
     # Ensure the directory exists
     try:

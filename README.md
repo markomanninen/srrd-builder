@@ -50,7 +50,7 @@ This project is in active beta testing with complete core functionality implemen
 - **LaTeX Document Generation** with automatic bibliography integration
 - **Vector Database Storage** for semantic search and knowledge management
 - **Git-based Project Management** with session restoration
-- **Global Project Context** with `~/.srrd/globalproject` for home directory research
+- **Global Project Context** with `~/Projects/default` for home directory research
 - **Dual-Server Architecture** (MCP Server + Web GUI) with unified status monitoring
 - **Socratic Questioning Engine** for progressive research refinement
 - **Novel Theory Development Framework** for paradigm innovation in physics
@@ -293,7 +293,7 @@ The SRRD CLI provides comprehensive project and server management:
 # Project Management
 srrd init                    # Initialize new research project
 srrd switch                  # Switch MCP context to current project
-srrd reset                   # Reset to global home project (~/.srrd/globalproject)
+srrd reset                   # Reset to global home project (~/Projects/default)
 srrd status                  # Check global servers and local project status
 
 # Server Management
@@ -317,7 +317,7 @@ The system now provides unified status monitoring for both server types:
 - **MCP Server** (Port 8765) - Claude Desktop integration
 - **Web GUI Server** (Port 8080) - Browser-based interface
 - **Unified Status Commands** - Both `srrd configure --status` and `srrd-server status` show all running servers
-- **Global Project Support** - Default context uses `~/.srrd/globalproject` for home directory research
+- **Global Project Support** - Default context uses `~/Projects/default` for home directory research
 
 **Note:** The CLI now uses `python3 -m srrd_builder.cli` (improved module structure without RuntimeWarning)
 

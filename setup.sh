@@ -309,30 +309,6 @@ if [[ "$PLATFORM" == "macOS" ]]; then
     fi
 fi
 
-# Optional test suite execution
-if [[ "$RUN_TESTS" == "true" ]]; then
-    echo ""
-    echo "🧪 Running Professional Test Suite (158 tests)..."
-    echo "================================================="
-    
-    if [ -f "run_tests.sh" ]; then
-        if bash run_tests.sh; then
-            echo "✅ All 158 tests passed successfully!"
-        else
-            echo "❌ Some tests failed. Check test output above."
-            echo "💡 Installation is still functional - tests validate code quality."
-        fi
-    else
-        echo "⚠️  Test runner not found. Skipping test execution."
-    fi
-else
-    echo ""
-    echo "💡 To run the professional test suite (158 tests):"
-    echo "   bash run_tests.sh"
-    echo "   or"
-    echo "   ./setup.sh --with-tests"
-fi
-
 echo ""
 echo "🎉 Setup complete!"
 echo ""
@@ -358,6 +334,37 @@ echo "   srrd-server --with-frontend  # Start web demo"
 echo ""
 echo "📖 Available tools: $TOOL_NAMES"
 echo ""
-echo "🔄 Initializing global SRRD project context..."
-python3 -c "import sys; sys.path.insert(0, '$(pwd)/srrd_builder/utils'); import launcher_config; launcher_config.reset_to_global_project()"
-echo "✅ Global SRRD project context initialized (if not already present)"
+
+# Automatically initialize SRRD project in the default project directory if not already initialized
+DEFAULT_PROJECT_DIR="$HOME/Projects/default"
+if [ ! -d "$DEFAULT_PROJECT_DIR/.srrd" ]; then
+    echo "\n🚀 Initializing SRRD project in $DEFAULT_PROJECT_DIR ..."
+    mkdir -p "$DEFAULT_PROJECT_DIR"
+    (cd "$DEFAULT_PROJECT_DIR" && srrd init) || echo "⚠️  'srrd init' failed in $DEFAULT_PROJECT_DIR. Please run it manually if needed."
+else
+    echo "\nℹ️  SRRD project already initialized in $DEFAULT_PROJECT_DIR."
+fi
+
+# Optional test suite execution
+if [[ "$RUN_TESTS" == "true" ]]; then
+    echo ""
+    echo "🧪 Running Professional Test Suite (158 tests)..."
+    echo "================================================="
+    
+    if [ -f "run_tests.sh" ]; then
+        if bash run_tests.sh; then
+            echo "✅ All 158 tests passed successfully!"
+        else
+            echo "❌ Some tests failed. Check test output above."
+            echo "💡 Installation is still functional - tests validate code quality."
+        fi
+    else
+        echo "⚠️  Test runner not found. Skipping test execution."
+    fi
+else
+    echo ""
+    echo "💡 To run the professional test suite (158 tests):"
+    echo "   bash run_tests.sh"
+    echo "   or"
+    echo "   ./setup.sh --with-tests"
+fi

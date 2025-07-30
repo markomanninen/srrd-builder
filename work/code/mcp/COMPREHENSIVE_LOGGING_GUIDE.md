@@ -46,7 +46,7 @@ When working in a specific SRRD project:
 When no project is active:
 
 ```text
-~/.srrd/globalproject/logs/mcp_requests/
+~/Projects/default/logs/mcp_requests/
 ```
 
 ## Sample Log Files
@@ -490,7 +490,7 @@ jq -r '.tool_name' execution_*.json | sort | uniq -c | sort -nr
 The logging system is automatically enabled when the MCP server starts with logging enabled. It uses the project path to determine where to store logs:
 
 - **In Project**: Logs go to `[PROJECT_PATH]/logs/mcp_requests/`
-- **Global**: Logs go to `~/.srrd/globalproject/logs/mcp_requests/`
+- **Global**: Logs go to `~/Projects/default/logs/mcp_requests/`
 
 ## Performance Considerations
 

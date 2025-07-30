@@ -49,7 +49,7 @@ result = await switch_project_context_tool(
 ```python  
 # Reset to global home project (neutral state)
 result = await reset_project_context_tool()
-# All tools now use the global ~/.srrd/globalproject context
+# All tools now use the global ~/Projects/default context
 ```
 
 ### Usage Examples
