@@ -312,12 +312,20 @@ echo    - srrd-server         Start WebSocket demo server
 echo.
 
 echo Initializing global SRRD project context...
-REM Run the Python command in a separate process and wait with timeout to avoid hanging
-start /wait /min cmd /c "python -u -c "import sys; print('PYTHON START'); sys.path.insert(0, r'%cd%\srrd_builder\utils'); print('PATH SET'); import launcher_config; print('IMPORTED'); launcher_config.reset_to_global_project(); print('DONE')" 2>&1"
-if errorlevel 1 (
-    echo Global SRRD project context initialization failed
+
+
+REM Automatically initialize SRRD project in the default project directory if not already initialized
+set "DEFAULT_PROJECT_DIR=%USERPROFILE%\Projects\default"
+if not exist "%DEFAULT_PROJECT_DIR%\.srrd" (
+    echo.
+    echo Initializing SRRD project in %DEFAULT_PROJECT_DIR% ...
+    if not exist "%DEFAULT_PROJECT_DIR%" mkdir "%DEFAULT_PROJECT_DIR%"
+    pushd "%DEFAULT_PROJECT_DIR%"
+    srrd init || echo WARNING: 'srrd init' failed in %DEFAULT_PROJECT_DIR%. Please run it manually if needed.
+    popd
 ) else (
-    echo Global SRRD project context initialized, if not already present 
+    echo.
+    echo SRRD project already initialized in %DEFAULT_PROJECT_DIR%.
 )
 
 REM Optional test suite execution
