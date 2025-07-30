@@ -25,7 +25,7 @@ def handle_reset(args):
     if success:
         print("✅ SRRD reset to global home project successfully!")
         print(f"   📁 Global project: {project_path}")
-        print(f"   📍 Config: ~/.srrd/globalproject/config.json")
+        print(f"   📍 Config: ~/Projects/default/config.json")
         print("   • Use 'srrd init' in specific directories for local projects") 
         print("   • Use 'srrd switch' to change between projects")
         return 0

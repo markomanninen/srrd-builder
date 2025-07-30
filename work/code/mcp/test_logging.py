@@ -154,7 +154,7 @@ def show_log_directory_info():
     print("\n📂 Log File Locations:")
     print("=" * 30)
     print("🔍 Logs are stored in project-specific directories:")
-    print("   ~/.srrd/globalproject/logs/mcp_requests/  (when no project is active)")
+    print("   ~/Projects/default/logs/mcp_requests/  (when no project is active)")
     print("   [PROJECT_PATH]/logs/mcp_requests/         (when in a specific project)")
     print("\n📋 Log File Types:")
     print("   • mcp_requests.log          - General activity log")

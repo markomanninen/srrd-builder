@@ -22,7 +22,7 @@ def reset_to_global_project() -> Tuple[bool, Optional[str], Optional[Path]]:
     try:
         # Get home directory and ensure global project directory exists
         home = Path.home()
-        global_project_path = home / '.srrd' / 'globalproject'
+        global_project_path = home / 'Projects' / 'default'
         global_project_path.mkdir(parents=True, exist_ok=True)
 
         # Create global project .srrd directory

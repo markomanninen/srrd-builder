@@ -121,7 +121,7 @@ SRRD-Builder includes a **Workflow Intelligence** feature that provides AI-power
 
 ## Global Project Context
 
-SRRD-Builder uses a global project context located at `~/.srrd/globalproject`. This allows you to use the MCP tools from any directory without initializing a project.
+SRRD-Builder uses a global project context located at `~/Projects/default`. This allows you to use the MCP tools from any directory without initializing a project.
 
 - **Default Context**: When no project is active, the global context is used.
 - **Initialization**: The global context is automatically initialized on the first run.
