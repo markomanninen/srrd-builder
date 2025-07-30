@@ -139,11 +139,11 @@ run_cmd "37. evaluate_paradigm_shift_potential" '{"jsonrpc": "2.0", "id": 37, "m
 # 38. cultivate_innovation
 run_cmd "38. cultivate_innovation" '{"jsonrpc": "2.0", "id": 38, "method": "tools/call", "params": {"name": "cultivate_innovation", "arguments": {"domain": "AI", "innovation_goals": ["goal"], "research_idea": "idea"}}}'
 
-# 39. get_session_summary
-run_cmd "39. get_session_summary" '{"jsonrpc": "2.0", "id": 39, "method": "tools/call", "params": {"name": "get_session_summary", "arguments": {}}}'
+# 39. start_research_session
+run_cmd "39. start_research_session" '{"jsonrpc": "2.0", "id": 39, "method": "tools/call", "params": {"name": "start_research_session", "arguments": {"research_act": "planning", "research_focus": "AI"}}}'
 
-# 40. start_research_session
-run_cmd "40. start_research_session" '{"jsonrpc": "2.0", "id": 40, "method": "tools/call", "params": {"name": "start_research_session", "arguments": {"research_act": "planning", "research_focus": "AI"}}}'
+# 40. get_session_summary
+run_cmd "40. get_session_summary" '{"jsonrpc": "2.0", "id": 40, "method": "tools/call", "params": {"name": "get_session_summary", "arguments": {}}}'
 
 # 41. restore_session
 run_cmd "41. restore_session" '{"jsonrpc": "2.0", "id": 41, "method": "tools/call", "params": {"name": "restore_session", "arguments": {"session_id": 1}}}'
