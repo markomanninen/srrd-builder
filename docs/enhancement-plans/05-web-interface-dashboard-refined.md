@@ -780,4 +780,43 @@ class TestWebDashboardIntegration:
 - **Don't Duplicate**: Use existing styling patterns and component structure
 - **Don't Over-Engineer**: Add features incrementally to proven interface
 
+## Frontend Integration Implementation Notes
+
+### Tool Integration Status
+
+The dashboard enhancement will build upon the existing frontend framework that already includes:
+
+**Existing Frontend Infrastructure:**
+
+- ✅ **Tool Information Database** (`work/code/mcp/frontend/data/tool-info.js`) - 48 tools with comprehensive metadata
+- ✅ **Research Framework** (`work/code/mcp/frontend/data/research-framework.js`) - 6 research acts, categorized tools
+- ✅ **Validation System** - Automated tool mapping validation and console logging
+
+**Dashboard Integration Requirements:**
+
+When adding new dashboard features, maintain consistency with existing frontend patterns:
+
+**Tool Visualization:**
+
+- Use existing tool categorization from research framework
+- Leverage existing tool metadata for descriptions and help text
+- Build upon existing tool count validation (currently 48 tools)
+
+**New Dashboard Tools Integration:**
+
+- Add new dashboard-specific tools to `tool-info.js` with comprehensive metadata
+- Map dashboard tools to appropriate research acts in `research-framework.js`
+- Update tool count references and validation arrays
+- Follow established integration process for frontend validation
+
+**Recommended Process for Dashboard Tools:**
+
+1. Add dashboard tool metadata to `tool-info.js`
+2. Map to Communication & Dissemination act, project_management category
+3. Update tool count in both frontend files
+4. Add to expectedTools validation array
+5. Test integration via console validation logs
+
+This refined plan builds systematically on the existing robust web interface while adding dashboard capabilities that integrate seamlessly with the current tool ecosystem and visualization patterns.
+
 This refined plan builds systematically on the existing robust web interface infrastructure while adding sophisticated dashboard and project management capabilities that integrate seamlessly with the current system architecture.

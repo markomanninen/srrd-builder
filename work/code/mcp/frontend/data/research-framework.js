@@ -1,6 +1,6 @@
 /**
  * SRRD-Builder Research Framework
- * Maps all 46 tools to research acts and categories
+ * Maps all 48 tools to research acts and categories
  * Provides structured navigation for scientific research workflow
  */
 
@@ -57,7 +57,7 @@ const RESEARCH_FRAMEWORK = {
             description: 'Define and refine research objectives',
             icon: '🎯',
             act: 'conceptualization',
-            tools: ['clarify_research_goals']
+            tools: ['clarify_research_goals', 'enhanced_socratic_dialogue']
         },
         problem_identification: {
             name: 'Problem Identification', 
@@ -71,7 +71,7 @@ const RESEARCH_FRAMEWORK = {
             description: 'Question assumptions and generate critical questions',
             icon: '🤔',
             act: 'conceptualization',
-            tools: ['assess_foundational_assumptions', 'generate_critical_questions']
+            tools: ['assess_foundational_assumptions', 'generate_critical_questions', 'enhanced_theory_challenger']
         },
 
         // DESIGN & PLANNING
@@ -205,7 +205,7 @@ const RESEARCH_FRAMEWORK = {
     }
 };
 
-// Validation: Count all tools to ensure we have all 46
+// Validation: Count all tools to ensure we have all 48
 const allTools = Object.values(RESEARCH_FRAMEWORK.categories)
     .flatMap(category => category.tools);
 
@@ -213,7 +213,7 @@ const uniqueTools = [...new Set(allTools)];
 
 console.log(`Framework includes ${uniqueTools.length} tools:`, uniqueTools.sort());
 
-// Expected 46 tools (as identified from codebase):
+// Expected 48 tools (as identified from codebase):
 const expectedTools = [
     'assess_foundational_assumptions',
     'backup_project', 
@@ -226,6 +226,8 @@ const expectedTools = [
     'cultivate_innovation',
     'develop_alternative_framework',
     'discover_patterns',
+    'enhanced_socratic_dialogue',
+    'enhanced_theory_challenger',
     'ensure_ethics',
     'evaluate_paradigm_shift_potential',
     'explain_methodology',
@@ -274,7 +276,7 @@ if (extraTools.length > 0) {
     console.error('Extra tools:', extraTools);
 }
 if (missingTools.length === 0 && extraTools.length === 0) {
-    console.log('✅ All 46 tools successfully mapped to framework!');
+    console.log('✅ All 48 tools successfully mapped to framework!');
 }
 
 // Make available for import

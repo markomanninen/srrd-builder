@@ -434,10 +434,25 @@ class TestEnhancedConversationalWorkflow:
 - Follow the 3-tier test structure (unit/integration/validation)
 - Avoid over-mocking as highlighted in test suite guidelines
 
-### Phase 4: Documentation and CLI Integration (1 week)
-- Update existing tool documentation
-- Add CLI examples building on existing patterns
-- Integration with existing web interface for testing
+### Phase 4: CLI and Frontend Integration (1-2 weeks)
+- **CLI Integration**: Add command-line interfaces for enhanced tools
+  - Create CLI commands for `enhanced_socratic_dialogue` and `enhanced_theory_challenger`
+  - Update CLI help system and documentation
+  - Add examples and usage patterns
+- **Script Integration**: Update `scripts/all_mcp_tools_commands.sh` 
+  - Add test commands for new enhanced tools
+  - Include various parameter combinations for testing
+- **Frontend Integration**: Enhance web interface for conversational features
+  - Add UI components for progressive dialogue interaction
+  - Create response analysis display components
+  - Add challenge intensity controls for theory challenger
+  - Update WebSocket communication for real-time dialogue
+
+### Phase 5: Integration Testing and Documentation (1 week)
+- Create tests for CLI command functionality
+- Add frontend integration tests
+- Test end-to-end workflows through web interface
+- Update user documentation and examples
 
 ## Success Metrics
 
@@ -468,3 +483,69 @@ class TestEnhancedConversationalWorkflow:
 - **Database Integration**: Use existing `SQLiteManager` and session management
 
 This refined plan builds incrementally on the robust existing infrastructure while adding sophisticated conversational capabilities that enhance rather than replace the current tools.
+
+## Frontend Integration Status (COMPLETED)
+
+### Tools Successfully Integrated in Frontend
+
+- ✅ **Tool Information Database** (`work/code/mcp/frontend/data/tool-info.js`)
+  - `enhanced_socratic_dialogue` - Added with complete metadata under CONCEPTUALIZATION TOOLS
+  - `enhanced_theory_challenger` - Added with complete metadata under CONCEPTUALIZATION TOOLS
+  - Database updated to reflect 48 total tools
+
+- ✅ **Research Framework** (`work/code/mcp/frontend/data/research-framework.js`)
+  - `enhanced_socratic_dialogue` - Mapped to **Goal Setting** category under **Conceptualization** act
+  - `enhanced_theory_challenger` - Mapped to **Critical Thinking** category under **Conceptualization** act
+  - Framework validation updated from 46 to 48 tools
+  - Both tools added to expected tools validation array
+
+### Frontend Integration Notes for Future Enhancement Implementations
+
+**Important Notes for Next Enhancement Plan:**
+
+1. **Tool Count Updates**: Remember to update tool count in both `tool-info.js` header comments and `research-framework.js` validation logic
+2. **Category Mapping**: New tools must be added to appropriate categories in the research framework to be discoverable in the web interface
+3. **Validation Arrays**: Add new tools to the `expectedTools` array in `research-framework.js` to pass validation checks
+4. **Tool Documentation**: Each new tool requires complete metadata in `tool-info.js` including title, purpose, context, usage, examples, and tags
+
+**Recommended Frontend Integration Process:**
+
+1. Add tool metadata to `tool-info.js` with comprehensive documentation
+2. Map tools to appropriate research acts and categories in `research-framework.js`
+3. Update tool count references in both files
+4. Add tools to validation arrays
+5. **CRITICAL**: Add parameter defaults to `getToolParameterDefaults` function in `enhanced-app.js`
+6. Test frontend validation by checking console logs for successful tool mapping
+
+**Frontend Parameter Handling - CRITICAL Implementation Detail:**
+
+When implementing tools with required parameters, you MUST add default parameter values to the frontend or tools will fail with parameter errors.
+
+**Location**: `work/code/mcp/frontend/enhanced-app.js` → `getToolParameterDefaults()` function
+
+**Implementation Example:**
+```javascript
+// Inside the toolParameters object in getToolParameterDefaults():
+'enhanced_socratic_dialogue': {
+    research_context: 'I am researching machine learning optimization techniques for neural network training',
+    user_response: '',
+    dialogue_depth: 1,
+    focus_area: 'clarification',
+    domain_specialization: 'computer_science'
+},
+'enhanced_theory_challenger': {
+    theory_description: 'Machine learning models can achieve general intelligence through scaling model parameters and training data',
+    domain: 'computer_science',
+    challenge_intensity: 'moderate'
+}
+```
+
+**Why This Is Required:**
+- Frontend calls tools through `runToolWithDefaults()` → `getToolParameters()` → `getToolParameterDefaults()`
+- Without default parameters, tools receive `null` or `{}` and fail with "missing required parameter" errors
+- Default values provide sensible starting points that users can customize through the UI
+
+**Parameter Matching:**
+- Ensure frontend parameter names exactly match MCP tool registration `required` fields
+- Provide meaningful default values that demonstrate the tool's capabilities
+- Include all required parameters plus commonly used optional ones

@@ -286,6 +286,12 @@ def pytest_runtest_setup(item):
 
 # Helper functions for tests
 
+class MockArgs:
+    """Mock arguments class for CLI command testing"""
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
 def create_mock_mcp_request(method, params=None, request_id=1):
     """Helper function to create mock MCP requests"""
     return {

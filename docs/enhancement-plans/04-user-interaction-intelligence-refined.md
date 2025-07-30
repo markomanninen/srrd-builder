@@ -983,4 +983,44 @@ class TestUserJourneyAnalysisIntegration:
 - **Don't Duplicate**: Use existing database operations and session management
 - **Don't Over-Engineer**: Add intelligence incrementally to proven system
 
+## Frontend Integration Notes for Implementation
+
+### Frontend Integration Requirements
+
+When implementing new user interaction intelligence tools, ensure proper frontend integration:
+
+**Tool Information Database Updates:**
+
+- Add new interaction analysis tools to `work/code/mcp/frontend/data/tool-info.js`
+- Include comprehensive metadata: title, purpose, context, usage, examples, tags
+- Update tool count in header comments
+
+**Research Framework Integration:**
+
+- Map new tools to appropriate research acts and categories in `work/code/mcp/frontend/data/research-framework.js`
+- Add tools to the `expectedTools` validation array
+- Update framework validation logic for correct tool counts
+
+**Recommended Integration Process:**
+
+1. Add complete tool metadata to `tool-info.js`
+2. Map tools to research acts/categories in `research-framework.js`
+3. Update tool count references in both files
+4. Add tools to validation arrays
+5. **CRITICAL**: Add default parameters to `getToolParameterDefaults()` in `enhanced-app.js`
+6. Test integration via console validation logs
+
+**Frontend Parameter Handling - CRITICAL:**
+
+For tools with required parameters, you MUST add default values to `work/code/mcp/frontend/enhanced-app.js` in the `getToolParameterDefaults()` function, or the frontend will fail with "missing required parameter" errors. See Plan 1 documentation for detailed implementation examples.
+
+**Category Mapping Guidelines:**
+
+- **Semantic analysis tools** → Communication & Dissemination act, workflow_tracking category
+- **User journey tools** → Communication & Dissemination act, workflow_tracking category
+- **Interaction intelligence tools** → Communication & Dissemination act, workflow_tracking category
+- **Predictive research tools** → Design & Planning act, methodology category
+
+This refined plan builds intelligence on top of the existing robust interaction tracking system while providing valuable insights into user research journeys and semantic understanding.
+
 This refined plan builds systematically on the existing robust interaction tracking and session management infrastructure while adding intelligent analysis capabilities that integrate seamlessly with the current system architecture.
