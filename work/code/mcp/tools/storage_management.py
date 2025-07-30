@@ -126,9 +126,6 @@ def _get_project_creation_guidance(project_path: str) -> str:
     if "Projects" in str(path):
         return """**Location**: Created in your home Projects directory
 **Context**: This is now your active SRRD project"""
-    elif path.parent.name in ["globalproject", ".srrd"]:
-        return """**Location**: Created in global SRRD context
-**Context**: This project is now active and ready to use"""
     else:
         return """**Location**: Created alongside your current project
 **Context**: Automatically switched to this new project"""
