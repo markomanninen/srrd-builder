@@ -192,4 +192,16 @@ run_cmd "enhanced_theory_challenger_gentle" '{"jsonrpc": "2.0", "id": __ID__, "m
 # 52. enhanced_theory_challenger rigorous
 run_cmd "enhanced_theory_challenger_rigorous" '{"jsonrpc": "2.0", "id": __ID__, "method": "tools/call", "params": {"name": "enhanced_theory_challenger", "arguments": {"theory_description": "Dark matter consists of primordial black holes", "domain": "physics", "challenge_intensity": "rigorous"}}}'
 
+# 53. get_research_act_guidance
+run_cmd "get_research_act_guidance" '{"jsonrpc": "2.0", "id": __ID__, "method": "tools/call", "params": {"name": "get_research_act_guidance", "arguments": {"target_act": "conceptualization", "user_experience": "intermediate", "detailed_guidance": true}}}'
+
+# 54. get_research_act_guidance design_planning
+run_cmd "get_research_act_guidance_design" '{"jsonrpc": "2.0", "id": __ID__, "method": "tools/call", "params": {"name": "get_research_act_guidance", "arguments": {"target_act": "design_planning", "user_experience": "expert", "detailed_guidance": false}}}'
+
+# 55. get_contextual_recommendations
+run_cmd "get_contextual_recommendations" '{"jsonrpc": "2.0", "id": __ID__, "method": "tools/call", "params": {"name": "get_contextual_recommendations", "arguments": {"recommendation_depth": 3}}}'
+
+# 56. get_contextual_recommendations with last tool
+run_cmd "get_contextual_recommendations_with_context" '{"jsonrpc": "2.0", "id": __ID__, "method": "tools/call", "params": {"name": "get_contextual_recommendations", "arguments": {"last_tool_used": "clarify_research_goals", "recommendation_depth": 5}}}'
+
 exit 0
