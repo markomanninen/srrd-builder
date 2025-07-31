@@ -43,6 +43,77 @@ class ResearchPlanningTool:
                     "What foundational principles of current physics does your work question?",
                     "What would be the implications if your alternative framework is correct?",
                 ],
+                "validation": [
+                    "What testable predictions does your theory make?",
+                    "How would you distinguish your theory from existing alternatives?",
+                    "What would constitute compelling evidence for your theoretical framework?",
+                ],
+            },
+            "computer_science": {
+                "clarification": [
+                    "What computational problem are you trying to solve?",
+                    "How does your approach differ from existing algorithms?",
+                    "What are the performance requirements for your solution?",
+                ],
+                "assumption": [
+                    "What assumptions are you making about input data characteristics?",
+                    "How do you handle edge cases and error conditions?",
+                    "What scalability assumptions underlie your approach?",
+                ],
+                "validation": [
+                    "How will you benchmark your solution against existing methods?",
+                    "What test datasets will you use for validation?",
+                    "How will you measure and report performance improvements?",
+                ],
+                "methodology": [
+                    "What development methodology will you follow?",
+                    "How will you ensure code quality and maintainability?",
+                    "What testing strategies will you employ?",
+                ],
+            },
+            "biology": {
+                "clarification": [
+                    "What biological system or process are you investigating?",
+                    "At what level of organization are you focusing (molecular, cellular, organismal)?",
+                    "How does this research connect to broader biological principles?",
+                ],
+                "methodology": [
+                    "What experimental controls will you use?",
+                    "How will you ensure reproducibility of biological measurements?",
+                    "What ethical considerations apply to your biological research?",
+                ],
+                "validation": [
+                    "How will you validate your biological findings?",
+                    "What statistical methods will you use for data analysis?",
+                    "How will you address potential confounding variables?",
+                ],
+                "assumption": [
+                    "What biological assumptions underlie your experimental design?",
+                    "How do environmental factors affect your system?",
+                    "What limitations exist in your experimental model?",
+                ],
+            },
+            "psychology": {
+                "clarification": [
+                    "What psychological phenomenon are you investigating?",
+                    "What theoretical framework guides your research?",
+                    "How does your study contribute to psychological understanding?",
+                ],
+                "methodology": [
+                    "What research design will you use (experimental, correlational, longitudinal)?",
+                    "How will you address ethical considerations in human research?",
+                    "What measures will you use to assess psychological constructs?",
+                ],
+                "assumption": [
+                    "What assumptions about human behavior guide your research?",
+                    "How do cultural factors influence your research design?",
+                    "What biases might affect your data collection or interpretation?",
+                ],
+                "validation": [
+                    "How will you ensure the validity and reliability of your measures?",
+                    "What statistical analyses will you use?",
+                    "How will you address alternative explanations for your findings?",
+                ],
             },
             "general": {
                 "clarification": [
@@ -60,8 +131,189 @@ class ResearchPlanningTool:
                     "What methods will you use to gather evidence?",
                     "How will you know if your hypothesis is wrong?",
                 ],
+                "validation": [
+                    "How will you validate your research findings?",
+                    "What quality controls will you implement?",
+                    "How will you ensure your results are reproducible?",
+                ],
             },
         }
+
+    async def enhanced_socratic_dialogue(
+        self,
+        research_context: str,
+        user_response: str = None,
+        dialogue_depth: int = 1,
+        focus_area: str = "clarification",
+        domain_specialization: str = "general",
+        **kwargs
+    ) -> Dict[str, Any]:
+        """
+        Enhanced tool: Progressive Socratic dialogue with depth control
+        
+        Builds on existing clarify_research_goals but adds progressive questioning
+        """
+        question_bank = self.socratic_questions.get(domain_specialization, self.socratic_questions["general"])
+        
+        # Progressive questioning based on depth
+        if dialogue_depth == 1:
+            questions = question_bank.get("clarification", [])[:2]
+        elif dialogue_depth == 2:
+            questions = question_bank.get("assumption", [])[:2]  
+        elif dialogue_depth >= 3:
+            questions = question_bank.get("validation", [])[:2]
+        
+        # Analyze user response if provided
+        response_analysis = None
+        if user_response:
+            response_analysis = self._analyze_user_response(user_response, focus_area)
+        
+        # Generate contextual follow-ups based on response
+        contextual_questions = []
+        if response_analysis:
+            contextual_questions = self._generate_contextual_followups(
+                response_analysis, domain_specialization, dialogue_depth
+            )
+        
+        return {
+            "progressive_questions": questions,
+            "contextual_followups": contextual_questions,
+            "response_analysis": response_analysis,
+            "dialogue_depth": dialogue_depth,
+            "suggested_next_depth": min(dialogue_depth + 1, 3),
+            "research_context": research_context,
+            "focus_area": focus_area,
+            "domain": domain_specialization,
+            "user_interaction_required": f"Please respond to these {focus_area} questions. I'll provide deeper questions based on your answers.",
+            "next_step_options": [
+                f"Answer the {focus_area} questions to proceed to deeper inquiry",
+                "Ask me to focus on a specific aspect that interests you most",
+                "Request methodology suggestions based on your responses"
+            ]
+        }
+
+    def _analyze_user_response(self, response: str, focus_area: str) -> Dict[str, Any]:
+        """Analyze user response for sophistication and content patterns"""
+        words = response.split()
+        analysis = {
+            "response_length": len(words),
+            "technical_terms": self._count_technical_terms(response),
+            "uncertainty_indicators": self._detect_uncertainty(response),
+            "specificity_level": self._assess_specificity(response),
+            "follow_up_needed": []
+        }
+        
+        # Determine follow-up needs based on analysis
+        if analysis["specificity_level"] < 0.5:
+            analysis["follow_up_needed"].append("More specific details needed")
+        if analysis["uncertainty_indicators"] > 2:
+            analysis["follow_up_needed"].append("Clarification of uncertain points")
+        if analysis["technical_terms"] < 2 and len(words) > 10:
+            analysis["follow_up_needed"].append("More technical detail would be helpful")
+            
+        return analysis
+
+    def _count_technical_terms(self, text: str) -> int:
+        """Count technical terms in user response"""
+        technical_indicators = [
+            'algorithm', 'method', 'approach', 'framework', 'model', 'theory',
+            'hypothesis', 'analysis', 'research', 'study', 'experiment', 'data',
+            'statistical', 'computational', 'mathematical', 'empirical', 'validation',
+            'methodology', 'paradigm', 'theoretical', 'experimental', 'quantitative',
+            # Computer science terms
+            'cryptographic', 'quantum', 'lattice', 'neural', 'network', 'machine',
+            'learning', 'artificial', 'intelligence', 'optimization', 'security',
+            # Biology/science terms
+            'molecular', 'cellular', 'enzyme', 'protein', 'genetic', 'biochemical',
+            'biological', 'microscopy', 'fluorescence', 'kinetics', 'systematic',
+            # Physics terms
+            'electromagnetic', 'particle', 'wave', 'relativity', 'mechanics',
+            # General academic terms
+            'systematic', 'rigorous', 'sophisticated', 'comprehensive', 'innovative'
+        ]
+        
+        text_lower = text.lower()
+        count = sum(1 for term in technical_indicators if term in text_lower)
+        return count
+
+    def _detect_uncertainty(self, text: str) -> int:
+        """Detect uncertainty indicators in user response"""
+        uncertainty_words = [
+            'maybe', 'perhaps', 'possibly', 'might', 'could', 'uncertain',
+            'unclear', 'not sure', 'think', 'believe', 'probably', 'likely'
+        ]
+        
+        text_lower = text.lower()
+        count = sum(1 for word in uncertainty_words if word in text_lower)
+        return count
+
+    def _assess_specificity(self, text: str) -> float:
+        """Assess specificity level of user response (0.0 to 1.0)"""
+        specific_indicators = [
+            'specific', 'exactly', 'precisely', 'particular', 'detailed',
+            'measure', 'quantify', 'calculate', 'implement', 'design', 'developing',
+            'using', 'algorithm', 'method', 'technique', 'approach'
+        ]
+        
+        general_indicators = [
+            'general', 'overall', 'broadly', 'basically', 'simply',
+            'just', 'kind of', 'sort of', 'something', 'things'
+        ]
+        
+        # Technical specificity indicators (specific algorithms, methods, etc.)
+        technical_specificity = [
+            'lattice-based', 'post-quantum', 'cryptographic', 'neural network',
+            'machine learning', 'deep learning', 'reinforcement learning',
+            'quantum computing', 'blockchain', 'neural networks', 'regression',
+            'classification', 'clustering', 'optimization', 'gradient descent',
+            'backpropagation', 'convolutional', 'recurrent', 'transformer'
+        ]
+        
+        text_lower = text.lower()
+        specific_count = sum(1 for indicator in specific_indicators if indicator in text_lower)
+        general_count = sum(1 for indicator in general_indicators if indicator in text_lower)
+        technical_spec_count = sum(1 for tech in technical_specificity if tech in text_lower)
+        
+        # Get technical terms count for additional specificity
+        technical_terms = self._count_technical_terms(text)
+        
+        # Enhanced scoring considering multiple factors
+        words_count = len(text.split())
+        if words_count == 0:
+            return 0.0
+        
+        # Base score from specific vs general indicators
+        base_score = (specific_count * 2 - general_count) / max(words_count / 10, 1)
+        
+        # Bonus for technical specificity
+        tech_bonus = (technical_spec_count * 0.3) + (technical_terms * 0.1)
+        
+        # Bonus for longer, more detailed responses
+        length_bonus = min(0.2, words_count / 100)
+        
+        final_score = 0.5 + (base_score * 0.3) + tech_bonus + length_bonus
+        return max(0.0, min(1.0, final_score))
+
+    def _generate_contextual_followups(self, analysis: Dict, domain: str, depth: int) -> List[str]:
+        """Generate contextual follow-up questions based on user response analysis"""
+        followups = []
+        
+        if "More specific details needed" in analysis["follow_up_needed"]:
+            followups.append("Can you provide more specific details about your approach?")
+        
+        if analysis["technical_terms"] < 2 and depth > 1:
+            followups.append("What technical methods or tools are you considering?")
+        
+        if "Clarification of uncertain points" in analysis["follow_up_needed"]:
+            followups.append("Which aspects are you most uncertain about? Let's explore those together.")
+        
+        if domain == "computer_science" and analysis["specificity_level"] < 0.4:
+            followups.append("What specific algorithms or data structures are relevant to your problem?")
+        
+        if domain == "biology" and "methodology" not in analysis:
+            followups.append("What experimental techniques are you planning to use?")
+            
+        return followups
 
     async def clarify_research_goals(
         self,
@@ -352,6 +604,19 @@ async def suggest_methodology(**kwargs) -> Dict[str, Any]:
     return await tool.suggest_methodology(**filtered_kwargs)
 
 
+@context_aware(require_context=True)
+async def enhanced_socratic_dialogue(**kwargs) -> Dict[str, Any]:
+    """MCP tool wrapper for enhanced Socratic dialogue"""
+    # Filter out context parameters
+    filtered_kwargs = {
+        k: v
+        for k, v in kwargs.items()
+        if k not in ["project_path", "config_path", "config"]
+    }
+    tool = ResearchPlanningTool()
+    return await tool.enhanced_socratic_dialogue(**filtered_kwargs)
+
+
 def register_research_tools(server):
     """Register research planning tools with the MCP server"""
 
@@ -386,4 +651,21 @@ def register_research_tools(server):
             "required": ["research_goals", "domain"],
         },
         handler=suggest_methodology,
+    )
+
+    server.register_tool(
+        name="enhanced_socratic_dialogue",
+        description="Progressive Socratic dialogue with depth control and response analysis",
+        parameters={
+            "type": "object",
+            "properties": {
+                "research_context": {"type": "string"},
+                "user_response": {"type": "string"},
+                "dialogue_depth": {"type": "integer"},
+                "focus_area": {"type": "string"},
+                "domain_specialization": {"type": "string"},
+            },
+            "required": ["research_context"],
+        },
+        handler=enhanced_socratic_dialogue,
     )

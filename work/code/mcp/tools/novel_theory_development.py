@@ -1545,6 +1545,222 @@ def _predict_societal_impact(shift_potential: float, domain: str) -> str:
         return "Limited societal impact beyond academic circles"
 
 
+@context_aware(require_context=True)
+async def enhanced_theory_challenger(**kwargs) -> Dict[str, str]:
+    """
+    Enhanced critical examination tool building on existing validate_novel_theory
+    """
+    theory_description = kwargs.get('theory_description', '')
+    domain = kwargs.get('domain')
+    challenge_intensity = kwargs.get('challenge_intensity', 'moderate')
+    
+    if not theory_description:
+        return {"error": "Missing required parameter: theory_description"}
+    
+    if not domain:
+        return {"error": "Missing required parameter: domain"}
+    
+    # Use existing novel theory validation as base
+    base_validation_kwargs = {
+        'theory_framework': theory_description,
+        'domain': domain
+    }
+    base_validation_result = await validate_novel_theory(**base_validation_kwargs)
+    
+    # Parse the JSON result from base validation
+    import json
+    try:
+        base_validation = json.loads(base_validation_result)
+    except json.JSONDecodeError:
+        base_validation = {"validation_results": {}, "overall_assessment": {}}
+    
+    # Add progressive critical challenges
+    challenges = _generate_progressive_challenges(theory_description, domain, challenge_intensity)
+    
+    # Add paradigm comparison analysis
+    paradigm_analysis = _analyze_paradigm_implications(theory_description, domain)
+    
+    # Combine results
+    enhanced_result = {
+        "theory_description": theory_description,
+        "domain": domain,
+        "challenge_intensity": challenge_intensity,
+        "base_validation": base_validation,
+        "critical_challenges": challenges,
+        "paradigm_implications": paradigm_analysis,
+        "challenge_progression": {
+            "current_level": challenge_intensity,
+            "next_level": _get_next_challenge_level(challenge_intensity),
+            "escalation_available": challenge_intensity != 'rigorous'
+        },
+        "user_interaction_required": "Please address these critical challenges. I can escalate the examination intensity if needed.",
+        "next_step_options": [
+            "Address the critical challenges point by point",
+            "Request more rigorous examination if ready",
+            "Ask for specific guidance on strengthening weak points"
+        ]
+    }
+    
+    return enhanced_result
+
+
+def _generate_progressive_challenges(theory_description: str, domain: str, intensity: str) -> List[Dict[str, str]]:
+    """Generate progressive critical challenges based on intensity level"""
+    
+    base_challenges = [
+        {
+            "type": "logical_consistency",
+            "question": "What internal contradictions might exist in this theory?",
+            "focus": "Check for logical coherence within the theoretical framework"
+        },
+        {
+            "type": "empirical_testability", 
+            "question": "What specific predictions can be derived and tested?",
+            "focus": "Identify concrete ways to validate or falsify the theory"
+        },
+        {
+            "type": "explanatory_scope",
+            "question": "What phenomena does this theory fail to explain?",
+            "focus": "Examine the boundaries and limitations of explanatory power"
+        }
+    ]
+    
+    moderate_challenges = base_challenges + [
+        {
+            "type": "alternative_explanations",
+            "question": "What alternative theories could explain the same phenomena?",
+            "focus": "Consider competing explanatory frameworks"
+        },
+        {
+            "type": "paradigm_compatibility",
+            "question": "How does this theory conflict with established knowledge?",
+            "focus": "Identify areas of tension with current scientific understanding"
+        }
+    ]
+    
+    rigorous_challenges = moderate_challenges + [
+        {
+            "type": "foundational_assumptions",
+            "question": "What unstated assumptions underlie this theoretical framework?",
+            "focus": "Uncover hidden presuppositions that may be problematic"
+        },
+        {
+            "type": "methodological_adequacy",
+            "question": "Are the proposed research methods sufficient for validation?",
+            "focus": "Critically examine the adequacy of validation approaches"
+        },
+        {
+            "type": "historical_precedent",
+            "question": "How do similar theoretical proposals from history inform this case?",
+            "focus": "Learn from historical patterns of theory acceptance/rejection"
+        }
+    ]
+    
+    if intensity == 'gentle':
+        return base_challenges[:2]
+    elif intensity == 'moderate':
+        return moderate_challenges
+    elif intensity == 'rigorous':
+        return rigorous_challenges
+    else:
+        return moderate_challenges
+
+
+def _analyze_paradigm_implications(theory_description: str, domain: str) -> Dict[str, str]:
+    """Analyze the paradigm implications of the theory"""
+    
+    # Analyze the theory description for paradigm-challenging elements
+    paradigm_indicators = {
+        'revolutionary': ['paradigm', 'revolutionary', 'fundamental', 'overturns', 'replaces'],
+        'evolutionary': ['extends', 'builds on', 'refines', 'improves', 'develops'],
+        'reconciling': ['unifies', 'bridges', 'connects', 'integrates', 'combines']
+    }
+    
+    theory_lower = theory_description.lower()
+    paradigm_type = 'evolutionary'  # default
+    
+    for ptype, indicators in paradigm_indicators.items():
+        if any(indicator in theory_lower for indicator in indicators):
+            paradigm_type = ptype
+            break
+    
+    domain_contexts = {
+        'physics': {
+            'established_paradigms': ['quantum mechanics', 'general relativity', 'standard model'],
+            'common_challenges': ['measurement problem', 'dark matter', 'quantum gravity'],
+            'paradigm_tensions': 'quantum mechanics vs general relativity'
+        },
+        'biology': {
+            'established_paradigms': ['neo-darwinism', 'central dogma', 'reductionism'],
+            'common_challenges': ['consciousness', 'emergence', 'complexity'],
+            'paradigm_tensions': 'reductionism vs systems thinking'
+        },
+        'psychology': {
+            'established_paradigms': ['behaviorism', 'cognitivism', 'neuroscientism'],
+            'common_challenges': ['consciousness', 'free will', 'mind-body problem'],
+            'paradigm_tensions': 'reductive vs holistic approaches'
+        },
+        'general': {
+            'established_paradigms': ['materialism', 'reductionism', 'empiricism'],
+            'common_challenges': ['consciousness', 'emergence', 'causation'],
+            'paradigm_tensions': 'reductive vs emergent explanations'
+        }
+    }
+    
+    context = domain_contexts.get(domain, domain_contexts['general'])
+    
+    return {
+        'paradigm_classification': paradigm_type,
+        'established_paradigms_challenged': ', '.join(context['established_paradigms']),
+        'domain_context': f"In {domain}, this theory relates to established paradigms of {', '.join(context['established_paradigms'])}",
+        'potential_tensions': context['paradigm_tensions'],
+        'common_domain_challenges': ', '.join(context['common_challenges']),
+        'paradigm_shift_likelihood': _assess_paradigm_shift_likelihood(paradigm_type, theory_description),
+        'integration_difficulty': _assess_integration_difficulty(paradigm_type, domain)
+    }
+
+
+def _get_next_challenge_level(current_level: str) -> str:
+    """Get the next challenge intensity level"""
+    levels = ['gentle', 'moderate', 'rigorous']
+    try:
+        current_index = levels.index(current_level)
+        if current_index < len(levels) - 1:
+            return levels[current_index + 1]
+    except ValueError:
+        pass
+    return 'rigorous'
+
+
+def _assess_paradigm_shift_likelihood(paradigm_type: str, theory_description: str) -> str:
+    """Assess likelihood of paradigm shift based on theory characteristics"""
+    
+    if paradigm_type == 'revolutionary':
+        return 'High - theory challenges fundamental assumptions'
+    elif paradigm_type == 'reconciling':
+        return 'Moderate - theory attempts to bridge existing paradigms'
+    else:
+        return 'Low - theory builds incrementally on existing knowledge'
+
+
+def _assess_integration_difficulty(paradigm_type: str, domain: str) -> str:
+    """Assess difficulty of integrating theory with existing knowledge"""
+    
+    difficulty_map = {
+        'revolutionary': 'Very High - requires abandoning established principles',
+        'evolutionary': 'Moderate - requires extending current frameworks', 
+        'reconciling': 'High - requires synthesizing competing approaches'
+    }
+    
+    base_difficulty = difficulty_map.get(paradigm_type, 'Moderate')
+    
+    # Domain-specific adjustments
+    if domain in ['physics', 'biology']:
+        return f"{base_difficulty} (especially challenging in {domain} due to established mathematical frameworks)"
+    else:
+        return base_difficulty
+
+
 def register_novel_theory_tools(server):
     """Register novel theory development tools with the MCP server"""
 
@@ -1735,4 +1951,29 @@ def register_novel_theory_tools(server):
             "required": ["theory_framework", "domain"],
         },
         handler=evaluate_paradigm_shift_potential,
+    )
+
+    server.register_tool(
+        name="enhanced_theory_challenger",
+        description="Enhanced critical examination tool with progressive challenge levels",
+        parameters={
+            "type": "object",
+            "properties": {
+                "theory_description": {
+                    "type": "string",
+                    "description": "Theory description to challenge"
+                },
+                "domain": {
+                    "type": "string", 
+                    "description": "Research domain"
+                },
+                "challenge_intensity": {
+                    "type": "string",
+                    "description": "Challenge intensity level (gentle, moderate, rigorous)",
+                    "default": "moderate"
+                }
+            },
+            "required": ["theory_description", "domain"]
+        },
+        handler=enhanced_theory_challenger,
     )

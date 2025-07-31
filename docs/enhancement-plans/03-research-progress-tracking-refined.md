@@ -694,4 +694,44 @@ class TestEnhancedProgressIntegration:
 - **Don't Duplicate**: Use existing database queries and progress calculations
 - **Don't Over-Engineer**: Add visual enhancements incrementally
 
+## Frontend Integration Notes for Implementation
+
+### Frontend Integration Requirements
+
+When implementing new progress tracking tools, ensure proper frontend integration:
+
+**Tool Information Database Updates:**
+
+- Add new progress tracking tools to `work/code/mcp/frontend/data/tool-info.js`
+- Include comprehensive metadata: title, purpose, context, usage, examples, tags
+- Update tool count in header comments
+
+**Research Framework Integration:**
+
+- Map new tools to appropriate research acts and categories in `work/code/mcp/frontend/data/research-framework.js`
+- Add tools to the `expectedTools` validation array
+- Update framework validation logic for correct tool counts
+
+**Recommended Integration Process:**
+
+1. Add complete tool metadata to `tool-info.js`
+2. Map tools to research acts/categories in `research-framework.js`
+3. Update tool count references in both files
+4. Add tools to validation arrays
+5. **CRITICAL**: Add default parameters to `getToolParameterDefaults()` in `enhanced-app.js`
+6. Test integration via console validation logs
+
+**Frontend Parameter Handling - CRITICAL:**
+
+For tools with required parameters, you MUST add default values to `work/code/mcp/frontend/enhanced-app.js` in the `getToolParameterDefaults()` function, or the frontend will fail with "missing required parameter" errors. See Plan 1 documentation for detailed implementation examples.
+
+**Category Mapping Guidelines:**
+
+- **Progress visualization tools** → Communication & Dissemination act, workflow_tracking category
+- **Milestone detection tools** → Communication & Dissemination act, workflow_tracking category
+- **Research metrics tools** → Communication & Dissemination act, workflow_tracking category
+- **Achievement tools** → Communication & Dissemination act, workflow_tracking category
+
+This refined plan enhances the existing robust progress tracking system with visual and celebratory elements while maintaining full integration with the current architecture.
+
 This refined plan enhances the already robust progress tracking system with visual elements and intelligent milestone detection while building on the comprehensive foundation that's already proven to work effectively.

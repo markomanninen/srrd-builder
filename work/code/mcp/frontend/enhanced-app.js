@@ -989,6 +989,18 @@ class EnhancedSRRDApp {
             },
             'get_session_summary': {
                 project_path: currentProjectPath || ''
+            },
+            'enhanced_socratic_dialogue': {
+                research_context: 'I am researching machine learning optimization techniques for neural network training',
+                user_response: '',
+                dialogue_depth: 1,
+                focus_area: 'clarification',
+                domain_specialization: 'computer_science'
+            },
+            'enhanced_theory_challenger': {
+                theory_description: 'Machine learning models can achieve general intelligence through scaling model parameters and training data',
+                domain: 'computer_science',
+                challenge_intensity: 'moderate'
             }
         };
         

@@ -1,6 +1,6 @@
 /**
  * SRRD-Builder Tool Information Database
- * Comprehensive information for all 46 research tools
+ * Comprehensive information for all 48 research tools
  * Used for help modals and user guidance
  */
 
@@ -18,6 +18,34 @@ const TOOL_INFO_DATABASE = {
             'Clarify research scope and boundaries'
         ],
         tags: ['Research Planning', 'Goal Setting', 'Socratic Method']
+    },
+
+    'enhanced_socratic_dialogue': {
+        title: 'Enhanced Socratic Dialogue',
+        purpose: 'Progressive conversational guidance with depth-controlled questioning and user response analysis.',
+        context: 'Advanced interactive dialogue system that adapts questioning depth based on user responses and provides sophisticated analysis of research thinking.',
+        usage: 'Engages in multi-depth Socratic conversations, analyzing your responses to provide contextual follow-up questions and personalized guidance.',
+        examples: [
+            'Progressive questioning from clarification to validation',
+            'User response analysis for technical sophistication',
+            'Domain-specific question banks for targeted guidance',
+            'Contextual follow-up generation based on uncertainty levels'
+        ],
+        tags: ['Enhanced Dialogue', 'Response Analysis', 'Progressive Questioning', 'Conversational AI']
+    },
+
+    'enhanced_theory_challenger': {
+        title: 'Enhanced Theory Challenger',
+        purpose: 'Critical examination tool with progressive challenge levels and paradigm implication analysis.',
+        context: 'Advanced theory validation system that provides escalating levels of critical examination and analyzes paradigm implications.',
+        usage: 'Challenges theories with adjustable intensity levels while analyzing paradigm implications and integration difficulties.',
+        examples: [
+            'Progressive challenge levels from gentle to rigorous',
+            'Paradigm implication analysis and classification',
+            'Integration difficulty assessment',
+            'Critical challenge generation based on theory characteristics'
+        ],
+        tags: ['Theory Validation', 'Critical Analysis', 'Paradigm Assessment', 'Progressive Challenges']
     },
 
     'initiate_paradigm_challenge': {
