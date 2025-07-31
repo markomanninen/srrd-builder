@@ -1,11 +1,17 @@
 """
 Research Continuity Tools
 Research lifecycle persistence and workflow guidance
+
+Enhanced with structured research act guidance and contextual recommendations:
+- get_research_act_guidance: Experience-tailored guidance for specific research acts
+- get_contextual_recommendations: AI-powered tool recommendations based on usage patterns
+- Pattern analysis and workflow intelligence for optimized research progression
 """
 
 import json
 import sys
 from pathlib import Path
+from typing import Any, Dict, List
 
 from storage.sqlite_manager import SQLiteManager
 from utils.context_decorator import ContextAwareError, context_aware
@@ -495,6 +501,462 @@ async def get_session_summary_tool(**kwargs) -> str:
         return f"Error: Unexpected failure in get_session_summary - {error_msg}"
 
 
+@context_aware(require_context=True)
+async def get_research_act_guidance(**kwargs) -> str:
+    """
+    Get structured guidance for current or specified research act
+    
+    Builds on existing ResearchFrameworkService and WorkflowIntelligence
+    """
+    # Get parameters
+    target_act = kwargs.get('target_act', None)
+    user_experience = kwargs.get('user_experience', 'intermediate')
+    detailed_guidance = kwargs.get('detailed_guidance', True)
+    
+    # Use existing research framework service
+    research_framework = _get_research_framework()
+    if not research_framework:
+        return "Research framework service not available."
+    
+    project_path = get_current_project()
+    # Note: @context_aware(require_context=True) already ensures project_path exists
+    
+    try:
+        # Get current progress using existing functionality
+        db_path = SQLiteManager.get_sessions_db_path(project_path)
+        sqlite_manager = SQLiteManager(db_path)
+        await sqlite_manager.initialize()
+        
+        # Determine current act if not specified
+        if not target_act:
+            # Default to conceptualization for initial guidance
+            # TODO: Implement intelligent act detection based on tool usage patterns
+            target_act = 'conceptualization'
+        
+        # Get enhanced guidance for the target act
+        act_guidance = await _get_enhanced_act_guidance(
+            target_act, user_experience, detailed_guidance, sqlite_manager, research_framework
+        )
+        
+        await sqlite_manager.close()
+        return act_guidance
+        
+    except Exception as e:
+        return f"Error generating research act guidance: {str(e)}"
+
+
+async def _get_enhanced_act_guidance(
+    act_name: str, 
+    experience: str, 
+    detailed: bool, 
+    sqlite_manager: SQLiteManager,
+    research_framework: ResearchFrameworkService
+) -> str:
+    """Generate enhanced guidance for specific research act"""
+    
+    # Extended act definitions building on existing framework
+    act_definitions = {
+        "conceptualization": {
+            "purpose": "Defining research problems, questions, and objectives",
+            "key_activities": [
+                "clarify_research_goals",
+                "assess_foundational_assumptions", 
+                "generate_critical_questions",
+                "semantic_search"
+            ],
+            "success_criteria": [
+                "Clear, specific research question formulated",
+                "Key assumptions identified and examined", 
+                "Research scope properly defined",
+                "Initial literature review completed"
+            ],
+            "common_challenges": [
+                "Research question too broad or vague",
+                "Unexamined assumptions",
+                "Insufficient background research",
+                "Unclear success metrics"
+            ]
+        },
+        "design_planning": {
+            "purpose": "Planning methodology and research approach",
+            "key_activities": [
+                "suggest_methodology",
+                "design_experimental_framework",
+                "plan_data_collection",
+                "assess_resource_requirements"
+            ],
+            "success_criteria": [
+                "Appropriate methodology selected and justified",
+                "Research design is feasible and rigorous",
+                "Data collection plan is detailed and realistic",
+                "Resource requirements identified"
+            ],
+            "common_challenges": [
+                "Methodology doesn't match research question",
+                "Unrealistic scope or timeline",
+                "Missing ethical considerations",
+                "Inadequate resource planning"
+            ]
+        },
+        "implementation": {
+            "purpose": "Executing research plan and collecting data",
+            "key_activities": [
+                "execute_data_collection",
+                "monitor_progress",
+                "document_procedures",
+                "quality_assurance"
+            ],
+            "success_criteria": [
+                "Data collection executed according to plan",
+                "Quality standards maintained",
+                "Procedures properly documented",
+                "Progress regularly monitored"
+            ],
+            "common_challenges": [
+                "Deviation from planned methodology",
+                "Data quality issues",
+                "Timeline pressures",
+                "Resource constraints"
+            ]
+        },
+        "analysis": {
+            "purpose": "Analyzing collected data and identifying patterns",
+            "key_activities": [
+                "analyze_data_patterns",
+                "validate_findings",
+                "statistical_analysis",
+                "interpret_results"
+            ],
+            "success_criteria": [
+                "Data properly analyzed using appropriate methods",
+                "Findings validated and reliable",
+                "Results clearly interpreted",
+                "Limitations identified"
+            ],
+            "common_challenges": [
+                "Inappropriate analysis methods",
+                "Overinterpretation of results",
+                "Missing confounding factors",
+                "Statistical errors"
+            ]
+        },
+        "synthesis": {
+            "purpose": "Synthesizing findings and developing conclusions",
+            "key_activities": [
+                "synthesize_findings",
+                "develop_conclusions",
+                "identify_implications",
+                "assess_contribution"
+            ],
+            "success_criteria": [
+                "Findings synthesized coherently",
+                "Conclusions well-supported by data",
+                "Implications clearly identified",
+                "Contribution to field assessed"
+            ],
+            "common_challenges": [
+                "Inconsistent synthesis",
+                "Unsupported conclusions",
+                "Missing broader implications",
+                "Overstated contributions"
+            ]
+        },
+        "publication": {
+            "purpose": "Communicating research findings and disseminating results",
+            "key_activities": [
+                "prepare_manuscript",
+                "peer_review_process",
+                "present_findings",
+                "disseminate_results"
+            ],
+            "success_criteria": [
+                "Research clearly communicated",
+                "Appropriate venues selected",
+                "Feedback incorporated",
+                "Results widely disseminated"
+            ],
+            "common_challenges": [
+                "Poor communication of findings",
+                "Inappropriate publication venues",
+                "Ignoring peer feedback",
+                "Limited dissemination"
+            ]
+        }
+    }
+    
+    act_info = act_definitions.get(act_name, {})
+    if not act_info:
+        return f"Unknown research act: {act_name}"
+    
+    # Check current progress in this act using existing database
+    act_progress = await _get_act_specific_progress(act_name, sqlite_manager)
+    
+    # Generate guidance based on progress and experience level
+    guidance_sections = []
+    
+    # Act overview - properly format act name
+    formatted_act_name = act_name.replace('_', ' ').title()
+    guidance_sections.append(f"# {formatted_act_name} Research Act Guidance")
+    guidance_sections.append(f"\n**Purpose**: {act_info['purpose']}")
+    
+    # Current progress
+    if act_progress:
+        completion_pct = act_progress.get('completion_percentage', 0)
+        guidance_sections.append(f"\n**Current Progress**: {completion_pct:.1f}% complete")
+        
+        if completion_pct > 0:
+            completed_tools = act_progress.get('completed_tools', [])
+            guidance_sections.append(f"**Completed Tools**: {', '.join(completed_tools)}")
+    
+    # Key activities and tools
+    guidance_sections.append(f"\n## Key Activities for {formatted_act_name}")
+    for i, activity in enumerate(act_info.get('key_activities', []), 1):
+        guidance_sections.append(f"{i}. **{activity}**")
+        if detailed:
+            tool_guidance = _get_tool_specific_guidance(activity, experience)
+            if tool_guidance:
+                guidance_sections.append(f"   - {tool_guidance}")
+    
+    # Success criteria
+    guidance_sections.append(f"\n## Success Criteria")
+    for criterion in act_info.get('success_criteria', []):
+        guidance_sections.append(f"- {criterion}")
+    
+    # Common challenges and how to avoid them
+    guidance_sections.append(f"\n## Common Challenges to Avoid")
+    for challenge in act_info.get('common_challenges', []):
+        guidance_sections.append(f"- {challenge}")
+    
+    # Next steps based on current progress
+    guidance_sections.append(f"\n## Recommended Next Steps")
+    next_tools = await _get_smart_next_tools(act_name, act_progress, sqlite_manager)
+    for tool in next_tools:
+        guidance_sections.append(f"- Use **{tool['name']}**: {tool['rationale']}")
+    
+    return "\n".join(guidance_sections)
+
+
+async def _get_act_specific_progress(act_name: str, sqlite_manager: SQLiteManager) -> Dict[str, Any]:
+    """Get progress specific to a research act using existing database"""
+    # Query existing tool_usage table to determine act progress
+    act_tools_map = {
+        "conceptualization": ["clarify_research_goals", "assess_foundational_assumptions", "generate_critical_questions", "semantic_search"],
+        "design_planning": ["suggest_methodology", "design_experimental_framework", "plan_data_collection"],
+        "implementation": ["execute_data_collection", "monitor_progress", "document_procedures"],
+        "analysis": ["analyze_data_patterns", "validate_findings", "statistical_analysis"],
+        "synthesis": ["synthesize_findings", "develop_conclusions", "identify_implications"],
+        "publication": ["prepare_manuscript", "peer_review_process", "present_findings"]
+    }
+    
+    relevant_tools = act_tools_map.get(act_name, [])
+    if not relevant_tools:
+        return {}
+    
+    # Query database for tools used in this act
+    placeholders = ','.join(['?' for _ in relevant_tools])
+    query = f"""
+        SELECT tool_name, COUNT(*) as usage_count, MAX(timestamp) as last_used
+        FROM tool_usage 
+        WHERE tool_name IN ({placeholders})
+        GROUP BY tool_name
+        ORDER BY last_used DESC
+    """
+    
+    try:
+        async with sqlite_manager.connection.execute(query, relevant_tools) as cursor:
+            tool_usage = await cursor.fetchall()
+        
+        completed_tools = [row[0] for row in tool_usage]
+        completion_pct = (len(completed_tools) / len(relevant_tools)) * 100
+        
+        return {
+            "completion_percentage": completion_pct,
+            "completed_tools": completed_tools,
+            "total_tools": len(relevant_tools),
+            "last_activity": tool_usage[0][2] if tool_usage else None
+        }
+    except Exception:
+        return {"completion_percentage": 0, "completed_tools": [], "total_tools": len(relevant_tools)}
+
+
+async def _get_smart_next_tools(act_name: str, progress: Dict, sqlite_manager: SQLiteManager) -> List[Dict[str, str]]:
+    """Get smart next tool recommendations based on act progress"""
+    completed_tools = progress.get('completed_tools', [])
+    
+    # Act-specific tool progressions
+    tool_progressions = {
+        "conceptualization": [
+            {"name": "clarify_research_goals", "rationale": "Start by clarifying your research objectives"},
+            {"name": "semantic_search", "rationale": "Search existing literature for background"},
+            {"name": "assess_foundational_assumptions", "rationale": "Examine underlying assumptions"},
+            {"name": "generate_critical_questions", "rationale": "Develop critical thinking questions"}
+        ],
+        "design_planning": [
+            {"name": "suggest_methodology", "rationale": "Get methodology recommendations"},
+            {"name": "design_experimental_framework", "rationale": "Design your research approach"},
+            {"name": "assess_resource_requirements", "rationale": "Plan required resources"}
+        ],
+        "implementation": [
+            {"name": "execute_data_collection", "rationale": "Begin systematic data collection"},
+            {"name": "monitor_progress", "rationale": "Track implementation progress"},
+            {"name": "document_procedures", "rationale": "Document your methodology"}
+        ],
+        "analysis": [
+            {"name": "analyze_data_patterns", "rationale": "Identify patterns in your data"},
+            {"name": "validate_findings", "rationale": "Ensure findings are robust"},
+            {"name": "statistical_analysis", "rationale": "Apply appropriate statistical methods"}
+        ],
+        "synthesis": [
+            {"name": "synthesize_findings", "rationale": "Combine findings coherently"},
+            {"name": "develop_conclusions", "rationale": "Draw well-supported conclusions"},
+            {"name": "identify_implications", "rationale": "Assess broader implications"}
+        ],
+        "publication": [
+            {"name": "prepare_manuscript", "rationale": "Draft your research manuscript"},
+            {"name": "peer_review_process", "rationale": "Engage with peer review"},
+            {"name": "present_findings", "rationale": "Present to relevant audiences"}
+        ]
+    }
+    
+    progression = tool_progressions.get(act_name, [])
+    next_tools = []
+    
+    for tool in progression:
+        if tool["name"] not in completed_tools:
+            next_tools.append(tool)
+            if len(next_tools) >= 3:  # Limit to top 3 recommendations
+                break
+    
+    return next_tools
+
+
+def _get_tool_specific_guidance(tool_name: str, experience: str) -> str:
+    """Get guidance for using specific tools"""
+    tool_guidance = {
+        "clarify_research_goals": {
+            "beginner": "Take time to really think through your research interests",
+            "intermediate": "Focus on making your goals specific and measurable", 
+            "expert": "Consider novel angles and paradigm implications"
+        },
+        "suggest_methodology": {
+            "beginner": "Ask for detailed explanations of recommended methodologies",
+            "intermediate": "Consider multiple methodologies and their trade-offs",
+            "expert": "Evaluate methodology appropriateness for novel approaches"
+        },
+        "semantic_search": {
+            "beginner": "Start with broad search terms, then narrow down",
+            "intermediate": "Use varied search strategies and sources",
+            "expert": "Focus on gaps and contradictions in literature"
+        },
+        "assess_foundational_assumptions": {
+            "beginner": "Question basic premises of your field",
+            "intermediate": "Examine hidden assumptions in methodology",
+            "expert": "Challenge paradigmatic assumptions"
+        }
+    }
+    
+    return tool_guidance.get(tool_name, {}).get(experience, "")
+
+
+@context_aware(require_context=True)
+async def get_contextual_recommendations(**kwargs) -> str:
+    """
+    Get enhanced contextual recommendations based on recent tool usage patterns
+    
+    Provides intelligent recommendations using tool pattern analysis and research context
+    """
+    # Get parameters
+    last_tool_used = kwargs.get('last_tool_used', None)
+    recommendation_depth = kwargs.get('recommendation_depth', 3)
+    
+    project_path = get_current_project()
+    # Note: @context_aware(require_context=True) already ensures project_path exists
+    
+    try:
+        # Initialize services
+        research_framework = _get_research_framework()
+        if not research_framework:
+            return "Research framework service not available."
+        
+        db_path = SQLiteManager.get_sessions_db_path(project_path)
+        sqlite_manager = SQLiteManager(db_path)
+        await sqlite_manager.initialize()
+        
+        # Get project ID (assume first project for simplicity)
+        async with sqlite_manager.connection.execute(
+            "SELECT id FROM projects ORDER BY created_at DESC LIMIT 1"
+        ) as cursor:
+            project_row = await cursor.fetchone()
+            project_id = project_row[0] if project_row else 1
+        
+        # Use enhanced WorkflowIntelligence
+        workflow_intelligence = WorkflowIntelligence(sqlite_manager, research_framework)
+        
+        # Get contextual recommendations
+        recommendations = await workflow_intelligence.get_contextual_recommendations(
+            project_id=project_id,
+            last_tool_used=last_tool_used,
+            recommendation_depth=recommendation_depth
+        )
+        
+        await sqlite_manager.close()
+        
+        # Format response as markdown
+        response_sections = []
+        
+        # Current context summary
+        current_context = recommendations.get("current_context", {})
+        if current_context:
+            response_sections.append("# Current Research Context")
+            overall_progress = current_context.get("overall_progress", {})
+            if overall_progress:
+                completion = overall_progress.get("completion_percentage", 0)
+                response_sections.append(f"**Overall Progress**: {completion:.1f}% complete")
+        
+        # Recent activity pattern
+        pattern = recommendations.get("recent_activity_pattern", {})
+        if pattern:
+            response_sections.append(f"\n# Recent Activity Pattern")
+            pattern_type = pattern.get("pattern_type", "unknown")
+            confidence = pattern.get("confidence", 0)
+            response_sections.append(f"**Pattern**: {pattern_type.title()} (confidence: {confidence:.1f})")
+            
+            if pattern.get("suggestion"):
+                response_sections.append(f"**Suggestion**: {pattern['suggestion']}")
+        
+        # Prioritized recommendations
+        recs = recommendations.get("prioritized_recommendations", [])
+        if recs:
+            response_sections.append(f"\n# Recommended Next Tools")
+            for i, rec in enumerate(recs, 1):
+                tool_name = rec.get("tool_name", "unknown")
+                priority = rec.get("priority", "medium")
+                confidence = rec.get("confidence", 0)
+                pattern_context = rec.get("pattern_context", "")
+                
+                response_sections.append(f"{i}. **{tool_name}** ({priority} priority, {confidence:.1f} confidence)")
+                if pattern_context:
+                    response_sections.append(f"   - {pattern_context}")
+        
+        # Rationale
+        rationale = recommendations.get("rationale", "")
+        if rationale:
+            response_sections.append(f"\n# Rationale")
+            response_sections.append(rationale)
+        
+        # Alternative paths
+        alternatives = recommendations.get("alternative_paths", [])
+        if alternatives:
+            response_sections.append(f"\n# Alternative Approaches")
+            for alt in alternatives:
+                response_sections.append(f"- {alt}")
+        
+        return "\n".join(response_sections) if response_sections else "No recommendations available at this time."
+        
+    except Exception as e:
+        return f"Error generating contextual recommendations: {str(e)}"
+
+
 def register_research_continuity_tools(server):
     """Register research continuity tools with the MCP server"""
 
@@ -557,4 +1019,53 @@ def register_research_continuity_tools(server):
             "properties": {"session_id": {"type": "integer"}},
         },
         handler=get_session_summary_tool,
+    )
+
+    server.register_tool(
+        name="get_research_act_guidance",
+        description="Get structured guidance for current or specified research act",
+        parameters={
+            "type": "object",
+            "properties": {
+                "target_act": {
+                    "type": "string",
+                    "enum": ["conceptualization", "design_planning", "implementation", "analysis", "synthesis", "publication"],
+                    "description": "Specific research act to get guidance for (defaults to current act)"
+                },
+                "user_experience": {
+                    "type": "string",
+                    "enum": ["beginner", "intermediate", "expert"],
+                    "default": "intermediate",
+                    "description": "User experience level for tailored guidance"
+                },
+                "detailed_guidance": {
+                    "type": "boolean",
+                    "default": True,
+                    "description": "Whether to include detailed tool-specific guidance"
+                }
+            }
+        },
+        handler=get_research_act_guidance,
+    )
+
+    server.register_tool(
+        name="get_contextual_recommendations",
+        description="Get enhanced contextual recommendations based on recent tool usage patterns",
+        parameters={
+            "type": "object",
+            "properties": {
+                "last_tool_used": {
+                    "type": "string",
+                    "description": "Name of the last tool used (for enhanced context)"
+                },
+                "recommendation_depth": {
+                    "type": "integer",
+                    "default": 3,
+                    "minimum": 1,
+                    "maximum": 10,
+                    "description": "Number of recommendations to generate"
+                }
+            }
+        },
+        handler=get_contextual_recommendations,
     )

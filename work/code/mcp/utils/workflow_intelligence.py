@@ -515,3 +515,235 @@ class WorkflowIntelligence:
             "start_time": start_time.isoformat(),
             "end_time": end_time.isoformat(),
         }
+
+    async def get_contextual_recommendations(
+        self, 
+        project_id: int,
+        last_tool_used: str = None,
+        user_context: Dict[str, Any] = None,
+        recommendation_depth: int = 3
+    ) -> Dict[str, Any]:
+        """
+        Enhanced contextual recommendations building on existing functionality
+        """
+        # Get existing analysis as foundation
+        current_context = await self.analyze_research_progress(project_id)
+        
+        # Enhance with tool sequence analysis
+        recent_tools = await self._get_recent_tool_sequence(project_id, limit=5)
+        tool_patterns = self._analyze_tool_patterns(recent_tools)
+        
+        # Generate enhanced recommendations
+        recommendations = await self._generate_enhanced_recommendations(
+            project_id,
+            current_context, 
+            recent_tools, 
+            tool_patterns,
+            last_tool_used,
+            recommendation_depth
+        )
+        
+        return {
+            "current_context": current_context,
+            "recent_activity_pattern": tool_patterns,
+            "prioritized_recommendations": recommendations,
+            "rationale": self._explain_recommendations(recommendations, tool_patterns),
+            "alternative_paths": await self._get_alternative_approaches(project_id, recommendations)
+        }
+    
+    async def _get_recent_tool_sequence(self, project_id: int, limit: int = 5) -> List[Dict[str, Any]]:
+        """Get recent tool usage sequence from existing database"""
+        query = """
+            SELECT tu.tool_name, tu.timestamp, tu.result_summary
+            FROM tool_usage tu
+            JOIN sessions s ON tu.session_id = s.id
+            WHERE s.project_id = ?
+            ORDER BY tu.timestamp DESC 
+            LIMIT ?
+        """
+        
+        try:
+            async with self.sqlite_manager.connection.execute(query, (project_id, limit)) as cursor:
+                results = await cursor.fetchall()
+            
+            return [
+                {
+                    "tool_name": row[0],
+                    "timestamp": row[1], 
+                    "result_summary": row[2]
+                }
+                for row in results
+            ]
+        except Exception:
+            return []
+    
+    def _analyze_tool_patterns(self, recent_tools: List[Dict]) -> Dict[str, Any]:
+        """Analyze patterns in recent tool usage"""
+        if not recent_tools:
+            return {"pattern_type": "no_activity", "confidence": 0}
+        
+        tool_names = [t["tool_name"] for t in recent_tools]
+        
+        # Detect common patterns
+        if len(set(tool_names)) == 1:
+            return {
+                "pattern_type": "repetitive",
+                "repeated_tool": tool_names[0],
+                "confidence": 0.8,
+                "suggestion": "Consider diversifying tool usage"
+            }
+        
+        # Check for logical progressions
+        logical_sequences = [
+            ["clarify_research_goals", "suggest_methodology"],
+            ["semantic_search", "generate_document"],
+            ["suggest_methodology", "design_experimental_framework"],
+            ["assess_foundational_assumptions", "generate_critical_questions"]
+        ]
+        
+        for sequence in logical_sequences:
+            if self._check_sequence_match(tool_names, sequence):
+                return {
+                    "pattern_type": "logical_progression",
+                    "sequence": sequence,
+                    "confidence": 0.9,
+                    "suggestion": "Good workflow progression detected"
+                }
+        
+        return {
+            "pattern_type": "exploratory",
+            "diversity": len(set(tool_names)) / len(tool_names),
+            "confidence": 0.6
+        }
+    
+    def _check_sequence_match(self, tool_names: List[str], sequence: List[str]) -> bool:
+        """Check if tool names contain a logical sequence"""
+        if len(tool_names) < len(sequence):
+            return False
+        
+        # Check if sequence appears in any order within recent tools
+        sequence_indices = []
+        for seq_tool in sequence:
+            if seq_tool in tool_names:
+                sequence_indices.append(tool_names.index(seq_tool))
+        
+        # If we found all tools in sequence, check if they appear in logical order
+        return len(sequence_indices) == len(sequence) and sequence_indices == sorted(sequence_indices, reverse=True)
+    
+    async def _generate_enhanced_recommendations(
+        self,
+        project_id: int,
+        current_context: Dict[str, Any], 
+        recent_tools: List[Dict], 
+        tool_patterns: Dict[str, Any],
+        last_tool_used: str,
+        recommendation_depth: int
+    ) -> List[Dict[str, Any]]:
+        """Generate enhanced recommendations based on context and patterns"""
+        
+        # Get base recommendations from existing framework
+        base_recommendations = await self.generate_recommendations(project_id, 1)  # Use session_id=1 as default
+        
+        enhanced_recommendations = []
+        
+        # Enhance each recommendation with pattern-based intelligence
+        for rec in base_recommendations[:recommendation_depth]:
+            enhanced_rec = {
+                "tool_name": rec.get("tool", ""),
+                "research_act": rec.get("research_act", ""),
+                "priority": rec.get("priority", "medium"),
+                "base_reasoning": rec.get("enhanced_reasoning", ""),
+                "pattern_context": self._get_pattern_context(rec.get("tool", ""), tool_patterns),
+                "confidence": self._calculate_recommendation_confidence(rec, recent_tools, tool_patterns)
+            }
+            enhanced_recommendations.append(enhanced_rec)
+        
+        return enhanced_recommendations
+    
+    def _get_pattern_context(self, tool_name: str, patterns: Dict[str, Any]) -> str:
+        """Get pattern-specific context for a tool recommendation"""
+        pattern_type = patterns.get("pattern_type", "unknown")
+        
+        if pattern_type == "repetitive":
+            return f"Breaks repetitive pattern of {patterns.get('repeated_tool', 'unknown')}"
+        elif pattern_type == "logical_progression":
+            return f"Continues logical workflow progression"
+        elif pattern_type == "exploratory":
+            return f"Supports exploratory research approach"
+        else:
+            return "General recommendation"
+    
+    def _calculate_recommendation_confidence(self, rec: Dict, recent_tools: List[Dict], patterns: Dict) -> float:
+        """Calculate confidence score for recommendation based on patterns"""
+        base_confidence = 0.7  # Default confidence
+        
+        # Boost confidence for logical progressions
+        if patterns.get("pattern_type") == "logical_progression":
+            base_confidence += 0.2
+        
+        # Reduce confidence for repetitive patterns
+        if patterns.get("pattern_type") == "repetitive":
+            base_confidence -= 0.1
+        
+        # Adjust based on tool usage recency
+        tool_name = rec.get("tool", "")
+        recent_tool_names = [t["tool_name"] for t in recent_tools]
+        if tool_name in recent_tool_names:
+            base_confidence -= 0.1  # Slight penalty for recently used tools
+        
+        return max(0.1, min(1.0, base_confidence))  # Clamp between 0.1 and 1.0
+    
+    def _explain_recommendations(self, recommendations: List[Dict], patterns: Dict) -> str:
+        """Generate explanation for the recommendation set"""
+        if not recommendations:
+            return "No specific recommendations available at this time."
+        
+        pattern_type = patterns.get("pattern_type", "unknown")
+        
+        explanations = [
+            f"Based on your recent {pattern_type} research pattern, I recommend:",
+        ]
+        
+        for i, rec in enumerate(recommendations, 1):
+            explanations.append(
+                f"{i}. **{rec['tool_name']}** ({rec['priority']} priority) - {rec['pattern_context']}"
+            )
+        
+        if pattern_type == "repetitive":
+            explanations.append("\nConsider diversifying your approach to explore new research dimensions.")
+        elif pattern_type == "logical_progression":
+            explanations.append("\nYour workflow shows good logical progression. Continue building on this foundation.")
+        
+        return "\n".join(explanations)
+    
+    async def _get_alternative_approaches(self, project_id: int, recommendations: List[Dict]) -> List[str]:
+        """Suggest alternative research approaches"""
+        # Get current research acts with significant progress
+        query = """
+            SELECT tu.research_act, COUNT(*) as count
+            FROM tool_usage tu
+            JOIN sessions s ON tu.session_id = s.id
+            WHERE s.project_id = ? AND tu.success = 1
+            GROUP BY tu.research_act
+        """
+        
+        alternatives = []
+        
+        try:
+            async with self.sqlite_manager.connection.execute(query, (project_id,)) as cursor:
+                act_usage_rows = await cursor.fetchall()
+            
+            act_usage = {row[0]: row[1] for row in act_usage_rows}
+        except Exception:
+            act_usage = {}
+        
+        underused_acts = [act for act, count in act_usage.items() if count < 3]
+        
+        if underused_acts:
+            alternatives.append(f"Explore underused research acts: {', '.join(underused_acts)}")
+        
+        # Suggest methodology diversity
+        if len(set(rec["research_act"] for rec in recommendations)) < 2:
+            alternatives.append("Consider incorporating tools from multiple research acts for a more comprehensive approach")
+        
+        return alternatives

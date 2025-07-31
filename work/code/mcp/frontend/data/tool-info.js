@@ -1,6 +1,6 @@
 /**
  * SRRD-Builder Tool Information Database
- * Comprehensive information for all 48 research tools
+ * Comprehensive information for all 50 research tools
  * Used for help modals and user guidance
  */
 
@@ -598,6 +598,120 @@ const TOOL_INFO_DATABASE = {
             'Protect against data loss'
         ],
         tags: ['Data Backup', 'Project Safety', 'Data Protection']
+    },
+
+    'get_research_act_guidance': {
+        title: 'Get Research Act Guidance',
+        purpose: 'Provides structured guidance for specific research acts with experience-tailored recommendations.',
+        context: 'Essential for understanding research act requirements, progress tracking, and getting personalized guidance based on user experience level.',
+        usage: 'Interactive tool that provides comprehensive guidance for research acts including activities, success criteria, challenges, and next steps.',
+        examples: [
+            'Get detailed guidance for conceptualization phase',
+            'Understand design planning requirements and activities',
+            'Track progress within specific research acts',
+            'Receive experience-level tailored recommendations',
+            'Identify next steps based on current progress'
+        ],
+        tags: ['Workflow Guidance', 'Research Acts', 'Progress Tracking', 'Personalized Recommendations']
+    },
+
+    'get_contextual_recommendations': {
+        title: 'Get Contextual Recommendations',
+        purpose: 'Provides intelligent tool recommendations based on recent usage patterns and research context.',
+        context: 'Advanced recommendation engine that analyzes tool usage patterns to suggest contextually appropriate next steps.',
+        usage: 'Interactive tool that examines recent activity patterns and provides prioritized recommendations with confidence scores.',
+        examples: [
+            'Get recommendations based on recent tool usage patterns',
+            'Analyze workflow patterns for optimization suggestions',
+            'Receive confidence-scored tool recommendations',
+            'Get alternative research approaches and paths',
+            'Understand rationale behind recommended next steps'
+        ],
+        tags: ['Smart Recommendations', 'Pattern Analysis', 'Workflow Intelligence', 'Contextual Guidance']
+    },
+
+    'get_research_progress': {
+        title: 'Get Research Progress',
+        purpose: 'Retrieves comprehensive research progress across all acts and categories.',
+        context: 'Essential for tracking overall research advancement and identifying completed milestones.',
+        usage: 'Provides detailed progress analysis showing completion percentages, tool usage statistics, and research velocity.',
+        examples: [
+            'View overall research progress across all acts',
+            'Track completion percentages by research category',
+            'Monitor research velocity and workflow health',
+            'Identify gaps in research workflow'
+        ],
+        tags: ['Progress Tracking', 'Research Analytics', 'Workflow Monitoring']
+    },
+
+    'get_tool_usage_history': {
+        title: 'Get Tool Usage History',
+        purpose: 'Provides chronological history of tool usage for session or project analysis.',
+        context: 'Critical for understanding research workflow patterns and tool effectiveness.',
+        usage: 'Interactive tool that displays tool usage timeline with execution details and success rates.',
+        examples: [
+            'View chronological tool usage for current session',
+            'Analyze tool usage patterns over time',
+            'Track tool success rates and execution times',
+            'Identify most frequently used research tools'
+        ],
+        tags: ['Usage Analytics', 'Tool Tracking', 'Session History']
+    },
+
+    'get_workflow_recommendations': {
+        title: 'Get Workflow Recommendations',  
+        purpose: 'Generates AI-powered recommendations for next research steps based on current progress.',
+        context: 'Advanced workflow guidance system that suggests optimal next steps based on research framework analysis.',
+        usage: 'Provides intelligent suggestions for research progression with priority rankings and rationale.',
+        examples: [
+            'Get AI-generated next step recommendations',
+            'Receive priority-ranked workflow suggestions',
+            'Understand rationale behind recommended actions',
+            'Optimize research workflow progression'
+        ],
+        tags: ['AI Recommendations', 'Workflow Optimization', 'Research Guidance']
+    },
+
+    'get_research_milestones': {
+        title: 'Get Research Milestones',
+        purpose: 'Retrieves achieved research milestones and upcoming targets for project tracking.',
+        context: 'Essential for celebrating achievements and setting realistic future goals in research projects.',
+        usage: 'Displays completed milestones with achievement dates and suggests upcoming milestone targets.',
+        examples: [
+            'View achieved research milestones with dates',
+            'Track milestone completion progress',
+            'Get suggestions for upcoming milestone targets',
+            'Celebrate research achievements and progress'
+        ],
+        tags: ['Milestone Tracking', 'Achievement Recognition', 'Goal Setting']
+    },
+
+    'start_research_session': {
+        title: 'Start Research Session',
+        purpose: 'Initiates a new research session with proper tracking and context management.',
+        context: 'Critical for organizing research work into trackable sessions with clear objectives.',
+        usage: 'Creates new research session with session ID, objectives, and automatic progress tracking setup.',
+        examples: [
+            'Begin new research session with clear objectives',
+            'Initialize session tracking for workflow monitoring',
+            'Set research focus and expected outcomes',
+            'Prepare environment for productive research work'
+        ],
+        tags: ['Session Management', 'Research Organization', 'Workflow Initialization']
+    },
+
+    'get_session_summary': {
+        title: 'Get Session Summary',
+        purpose: 'Provides comprehensive summary of research session progress and achievements.',
+        context: 'Essential for reviewing session productivity and planning follow-up work.',
+        usage: 'Generates detailed session report including tools used, progress made, and key insights.',
+        examples: [
+            'Review completed session achievements',
+            'Analyze session productivity metrics',
+            'Get summary of tools used and outcomes',
+            'Plan follow-up work based on session results'
+        ],
+        tags: ['Session Analysis', 'Productivity Review', 'Progress Summary']
     }
 };
 

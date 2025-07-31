@@ -990,6 +990,15 @@ class EnhancedSRRDApp {
             'get_session_summary': {
                 project_path: currentProjectPath || ''
             },
+            'get_research_act_guidance': {
+                target_act: 'conceptualization',
+                user_experience: 'intermediate',
+                detailed_guidance: true
+            },
+            'get_contextual_recommendations': {
+                last_tool_used: '',
+                recommendation_depth: 3
+            },
             'enhanced_socratic_dialogue': {
                 research_context: 'I am researching machine learning optimization techniques for neural network training',
                 user_response: '',

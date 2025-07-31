@@ -1,6 +1,6 @@
 /**
  * SRRD-Builder Research Framework
- * Maps all 48 tools to research acts and categories
+ * Maps all 50 tools to research acts and categories
  * Provides structured navigation for scientific research workflow
  */
 
@@ -200,12 +200,12 @@ const RESEARCH_FRAMEWORK = {
             description: 'Track research progress and workflow guidance',
             icon: '🔄',
             act: 'communication',
-            tools: ['get_research_progress', 'get_tool_usage_history', 'get_workflow_recommendations', 'get_research_milestones', 'start_research_session', 'get_session_summary']
+            tools: ['get_research_progress', 'get_tool_usage_history', 'get_workflow_recommendations', 'get_research_milestones', 'start_research_session', 'get_session_summary', 'get_research_act_guidance', 'get_contextual_recommendations']
         }
     }
 };
 
-// Validation: Count all tools to ensure we have all 48
+// Validation: Count all tools to ensure we have all 50
 const allTools = Object.values(RESEARCH_FRAMEWORK.categories)
     .flatMap(category => category.tools);
 

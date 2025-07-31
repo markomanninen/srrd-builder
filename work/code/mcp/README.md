@@ -4,35 +4,36 @@ This directory contains the Model Context Protocol (MCP) server for SRRD-Builder
 
 ## 🎯 Key Features
 
-- **46 Context-Aware Tools** - All tools automatically detect project context
-- **100% Enhancement Coverage** - Complete context-aware functionality
+- **50 Context-Aware Tools** - All tools automatically detect project context
+- **100% Enhancement Coverage** - Complete context-aware functionality including enhanced workflow guidance
 - **Backward Compatibility** - Existing tool calls work unchanged
 - **Automatic Context Injection** - No manual project_path parameters needed
 - **Graceful Fallback** - Works with or without project context
 - **Project Context Management** - Switch between projects or reset to global context
+- **Enhanced Workflow Intelligence** - Pattern analysis and contextual recommendations
 
 ## Production Files
 
 - **`mcp_server.py`** - The main MCP server for Claude Desktop
 - **`server.py`** - Alternative MCP server implementation
-- **`tools/`** - Tool modules providing all 46 research assistance tools
+- **`tools/`** - Tool modules providing all 50 research assistance tools
 - **`utils/`** - Context detection and decorator utilities
 - **`storage/`** - Storage management backend
 
 ## Context-Aware Enhancement
 
-All 38 tools are now enhanced with automatic context detection:
+All 50 tools are now enhanced with automatic context detection:
 
 ### Enhanced Tool Categories
 
-- **Storage Management** (8/8) - Project initialization, session management, version control, context switching
-- **Document Generation** (10/10) - LaTeX generation, compilation, formatting, templates
-- **Search & Discovery** (6/6) - Semantic search, knowledge graphs, pattern discovery
-- **Research Planning** (2/2) - Goal clarification, methodology suggestion  
-- **Quality Assurance** (2/2) - Peer review simulation, quality gates
-- **Methodology Advisory** (4/4) - Methodology explanation, design validation
-- **Novel Theory Development** (8/8) - Paradigm challenge, framework development
-- **Research Continuity** (6/6) - Progress tracking, session management, workflow intelligence
+- **Conceptualization** (6/6) - Goal clarification, Socratic dialogue, paradigm challenges, assumption assessment
+- **Design & Planning** (5/5) - Methodology suggestion, research design validation, ethics assessment
+- **Knowledge Acquisition** (8/8) - Semantic search, concept extraction, reference management, project context switching
+- **Analysis & Synthesis** (6/6) - Pattern discovery, knowledge graphs, alternative frameworks, paradigm comparison
+- **Validation & Refinement** (5/5) - Peer review simulation, quality gates, novel theory validation, innovation cultivation
+- **Communication** (8/8) - LaTeX generation, document compilation, formatting, bibliography management
+- **Project Management** (6/6) - Project initialization, session management, version control, knowledge search
+- **Workflow Intelligence** (6/6) - Progress tracking, contextual recommendations, milestone detection, workflow optimization
 
 ### New Project Context Management
 
@@ -104,7 +105,7 @@ The MCP server is configured in Claude Desktop's config file as:
 
 - Run `../../setup.sh` from the root directory to install dependencies and test the server
 - The server uses stdio-based communication with Claude Desktop
-- All 38 tools are enhanced with context-aware functionality
+- All 50 tools are enhanced with context-aware functionality including enhanced workflow guidance
 
 ## Testing
 
@@ -114,7 +115,7 @@ Test the MCP server directly:
 echo '{"jsonrpc": "2.0", "method": "tools/list", "params": {}, "id": 1}' | python3 mcp_server.py
 ```
 
-Should return a list of 38 available tools.
+Should return a list of 50 available tools.
 
 **Run comprehensive tests:**
 
