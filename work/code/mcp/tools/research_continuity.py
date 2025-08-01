@@ -957,6 +957,364 @@ async def get_contextual_recommendations(**kwargs) -> str:
         return f"Error generating contextual recommendations: {str(e)}"
 
 
+async def _get_visual_progress_summary_impl() -> str:
+    """Implementation of visual progress summary"""
+    project_path = get_current_project()
+    if not project_path:
+        raise ContextAwareError("SRRD project context is required for this tool.")
+    
+    # Get existing comprehensive progress data
+    base_progress = await get_research_progress_tool()
+    
+    # Extract progress data for visualization
+    progress_data = await _extract_progress_metrics(project_path)
+    
+    # Generate visual elements
+    visual_summary = []
+    
+    # ASCII progress bars for research acts
+    visual_summary.append("# Visual Research Progress Summary\n")
+    visual_summary.append("## Research Acts Progress\n")
+    
+    for act_name, act_data in progress_data['research_acts'].items():
+        completion = act_data.get('completion_percentage', 0)
+        bar = _create_progress_bar(completion, width=20)
+        visual_summary.append(f"**{act_name.title()}**: {bar} {completion:.1f}%")
+    
+    # Tool usage frequency visualization
+    if progress_data['tool_usage']:
+        visual_summary.append("\n## Tool Usage Frequency")
+        top_tools = sorted(
+            progress_data['tool_usage'].items(), 
+            key=lambda x: x[1], 
+            reverse=True
+        )[:5]
+        
+        max_usage = max(usage for _, usage in top_tools) if top_tools else 1
+        for tool_name, usage_count in top_tools:
+            normalized_usage = (usage_count / max_usage) * 20
+            bar = "█" * int(normalized_usage) + "░" * (20 - int(normalized_usage))
+            visual_summary.append(f"**{tool_name}**: [{bar}] {usage_count} uses")
+    
+    # Research velocity trend
+    if progress_data['velocity_data']:
+        visual_summary.append("\n## Research Velocity Trend (Last 7 Days)")
+        velocity_chart = _create_velocity_chart(progress_data['velocity_data'])
+        visual_summary.append(velocity_chart)
+    
+    # Combine visual summary with existing detailed report
+    combined_report = "\n".join(visual_summary) + "\n\n" + base_progress
+    
+    return combined_report
+
+
+@context_aware(require_context=True)
+async def get_visual_progress_summary(*args, **kwargs) -> str:
+    """
+    Enhanced tool: Generate visual progress summary with ASCII charts
+    
+    Builds on existing get_research_progress_tool with added visualization
+    """
+    return await _get_visual_progress_summary_impl()
+
+
+def _create_progress_bar(percentage: float, width: int = 20) -> str:
+    """Create ASCII progress bar"""
+    # Cap percentage at 100% and ensure minimum of 0%
+    capped_percentage = max(0, min(100, percentage))
+    filled = int(width * capped_percentage / 100)
+    bar = "█" * filled + "░" * (width - filled)
+    return f"[{bar}]"
+
+
+def _create_velocity_chart(velocity_data: List[Dict]) -> str:
+    """Create simple ASCII velocity trend chart"""
+    if not velocity_data or len(velocity_data) < 2:
+        return "Insufficient data for trend visualization"
+    
+    chart_lines = []
+    max_velocity = max(d['daily_velocity'] for d in velocity_data)
+    
+    for day_data in velocity_data[-7:]:  # Last 7 days
+        velocity = day_data['daily_velocity']
+        normalized = int((velocity / max_velocity) * 10) if max_velocity > 0 else 0
+        bar = "▓" * normalized + "░" * (10 - normalized)
+        chart_lines.append(f"{day_data['date']}: [{bar}] {velocity} tools")
+    
+    return "\n".join(chart_lines)
+
+
+async def _extract_progress_metrics(project_path: str) -> Dict[str, Any]:
+    """Extract key metrics from existing database for visualization"""
+    db_path = SQLiteManager.get_sessions_db_path(project_path)
+    sqlite_manager = SQLiteManager(db_path)
+    await sqlite_manager.initialize()
+    
+    # Research acts progress (reuse existing logic)
+    research_acts = {}
+    act_tools_map = {
+        "conceptualization": ["clarify_research_goals", "assess_foundational_assumptions", "generate_critical_questions"],
+        "design_planning": ["suggest_methodology", "design_experimental_framework"],
+        "implementation": ["execute_research_plan", "collect_data"],
+        "analysis": ["analyze_data", "interpret_results"],
+        "synthesis": ["synthesize_findings", "develop_conclusions"],
+        "publication": ["generate_document", "compile_references"]
+    }
+    
+    for act_name, tools in act_tools_map.items():
+        completed_tools = await _count_completed_tools(sqlite_manager, tools)
+        completion_pct = (completed_tools / len(tools)) * 100 if tools else 0
+        research_acts[act_name] = {
+            "completion_percentage": completion_pct,
+            "completed_tools": completed_tools,
+            "total_tools": len(tools)
+        }
+    
+    # Tool usage frequency
+    tool_usage = await _get_tool_usage_frequency(sqlite_manager)
+    
+    # Velocity data (last 7 days)
+    velocity_data = await _get_daily_velocity_data(sqlite_manager, days=7)
+    
+    await sqlite_manager.close()
+    
+    return {
+        "research_acts": research_acts,
+        "tool_usage": tool_usage,
+        "velocity_data": velocity_data
+    }
+
+
+async def _count_completed_tools(sqlite_manager: SQLiteManager, tools: List[str]) -> int:
+    """Count how many tools from the list have been used"""
+    if not tools:
+        return 0
+    
+    placeholders = ','.join(['?' for _ in tools])
+    query = f"SELECT COUNT(DISTINCT tool_name) FROM tool_usage WHERE tool_name IN ({placeholders})"
+    
+    async with sqlite_manager.connection.execute(query, tools) as cursor:
+        result = await cursor.fetchone()
+        return result[0] if result else 0
+
+
+async def _get_tool_usage_frequency(sqlite_manager: SQLiteManager) -> Dict[str, int]:
+    """Get tool usage frequency from existing database"""
+    query = "SELECT tool_name, COUNT(*) as usage_count FROM tool_usage GROUP BY tool_name"
+    
+    async with sqlite_manager.connection.execute(query) as cursor:
+        results = await cursor.fetchall()
+    
+    return {row[0]: row[1] for row in results}
+
+
+async def _get_daily_velocity_data(sqlite_manager: SQLiteManager, days: int = 7) -> List[Dict]:
+    """Get daily velocity data for trend visualization"""
+    query = """
+        SELECT DATE(timestamp) as date, COUNT(*) as daily_velocity
+        FROM tool_usage 
+        WHERE timestamp >= datetime('now', '-{} days')
+        GROUP BY DATE(timestamp)
+        ORDER BY date
+    """.format(days)
+    
+    async with sqlite_manager.connection.execute(query) as cursor:
+        results = await cursor.fetchall()
+    
+    return [{"date": row[0], "daily_velocity": row[1]} for row in results]
+
+
+async def _detect_and_celebrate_milestones_impl() -> str:
+    """
+    Enhanced tool: Automatically detect and celebrate research milestones
+    
+    Builds on existing session and progress tracking to identify achievements
+    """
+    project_path = get_current_project()
+    if not project_path:
+        raise ContextAwareError("SRRD project context is required for this tool.")
+    
+    db_path = SQLiteManager.get_sessions_db_path(project_path)
+    sqlite_manager = SQLiteManager(db_path)
+    await sqlite_manager.initialize()
+    
+    # Detect various types of milestones
+    milestones = []
+    
+    # Research act completion milestones
+    act_milestones = await _detect_act_completion_milestones(sqlite_manager)
+    milestones.extend(act_milestones)
+    
+    # Usage pattern milestones
+    usage_milestones = await _detect_usage_pattern_milestones(sqlite_manager)
+    milestones.extend(usage_milestones)
+    
+    # Velocity milestones
+    velocity_milestones = await _detect_velocity_milestones(sqlite_manager)
+    milestones.extend(velocity_milestones)
+    
+    await sqlite_manager.close()
+    
+    if not milestones:
+        return "No new milestones detected. Keep up the great research work!"
+    
+    # Format milestone celebration
+    celebration = []
+    celebration.append("# 🎉 Research Milestones Achieved! 🎉\n")
+    
+    for milestone in milestones:
+        celebration.append(f"## {milestone['icon']} {milestone['title']}")
+        celebration.append(f"**Achievement**: {milestone['description']}")
+        celebration.append(f"**Significance**: {milestone['significance']}")
+        if milestone.get('next_goal'):
+            celebration.append(f"**Next Goal**: {milestone['next_goal']}")
+        celebration.append("")  # Empty line for spacing
+    
+    celebration.append("Keep up the excellent research progress! 🚀")
+    
+    return "\n".join(celebration)
+
+
+@context_aware(require_context=True)
+async def detect_and_celebrate_milestones(*args, **kwargs) -> str:
+    """
+    Enhanced tool: Automatically detect and celebrate research milestones
+    
+    Builds on existing session and progress tracking to identify achievements
+    """
+    return await _detect_and_celebrate_milestones_impl()
+
+
+async def _detect_act_completion_milestones(sqlite_manager: SQLiteManager) -> List[Dict]:
+    """Detect research act completion milestones"""
+    milestones = []
+    
+    # Check for recent act completions (within last session)
+    recent_activity_query = """
+        SELECT tool_name, timestamp FROM tool_usage 
+        WHERE timestamp >= datetime('now', '-1 day')
+        ORDER BY timestamp DESC
+    """
+    
+    async with sqlite_manager.connection.execute(recent_activity_query) as cursor:
+        recent_tools = await cursor.fetchall()
+    
+    # Analyze for act completion patterns
+    act_tools_map = {
+        "conceptualization": {
+            "tools": ["clarify_research_goals", "assess_foundational_assumptions", "generate_critical_questions"],
+            "icon": "🎯",
+            "title": "Conceptualization Phase Completed"
+        },
+        "design_planning": {
+            "tools": ["suggest_methodology", "design_experimental_framework"],
+            "icon": "📋", 
+            "title": "Design & Planning Phase Completed"
+        },
+        "implementation": {
+            "tools": ["execute_research_plan", "collect_data"],
+            "icon": "⚙️",
+            "title": "Implementation Phase Completed"
+        },
+        "analysis": {
+            "tools": ["analyze_data", "interpret_results"],
+            "icon": "📊",
+            "title": "Analysis Phase Completed"
+        },
+        "synthesis": {
+            "tools": ["synthesize_findings", "develop_conclusions"],
+            "icon": "🔬",
+            "title": "Synthesis Phase Completed"
+        },
+        "publication": {
+            "tools": ["generate_document", "compile_references"],
+            "icon": "📝",
+            "title": "Publication Phase Completed"
+        }
+    }
+    
+    for act_name, act_info in act_tools_map.items():
+        completed_tools = await _count_completed_tools(sqlite_manager, act_info["tools"])
+        completion_rate = completed_tools / len(act_info["tools"])
+        
+        if completion_rate >= 0.8:  # 80% completion threshold
+            milestones.append({
+                "icon": act_info["icon"],
+                "title": act_info["title"],
+                "description": f"Completed {completed_tools}/{len(act_info['tools'])} core activities",
+                "significance": f"Strong foundation established for {act_name.replace('_', ' ')} phase",
+                "next_goal": "Consider moving to the next research phase"
+            })
+    
+    return milestones
+
+
+async def _detect_usage_pattern_milestones(sqlite_manager: SQLiteManager) -> List[Dict]:
+    """Detect usage pattern-based milestones"""
+    milestones = []
+    
+    # Total tool usage milestone
+    total_usage_query = "SELECT COUNT(*) FROM tool_usage"
+    async with sqlite_manager.connection.execute(total_usage_query) as cursor:
+        total_usage = (await cursor.fetchone())[0]
+    
+    # Check for usage milestones
+    usage_milestones_thresholds = [10, 25, 50, 100, 200]
+    for threshold in usage_milestones_thresholds:
+        if total_usage >= threshold and total_usage < threshold + 10:  # Recently crossed
+            milestones.append({
+                "icon": "🔧",
+                "title": f"{threshold} Tools Used Milestone",
+                "description": f"You've successfully used {total_usage} research tools",
+                "significance": "Demonstrates active engagement with the research process",
+                "next_goal": f"Continue exploring - next milestone at {threshold * 2} tools"
+            })
+    
+    # Tool diversity milestone
+    diversity_query = "SELECT COUNT(DISTINCT tool_name) FROM tool_usage"
+    async with sqlite_manager.connection.execute(diversity_query) as cursor:
+        unique_tools = (await cursor.fetchone())[0]
+    
+    if unique_tools >= 10:
+        milestones.append({
+            "icon": "🌟",
+            "title": "Research Tool Explorer",
+            "description": f"You've explored {unique_tools} different research tools",
+            "significance": "Shows comprehensive approach to research methodology",
+            "next_goal": "Focus on deepening expertise with your most effective tools"
+        })
+    
+    return milestones
+
+
+async def _detect_velocity_milestones(sqlite_manager: SQLiteManager) -> List[Dict]:
+    """Detect research velocity milestones"""
+    milestones = []
+    
+    # Check for consistent daily activity
+    daily_activity_query = """
+        SELECT DATE(timestamp) as date, COUNT(*) as daily_count
+        FROM tool_usage 
+        WHERE timestamp >= datetime('now', '-7 days')
+        GROUP BY DATE(timestamp)
+        HAVING daily_count >= 3
+    """
+    
+    async with sqlite_manager.connection.execute(daily_activity_query) as cursor:
+        active_days = await cursor.fetchall()
+    
+    if len(active_days) >= 5:  # 5+ active days in last week
+        milestones.append({
+            "icon": "⚡",
+            "title": "Consistent Research Momentum",
+            "description": f"Active research on {len(active_days)} days this week",
+            "significance": "Excellent research habit development and consistency",
+            "next_goal": "Maintain this momentum for long-term research success"
+        })
+    
+    return milestones
+
+
 def register_research_continuity_tools(server):
     """Register research continuity tools with the MCP server"""
 
@@ -1068,4 +1426,18 @@ def register_research_continuity_tools(server):
             }
         },
         handler=get_contextual_recommendations,
+    )
+
+    server.register_tool(
+        name="get_visual_progress_summary",
+        description="Generate visual progress summary with ASCII charts",
+        parameters={"type": "object", "properties": {}},
+        handler=get_visual_progress_summary,
+    )
+
+    server.register_tool(
+        name="detect_and_celebrate_milestones",
+        description="Automatically detect and celebrate research milestones",
+        parameters={"type": "object", "properties": {}},
+        handler=detect_and_celebrate_milestones,
     )

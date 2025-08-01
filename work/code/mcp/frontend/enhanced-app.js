@@ -99,7 +99,7 @@ class EnhancedSRRDApp {
             // Prerequisites - should run first
             prerequisites: ['initialize_project', 'clarify_research_goals'],
             
-            // Research workflow order - Complete list of all 46 tools
+            // Research workflow order - Complete list of all 52 tools
             executionOrder: [
                 // Project setup and initialization
                 'initialize_project',
@@ -158,12 +158,20 @@ class EnhancedSRRDApp {
                 'get_tool_usage_history',
                 'get_workflow_recommendations',
                 'get_session_summary',
+                'get_visual_progress_summary',
+                'detect_and_celebrate_milestones',
+                'get_contextual_recommendations',
+                'get_research_act_guidance',
                 
                 // Session and context management
                 'save_session',
                 'restore_session',
                 'switch_project_context',
                 'reset_project_context',
+                
+                // Advanced theoretical dialogue and challenge
+                'enhanced_socratic_dialogue',
+                'enhanced_theory_challenger',
                 
                 // Version control and backup
                 'version_control',
@@ -763,6 +771,32 @@ class EnhancedSRRDApp {
 
         if (defaultParams) {
             return defaultParams;
+        }
+
+        // Check if this is a tool that legitimately takes no parameters
+        const noParameterTools = [
+            'reset_project_context',
+            'assess_foundational_assumptions',
+            'compare_approaches',
+            'compare_paradigms',
+            'cultivate_innovation',
+            'detect_and_celebrate_milestones',
+            'develop_alternative_framework',
+            'ensure_ethics',
+            'evaluate_paradigm_shift_potential',
+            'explain_methodology',
+            'generate_critical_questions',
+            'generate_latex_with_template',
+            'get_visual_progress_summary',
+            'initiate_paradigm_challenge',
+            'list_latex_templates',
+            'validate_design',
+            'validate_novel_theory'
+        ];
+
+        // If this is a no-parameter tool, always return empty object
+        if (noParameterTools.includes(tool.name)) {
+            return {};
         }
 
         // If no defaults are found, and the tool has a schema,
@@ -1552,12 +1586,14 @@ class EnhancedSRRDApp {
             'compare_approaches',
             'compare_paradigms',
             'cultivate_innovation',
+            'detect_and_celebrate_milestones',
             'develop_alternative_framework',
             'ensure_ethics',
             'evaluate_paradigm_shift_potential',
             'explain_methodology',
             'generate_critical_questions',
             'generate_latex_with_template',
+            'get_visual_progress_summary',
             'initiate_paradigm_challenge',
             'list_latex_templates',
             'validate_design',
