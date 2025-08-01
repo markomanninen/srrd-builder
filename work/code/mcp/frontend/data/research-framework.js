@@ -1,6 +1,6 @@
 /**
  * SRRD-Builder Research Framework
- * Maps all 50 tools to research acts and categories
+ * Maps all 52 tools to research acts and categories
  * Provides structured navigation for scientific research workflow
  */
 
@@ -200,7 +200,7 @@ const RESEARCH_FRAMEWORK = {
             description: 'Track research progress and workflow guidance',
             icon: '🔄',
             act: 'communication',
-            tools: ['get_research_progress', 'get_tool_usage_history', 'get_workflow_recommendations', 'get_research_milestones', 'start_research_session', 'get_session_summary', 'get_research_act_guidance', 'get_contextual_recommendations']
+            tools: ['get_research_progress', 'get_tool_usage_history', 'get_workflow_recommendations', 'get_research_milestones', 'start_research_session', 'get_session_summary', 'get_research_act_guidance', 'get_contextual_recommendations', 'get_visual_progress_summary', 'detect_and_celebrate_milestones']
         }
     }
 };
@@ -213,7 +213,7 @@ const uniqueTools = [...new Set(allTools)];
 
 console.log(`Framework includes ${uniqueTools.length} tools:`, uniqueTools.sort());
 
-// Expected 48 tools (as identified from codebase):
+// Expected 52 tools (as identified from codebase):
 const expectedTools = [
     'assess_foundational_assumptions',
     'backup_project', 
@@ -224,6 +224,7 @@ const expectedTools = [
     'compare_paradigms',
     'compile_latex',
     'cultivate_innovation',
+    'detect_and_celebrate_milestones',
     'develop_alternative_framework',
     'discover_patterns',
     'enhanced_socratic_dialogue',
@@ -241,10 +242,13 @@ const expectedTools = [
     'generate_latex_document',
     'generate_latex_with_template',
     'generate_research_summary',
+    'get_contextual_recommendations',
+    'get_research_act_guidance',
     'get_research_milestones',
     'get_research_progress', 
     'get_session_summary',
     'get_tool_usage_history',
+    'get_visual_progress_summary',
     'get_workflow_recommendations',
     'initialize_project',
     'initiate_paradigm_challenge',
@@ -276,7 +280,7 @@ if (extraTools.length > 0) {
     console.error('Extra tools:', extraTools);
 }
 if (missingTools.length === 0 && extraTools.length === 0) {
-    console.log('✅ All 48 tools successfully mapped to framework!');
+    console.log('✅ All 52 tools successfully mapped to framework!');
 }
 
 // Make available for import

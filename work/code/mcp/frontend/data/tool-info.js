@@ -1,6 +1,6 @@
 /**
  * SRRD-Builder Tool Information Database
- * Comprehensive information for all 50 research tools
+ * Comprehensive information for all 52 research tools
  * Used for help modals and user guidance
  */
 
@@ -712,6 +712,34 @@ const TOOL_INFO_DATABASE = {
             'Plan follow-up work based on session results'
         ],
         tags: ['Session Analysis', 'Productivity Review', 'Progress Summary']
+    },
+
+    'get_visual_progress_summary': {
+        title: 'Visual Progress Summary',
+        purpose: 'Generates visual progress summary with ASCII charts and comprehensive progress visualization.',
+        context: 'Enhanced progress tracking that builds on existing analysis with visual elements for better comprehension.',
+        usage: 'Creates ASCII progress bars, tool usage frequency charts, and velocity trends combined with detailed progress reports.',
+        examples: [
+            'View research acts progress with visual progress bars',
+            'Analyze tool usage frequency with bar charts',
+            'Track research velocity trends over time',
+            'Get comprehensive visual and textual progress analysis'
+        ],
+        tags: ['Progress Visualization', 'ASCII Charts', 'Research Metrics', 'Visual Analytics']
+    },
+
+    'detect_and_celebrate_milestones': {
+        title: 'Milestone Detection & Celebration',
+        purpose: 'Automatically detects and celebrates research achievements and milestones.',
+        context: 'Intelligent milestone recognition system that identifies research progress achievements and provides motivational feedback.',
+        usage: 'Analyzes research activity patterns to detect act completions, usage milestones, and velocity achievements.',
+        examples: [
+            'Celebrate research act completion milestones',
+            'Recognize tool usage achievement levels',
+            'Acknowledge consistent research momentum',
+            'Provide motivational progress feedback'
+        ],
+        tags: ['Milestone Detection', 'Achievement Recognition', 'Progress Celebration', 'Motivational Feedback']
     }
 };
 

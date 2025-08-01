@@ -13,7 +13,7 @@
 
 SRRD-Builder uses a **neurosymbolic approach**, combining traditional symbolic programming (rule-based systems, structured knowledge, logical reasoning) with neural networks/large language models to support the scientific research lifecycle from initial planning to publication-ready documents.
 
-The system features an **MCP (Model Context Protocol) server** that integrates with Claude Desktop and VS Code, providing **44 research tools** for document generation, knowledge management, and research quality assurance. It specializes in novel theory development for fundamental physics research, ensuring rigorous development of alternative paradigms with equal treatment to mainstream approaches.
+The system features an **MCP (Model Context Protocol) server** that integrates with Claude Desktop and VS Code, providing **52 research tools** for document generation, knowledge management, and research quality assurance. It specializes in novel theory development for fundamental physics research, ensuring rigorous development of alternative paradigms with equal treatment to mainstream approaches.
 
 ## ⚠️ Development Status: Beta testing phase with comprehensive functionality
 
@@ -44,7 +44,7 @@ This project is in active beta testing with complete core functionality implemen
 - **VS Code Integration** using dedicated mcp.json configuration (modern MCP format)
 - **CLI Tool (`srrd`)** for project initialization and configuration
 - **Global Server Management (`srrd-server`)** with dual-server architecture
-- **44 Research Tools** including document generation, semantic search, and quality gates
+- **52 Research Tools** including document generation, semantic search, and quality gates
 - **Research Lifecycle Persistence** with automatic tool logging and progress tracking
 - **Workflow Intelligence** providing AI-powered progress analysis and recommendations
 - **LaTeX Document Generation** with automatic bibliography integration
@@ -214,11 +214,11 @@ srrd-server stop
 1. Start the demo system: `srrd-server --with-frontend`
 2. Open web interface: <http://localhost:8080>
 3. Click "Connect to Server" to establish WebSocket connection
-4. Test any of the 44 available tools using the categorized interface
+4. Test any of the 52 available tools using the categorized interface
 
 ### Available Tools
 
-The MCP server provides **44 tools** organized by research workflow categories:
+The MCP server provides **52 tools** organized by research workflow categories:
 
 #### 🧪 Research Planning & Goal Setting (2 tools)
 
@@ -260,11 +260,13 @@ The MCP server provides **44 tools** organized by research workflow categories:
 - Foundational assumption analysis and paradigm comparison
 - Equal treatment validation for alternative theories
 
-#### 🔄 Research Lifecycle Persistence (6 tools)
+#### 🔄 Research Lifecycle Persistence (8 tools)
 
 - Automatic tool usage logging and progress tracking
 - Research session management and milestone tracking
 - AI-powered workflow recommendations and health monitoring
+- Visual progress summaries with ASCII charts and velocity trends
+- Intelligent milestone detection and achievement celebration
 
 ### Example Workflow
 

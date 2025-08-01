@@ -204,4 +204,12 @@ run_cmd "get_contextual_recommendations" '{"jsonrpc": "2.0", "id": __ID__, "meth
 # 56. get_contextual_recommendations with last tool
 run_cmd "get_contextual_recommendations_with_context" '{"jsonrpc": "2.0", "id": __ID__, "method": "tools/call", "params": {"name": "get_contextual_recommendations", "arguments": {"last_tool_used": "clarify_research_goals", "recommendation_depth": 5}}}'
 
+# NEW ENHANCED PROGRESS TRACKING TOOLS
+
+# 57. get_visual_progress_summary
+run_cmd "get_visual_progress_summary" '{"jsonrpc": "2.0", "id": __ID__, "method": "tools/call", "params": {"name": "get_visual_progress_summary", "arguments": {}}}'
+
+# 58. detect_and_celebrate_milestones
+run_cmd "detect_and_celebrate_milestones" '{"jsonrpc": "2.0", "id": __ID__, "method": "tools/call", "params": {"name": "detect_and_celebrate_milestones", "arguments": {}}}'
+
 exit 0
