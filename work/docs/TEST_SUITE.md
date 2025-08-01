@@ -777,3 +777,4 @@ If tool counts don't match expected values:
 2. **Verify frontend files:** Both `tool-info.js` and `research-framework.js` must have matching tool counts
 3. **Check registration functions:** Each tool module should have a `register_*_tools` function with correct `server.register_tool` calls
 4. **Run individual verification:** Use the scripts above to identify which component has the mismatch
+5. Add new tools to `executionOrder`
